@@ -24,6 +24,8 @@ Skills are defined in `.claude/skills/` and the tester subagent in `.claude/agen
 | `/git-verify` | `/git-verify` | Pre-commit safety check: scans staged files for `.env`/`application.properties` leaks, hardcoded secrets, merge conflict markers, and direct commits to `main`. Gives a green/red verdict. |
 | `/explain` | `/explain src/main/.../JwtService.java:42` | Explains a file, package, class, or line in plain English — what it does, why it exists, how it fits the architecture, and whether it has test coverage. |
 | `/generate-migration` | `/generate-migration add refreshToken column to User` | Generates a Flyway SQL migration file (auto-increments version), updates the JPA entity, and configures Flyway in `application.properties` if not already set up. |
+| `/seed-db` | `/seed-db` | Seeds the local database with test data (users, watches, subscriptions) for development and manual testing. |
+| `/audit-endpoints` | `/audit-endpoints` | Security audit for REST endpoints: checks for DTO problems and missing authentication on endpoints that should be protected. |
 
 **Tip:** Run `/git-verify` before every commit. Run `/generate-migration` whenever you change the schema instead of relying on `ddl-auto=update`.
 
