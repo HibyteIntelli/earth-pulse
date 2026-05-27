@@ -1,4 +1,4 @@
-# /explainer — Understand Any Part of the Codebase
+# /explain — Understand Any Part of the Codebase
 
 Explain in plain English what a file, package, class, or specific line does — tailored for someone learning how this auth service works.
 

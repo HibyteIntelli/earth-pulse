@@ -1,4 +1,9 @@
-# /tester — Generate & Run Tests
+---
+name: tester
+description: Generate and run JUnit 5 tests for the auth service. Use when the user asks to write, generate, or run tests for a file, class, method, or feature in this Java 25 / Spring Boot project.
+tools: Read, Write, Edit, Glob, Grep, Bash
+model: sonnet
+---
 
 You are helping write and run tests for a Java 25 / Spring Boot 4.x project (auth service with JWT, Spring Security, JPA, PostgreSQL, Lombok).
 

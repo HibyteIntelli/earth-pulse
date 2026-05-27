@@ -1,4 +1,4 @@
-# /migration — Generate a Flyway Migration
+# /generate-migration — Generate a Flyway Migration
 
 Create a Flyway SQL migration and keep the JPA entity in sync with it.
 

@@ -20,12 +20,12 @@ These project-level commands are defined in `.claude/commands/` and can be invok
 
 | Command | Usage | What it does |
 |---------|-------|-------------|
-| `/tester` | `/tester JwtService` | Generates JUnit 5 tests (unit, MockMvc, or full integration) for a given file, class, method, or feature. Runs them and reports results. |
+| `tester` (subagent) | `/tester JwtService` | Generates JUnit 5 tests (unit, MockMvc, or full integration) for a given file, class, method, or feature. Runs as a dedicated subagent and reports results. |
 | `/git-verify` | `/git-verify` | Pre-commit safety check: scans staged files for `.env`/`application.properties` leaks, hardcoded secrets, merge conflict markers, and direct commits to `main`. Gives a green/red verdict. |
-| `/explainer` | `/explainer src/main/.../JwtService.java:42` | Explains a file, package, class, or line in plain English — what it does, why it exists, how it fits the architecture, and whether it has test coverage. |
-| `/migration` | `/migration add refreshToken column to User` | Generates a Flyway SQL migration file (auto-increments version), updates the JPA entity, and configures Flyway in `application.properties` if not already set up. |
+| `/explain` | `/explain src/main/.../JwtService.java:42` | Explains a file, package, class, or line in plain English — what it does, why it exists, how it fits the architecture, and whether it has test coverage. |
+| `/generate-migration` | `/generate-migration add refreshToken column to User` | Generates a Flyway SQL migration file (auto-increments version), updates the JPA entity, and configures Flyway in `application.properties` if not already set up. |
 
-**Tip:** Run `/git-verify` before every commit. Run `/migration` whenever you change the schema instead of relying on `ddl-auto=update`.
+**Tip:** Run `/git-verify` before every commit. Run `/generate-migration` whenever you change the schema instead of relying on `ddl-auto=update`.
 
 ---
 
