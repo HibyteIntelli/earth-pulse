@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.api</groupId>
-    <artifactId>llm-briefing</artifactId>
+    <artifactId>llm</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>llm-briefing</name>
     <description>llm-briefing</description>
