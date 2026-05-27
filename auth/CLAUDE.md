@@ -14,9 +14,9 @@ Stack: Java 25, Spring Boot 4.x, Spring Security, Spring Data JPA, PostgreSQL, L
 
 ---
 
-## Available Slash Commands
+## Available Commands & Agents
 
-These project-level commands are defined in `.claude/commands/` and can be invoked in any Claude Code session inside this project.
+Skills are defined in `.claude/skills/` and the tester subagent in `.claude/agents/`. All can be invoked in any Claude Code session inside this project.
 
 | Command | Usage | What it does |
 |---------|-------|-------------|

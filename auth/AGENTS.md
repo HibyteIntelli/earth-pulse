@@ -79,16 +79,16 @@ docker compose up -d        # start PostgreSQL
 
 ---
 
-## Available slash commands (Claude Code only)
+## Available commands & agents (Claude Code only)
 
-If you are Claude Code, these commands are available in `.claude/commands/`:
+Skills are in `.claude/skills/`; the tester subagent is in `.claude/agents/`.
 
 | Command | Purpose |
 |---------|---------|
-| `/tester <target>` | Generate and run JUnit 5 tests for a file, class, or feature |
+| `tester` (subagent) | Generate and run JUnit 5 tests for a file, class, or feature |
 | `/git-verify` | Pre-commit safety scan — run this before every commit |
-| `/explainer <target>` | Plain-English explanation of any file, class, or line |
-| `/migration <description>` | Generate a Flyway migration + update the JPA entity |
+| `/explain <target>` | Plain-English explanation of any file, class, or line |
+| `/generate-migration <description>` | Generate a Flyway migration + update the JPA entity |
 
 ---
 
