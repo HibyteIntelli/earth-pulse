@@ -16,7 +16,7 @@ $ARGUMENTS can optionally specify what to seed (e.g. `users`, `watches`, `all`) 
 
 Glob `src/main/resources/db/migration/` for Flyway migration files and read them to understand the current table structure. If no migrations exist, look for JPA entity classes under `src/main/java/` (search for `@Entity`) and infer the schema from field annotations.
 
-If no schema can be determined, report what was found and tell the user to run the app once first so Hibernate/Flyway creates the tables.
+If no schema can be determined, report what was found and tell the user seeding cannot proceed until migrations or entity classes define the schema.
 
 ### 3. Generate the seed SQL
 
