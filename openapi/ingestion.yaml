@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Earth Pulse - Ingestion Service
-  version: 0.1.0
+  version: 1.0.0
   description: |
     Polls NASA EONET and owns the natural-event store. Read-only API
     consumed by the frontend (map view) and the Notifier (polling for
