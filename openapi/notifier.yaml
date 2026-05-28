@@ -1,0 +1,424 @@
+openapi: 3.0.3
+info:
+  title: EarthPulse — Notifier Service
+  description: >
+    Detects new events, matches them against user watches, and delivers
+    notifications via email (immediate or daily digest).
+    Also exposes a notification history API consumed by the frontend.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8084
+    description: Local development
+
+tags:
+  - name: Notifications
+    description: Notification history for authenticated users (consumed by the frontend)
+  - name: Internal
+    description: Inbound push endpoint called by the Ingestion Service (shared-secret protected)
+  - name: Health
+    description: Service health check
+
+# ---------------------------------------------------------------------------
+# Security schemes
+# ---------------------------------------------------------------------------
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        JWT issued by POST /auth/login (User & Subscription Service).
+        Validated locally against the User Service JWKS.
+
+    InternalSecret:
+      type: apiKey
+      in: header
+      name: X-Internal-Secret
+      description: Shared secret for internal service-to-service calls.
+
+  # -------------------------------------------------------------------------
+  # Schemas
+  # -------------------------------------------------------------------------
+  schemas:
+
+    # --- Shared enums --------------------------------------------------------
+
+    ReadingLevel:
+      type: string
+      enum: [DEFAULT, SIMPLIFIED]
+      description: >
+        Complexity level of the AI-generated summary.
+        Copied from the matched watch at delivery time.
+
+    Severity:
+      type: string
+      enum: [LOW, MODERATE, HIGH, UNKNOWN]
+
+    DeliveryMode:
+      type: string
+      enum: [IMMEDIATE, DAILY_DIGEST]
+      description: >
+        How the notification was delivered.
+        Mirrors the watch's `digest_mode` at the time of delivery.
+        `IMMEDIATE` — one email sent per event as soon as it matched.
+        `DAILY_DIGEST` — event was bundled into the next scheduled digest email.
+
+    # --- Notification history (frontend) ------------------------------------
+
+    BriefingSnapshot:
+      type: object
+      description: >
+        Inline copy of the LLM briefing at the time the notification was sent.
+        Stored so the history remains readable even if the LLM cache is later
+        invalidated.
+      properties:
+        summary:
+          type: string
+          example: "A wildfire has been burning in the Sierra Nevada foothills since May 10…"
+        impact:
+          type: string
+          example: "Smoke is likely to degrade air quality across the Sacramento Valley."
+        severity:
+          $ref: '#/components/schemas/Severity'
+        precautions:
+          type: array
+          items:
+            type: string
+          example:
+            - "Stay indoors and keep windows closed if smoke is visible in your area"
+            - "Use N95 masks or respirators if you must go outside"
+
+    NotificationDto:
+      type: object
+      description: >
+        One delivery record, keyed by (watch, event). For DAILY_DIGEST mode,
+        multiple NotificationDto entries may have been bundled into a single
+        email; each still appears as a separate history entry so the user can
+        navigate to each individual event.
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "n1b2c3d4-0000-0000-0000-ef1234567890"
+        watchId:
+          type: string
+          format: uuid
+          description: The watch that triggered this notification.
+          example: "w1b2c3d4-0000-0000-0000-ef1234567890"
+        eventId:
+          type: string
+          description: EONET event ID.
+          example: "EONET_6543"
+        eventTitle:
+          type: string
+          example: "Wildfire - Sierra Nevada foothills"
+        eventCategory:
+          type: string
+          example: "wildfires"
+        eventUrl:
+          type: string
+          format: uri
+          description: Deep link to the event on the map.
+          example: "http://localhost:4200/map?event=EONET_6543"
+        deliveryMode:
+          $ref: '#/components/schemas/DeliveryMode'
+        readingLevel:
+          $ref: '#/components/schemas/ReadingLevel'
+        sentAt:
+          type: string
+          format: date-time
+          description: >
+            When the email was dispatched. For DAILY_DIGEST entries, this is
+            the time the digest email was sent, not when the event was matched.
+        briefing:
+          $ref: '#/components/schemas/BriefingSnapshot'
+
+    NotificationPage:
+      type: object
+      required: [items, total, limit, offset]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/NotificationDto'
+        total:
+          type: integer
+          example: 42
+        limit:
+          type: integer
+          example: 20
+        offset:
+          type: integer
+          example: 0
+
+    # --- Internal: event push from Ingestion --------------------------------
+
+    Geometry:
+      type: object
+      description: GeoJSON-style point at the event's primary location.
+      required: [type, coordinates]
+      properties:
+        type:
+          type: string
+          enum: [Point]
+        coordinates:
+          type: array
+          description: "[longitude, latitude] (GeoJSON order)."
+          items:
+            type: number
+          minItems: 2
+          maxItems: 2
+          example: [-120.5, 39.1]
+
+    NewEventPayload:
+      type: object
+      required: [eventId, title, categories, geometry, ingestedAt]
+      description: >
+        Pushed by the Ingestion Service immediately after it stores a
+        previously unseen event. The Notifier uses this to trigger the
+        matching + notification pipeline without needing to poll.
+      properties:
+        eventId:
+          type: string
+          description: EONET event ID; stable across event updates.
+          example: "EONET_6543"
+        title:
+          type: string
+          example: "Wildfire - Sierra Nevada foothills"
+        categories:
+          type: array
+          minItems: 1
+          items:
+            type: string
+          example: ["wildfires"]
+        geometry:
+          $ref: '#/components/schemas/Geometry'
+        magnitudeValue:
+          type: number
+          nullable: true
+          description: >
+            EONET magnitude (e.g. acres burned for wildfires, VEI for
+            volcanoes). Null when EONET does not publish one.
+          example: 1200.5
+        magnitudeUnit:
+          type: string
+          nullable: true
+          example: "acres"
+        ingestedAt:
+          type: string
+          format: date-time
+          description: When the Ingestion Service first stored this event.
+
+    # --- Errors -------------------------------------------------------------
+
+    ProblemDetail:
+      type: object
+      description: RFC 7807 problem detail.
+      properties:
+        type:
+          type: string
+          format: uri
+          example: "https://earthpulse.io/errors/validation-error"
+        title:
+          type: string
+          example: "Validation Failed"
+        status:
+          type: integer
+          example: 400
+        detail:
+          type: string
+          example: "eventId: must not be blank"
+        instance:
+          type: string
+          format: uri
+          example: "/internal/events/new"
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: UP
+
+# ---------------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------------
+paths:
+
+  # --- Notification history (frontend) -------------------------------------
+
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: List notifications for the authenticated user
+      operationId: listNotifications
+      description: >
+        Returns the notification history for the currently authenticated user,
+        sorted by `sentAt` descending (newest first). Each entry represents one
+        (watch, event) delivery record — a digest email with N events creates N
+        separate history entries, each with `deliveryMode: DAILY_DIGEST`.
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: eventId
+          in: query
+          description: Filter to a specific EONET event ID.
+          schema:
+            type: string
+          example: "EONET_6543"
+        - name: category
+          in: query
+          description: Filter by event category.
+          schema:
+            type: string
+          example: "wildfires"
+        - name: deliveryMode
+          in: query
+          description: Filter by delivery mode.
+          schema:
+            $ref: '#/components/schemas/DeliveryMode'
+        - name: since
+          in: query
+          description: Only notifications sent at or after this timestamp (ISO 8601).
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: Page of notification records.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPage'
+        "401":
+          description: Missing or invalid JWT.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /notifications/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Notification UUID.
+
+    get:
+      tags: [Notifications]
+      summary: Get a specific notification
+      operationId: getNotification
+      description: >
+        Returns the full detail for a single notification record, including
+        the inline briefing snapshot.
+      security:
+        - BearerAuth: []
+      responses:
+        "200":
+          description: Notification detail.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationDto'
+        "401":
+          description: Missing or invalid JWT.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        "403":
+          description: Notification belongs to another user.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        "404":
+          description: Notification not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  # --- Internal (Ingestion push) -------------------------------------------
+
+  /internal/events/new:
+    post:
+      tags: [Internal]
+      summary: Accept a new-event push from the Ingestion Service
+      operationId: receiveNewEvent
+      description: >
+        Called by the Ingestion Service immediately after it stores a
+        previously unseen event. The Notifier accepts the payload and
+        processes it asynchronously:
+
+        1. Calls POST /internal/watches/match on the User Service to find
+           all non-paused watches whose bounding box and categories match
+           the event.
+        2. For each matched watch, fetches a briefing from the LLM Service
+           using the watch's reading_level.
+        3. Dispatches immediate emails for IMMEDIATE-mode watches.
+        4. Buffers DAILY_DIGEST-mode matches for the next scheduled digest run.
+
+        Deduplication: if a (watch, event) pair has already been delivered,
+        subsequent calls for the same pair are silent no-ops (first write wins).
+
+        Protected by the `X-Internal-Secret` header — not accessible to
+        end users or the frontend.
+      security:
+        - InternalSecret: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewEventPayload'
+      responses:
+        "202":
+          description: >
+            Event accepted for asynchronous processing. This response does not
+            indicate that any notifications have been sent yet.
+        "400":
+          description: Validation error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+        "401":
+          description: Missing or invalid internal secret.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  # --- Health ---------------------------------------------------------------
+
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        "200":
+          description: Service is healthy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
