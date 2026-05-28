@@ -127,7 +127,7 @@ components:
           $ref: '#/components/schemas/ReadingLevel'
           description: >
             User's preferred reading level for AI briefings shown on the map.
-            Defaults to `default` on signup.
+            Defaults to `DEFAULT` on signup.
 
     UpdateUserRequest:
       type: object
