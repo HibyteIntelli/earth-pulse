@@ -9,6 +9,7 @@ import com.earthpulse.www.exception.InvalidCredentialsException;
 import com.earthpulse.www.repository.UserRepository;
 import com.nimbusds.jose.JOSEException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +30,11 @@ public class UserService {
         User user = new User();
         user.setEmail(dto.email());
         user.setPasswordHash(passwordEncoder.encode(dto.password()));
-        userRepository.save(user);
+        try {
+            userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new DuplicateEmailException(dto.email());
+        }
     }
 
     @Transactional(readOnly = true)

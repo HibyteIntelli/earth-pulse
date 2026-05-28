@@ -2,6 +2,7 @@ package com.earthpulse.www.entity;
 
 import com.earthpulse.www.enums.ReadingLevel;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -31,6 +32,7 @@ public class User {
     @Column(nullable = false)
     private ReadingLevel readingLevel = ReadingLevel.DEFAULT;
 
+    @Setter(AccessLevel.NONE)
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
 }

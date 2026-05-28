@@ -30,7 +30,8 @@ public class GlobalExceptionHandler {
         Map<String, String> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
                 .collect(Collectors.toMap(
                         FieldError::getField,
-                        fe -> fe.getDefaultMessage() != null ? fe.getDefaultMessage() : "invalid"
+                        fe -> fe.getDefaultMessage() != null ? fe.getDefaultMessage() : "invalid",
+                        (existing, replacement) -> existing
                 ));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("error", "Validation failed", "details", fieldErrors));

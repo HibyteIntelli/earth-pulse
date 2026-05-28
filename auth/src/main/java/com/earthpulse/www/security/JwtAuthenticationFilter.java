@@ -26,6 +26,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             new RequestAttributeSecurityContextRepository();
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/auth/") || path.equals("/.well-known/jwks.json");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
