@@ -51,8 +51,6 @@ The app reads credentials directly from `application.properties`.
 | `/git-verify` | Before every commit — checks for secrets, conflict markers, wrong branch | `/git-verify` |
 | `/explain` | Understand a file, class, method, or feature in plain English | `/explain JwtService` |
 | `/generate-migration` | Any schema change — creates a Flyway SQL file and updates the entity | `/generate-migration add refreshToken to User` |
-| `/audit-endpoints` | After adding/changing a controller — flags missing auth, validation, or DTO issues | `/audit-endpoints` |
-| `/seed-db` | Populate the local DB with test users and watches for manual testing | `/seed-db` |
 
 ## Agent
 
