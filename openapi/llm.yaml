@@ -1,0 +1,252 @@
+openapi: 3.0.3
+
+info:
+  title: Earth Pulse - LLM Briefing Service API
+  version: 1.0.0
+  description: |
+    Service responsible for generating and serving AI-powered natural disaster briefings.
+    Uses a local LLM (Ollama) with caching for performance and consistency.
+
+servers:
+  - url: http://localhost:8082
+    description: Local development server
+
+tags:
+  - name: Briefings
+  - name: Admin
+  - name: Health
+
+paths:
+
+  /briefings/{eventId}:
+
+    get:
+      tags:
+        - Briefings
+
+      summary: Get briefing (read-through cache)
+      description: |
+        Returns a briefing for the given event.
+
+        If data is missing, it will be lazily generated and cached:
+        - Shared fields (impact, severity, precautions) are generated per event
+        - Summary is generated per (eventId, readingLevel)
+
+      operationId: getBriefing
+
+      parameters:
+
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Unique event identifier (EONET)
+
+        - name: readingLevel
+          in: query
+          required: false
+          description: |
+            Controls the verbosity of the summary.
+            Defaults to DEFAULT if not provided.
+          schema:
+            $ref: '#/components/schemas/ReadingLevel'
+
+      responses:
+
+        "200":
+          description: Briefing returned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BriefingResponse'
+
+        "404":
+          description: Event not found
+
+        "503":
+          description: LLM service unavailable
+
+
+    post:
+      tags:
+        - Briefings
+
+      summary: Ensure briefing exists (create-if-missing)
+      description: |
+        Ensures a briefing exists for the given event and reading level.
+
+        Behavior:
+        - If shared fields are missing → generate them
+        - If summary for (eventId, readingLevel) is missing → generate it
+        - If everything exists → return cached result (no LLM call)
+
+        This endpoint is idempotent.
+
+      operationId: ensureBriefing
+
+      parameters:
+
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+
+        - name: readingLevel
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/ReadingLevel'
+
+      responses:
+
+        "200":
+          description: Returned existing briefing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BriefingResponse'
+
+        "201":
+          description: Newly generated briefing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BriefingResponse'
+
+
+  /briefings:
+
+    get:
+      tags:
+        - Briefings
+
+      summary: List cached briefings
+      description: Returns all cached briefings (for debugging/admin purposes)
+
+      operationId: listBriefings
+
+      responses:
+
+        "200":
+          description: List of briefings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BriefingResponse'
+
+
+  /admin/briefings/{eventId}:
+
+    delete:
+      tags:
+        - Admin
+
+      summary: Delete cached briefing
+      description: |
+        Deletes cached briefing data for an event.
+
+        This removes:
+        - Shared fields
+        - All summaries for all reading levels
+
+      operationId: deleteBriefing
+
+      parameters:
+
+        - name: eventId
+          in: path
+          required: true
+          schema:
+            type: string
+
+      responses:
+
+        "204":
+          description: Deleted successfully
+
+        "404":
+          description: Briefing not found
+
+
+  /health:
+
+    get:
+      tags:
+        - Health
+
+      summary: Health check
+      operationId: healthCheck
+
+      responses:
+
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+
+components:
+
+  schemas:
+
+    ReadingLevel:
+      type: string
+      enum:
+        - DEFAULT
+        - SIMPLIFIED
+
+    Severity:
+      type: string
+      enum:
+        - LOW
+        - MODERATE
+        - HIGH
+        - UNKNOWN
+
+    BriefingResponse:
+      type: object
+
+      properties:
+
+        eventId:
+          type: string
+
+        readingLevel:
+          $ref: '#/components/schemas/ReadingLevel'
+
+        generatedAt:
+          type: string
+          format: date-time
+
+        summary:
+          type: string
+
+        impact:
+          type: string
+
+        severity:
+          $ref: '#/components/schemas/Severity'
+
+        precautions:
+          type: array
+          items:
+            type: string
+
+        disclaimer:
+          type: string
+          example: AI-generated; always follow guidance from local authorities.
+
+    HealthResponse:
+      type: object
+
+      properties:
+
+        status:
+          type: string
+          example: UP
