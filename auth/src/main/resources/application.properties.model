@@ -1,8 +1,16 @@
 spring.application.name=auth
+server.port=8083
 
+# Database
 spring.datasource.url=jdbc:postgresql://localhost:5432/<POSTGRES_DB>
 spring.datasource.username=<POSTGRES_USER>
 spring.datasource.password=<POSTGRES_PASSWORD>
 spring.datasource.driver-class-name=org.postgresql.Driver
 
 spring.jpa.hibernate.ddl-auto=update
+
+# Service identity — used as the JWT issuer claim (iss)
+app.base-url=http://localhost:8083
+
+# Shared secret for internal endpoints called by the Notifier Service (X-Internal-Secret header)
+app.internal-secret=<RANDOM_SECRET_MIN_32_CHARS>
