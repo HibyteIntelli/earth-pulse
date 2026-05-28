@@ -15,7 +15,7 @@ earth-pulse/
 ├── frontend/        # Angular
 ├── ingestion/       # NASA EONET polling, event storage
 ├── llm/             # Ollama briefing generation
-├── user/            # Auth (JWT), watches, account
+├── auth/            # Auth (JWT), watches, account
 └── notifier/        # This service
 ```
 
@@ -41,7 +41,7 @@ earth-pulse/
 
 ## Authentication
 
-The User Service is the identity provider. This service validates JWTs locally using the User Service's JWKS endpoint. No custom JWT code needed here.
+The Auth Service is the identity provider. This service validates JWTs locally using the Auth Service's JWKS endpoint. No custom JWT code needed here.
 
 ```yaml
 spring:
@@ -49,7 +49,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: http://user-service:8080/.well-known/jwks.json
+          jwk-set-uri: http://auth-service:8080/.well-known/jwks.json
 ```
 
 ## Database
@@ -67,7 +67,7 @@ Credentials in `application-local.properties` (gitignored).
 ### Event matching
 - Receive push from Ingestion when new events arrive (primary)
 - Poll Ingestion as fallback
-- For each event, call User Service to get all watches whose bounding box + category match
+- For each event, call Auth Service to get all watches whose bounding box + category match
 
 ### Notification delivery
 Delivery mode is per-watch (`digest_mode` field), not per-user:
