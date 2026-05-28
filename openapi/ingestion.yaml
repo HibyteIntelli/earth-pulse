@@ -1,0 +1,349 @@
+openapi: 3.1.0
+info:
+  title: Earth Pulse - Ingestion Service
+  version: 1.0.0
+  description: |
+    Polls NASA EONET and owns the natural-event store. Read-only API
+    consumed by the frontend (map view) and the Notifier (polling for
+    newly ingested events).
+
+    This service also pushes new-event notifications to the Notifier;
+    that outbound call is documented in the Notifier's spec, not here.
+
+servers:
+  - url: http://localhost:8081
+    description: Local dev
+
+tags:
+  - name: events
+    description: Natural-event resources sourced from NASA EONET.
+  - name: categories
+    description: EONET category catalogue used by the filter UI.
+
+paths:
+  /events:
+    get:
+      tags: [events]
+      summary: List events matching filters.
+      description: |
+        Read endpoint backing the map view. All filters are optional and
+        composable (AND). When no filters are supplied, returns the most
+        recent active events up to `limit`, sorted by `startDate` desc.
+      parameters:
+        - name: bbox
+          in: query
+          description: |
+            Bounding box as `west,south,east,north` in WGS84 decimal degrees,
+            matching NASA EONET's bbox format. Used by the frontend to fetch
+            only events visible in the current viewport.
+          schema:
+            type: string
+            pattern: '^-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?$'
+          example: "-10.5,35.0,40.0,60.0"
+        - name: category
+          in: query
+          description: |
+            EONET category id (e.g. `wildfires`, `severeStorms`, `volcanoes`).
+            Repeat the parameter to OR multiple categories
+            (`?category=wildfires&category=volcanoes`).
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+          example: ["wildfires", "volcanoes"]
+        - name: status
+          in: query
+          description: Event lifecycle status. `open` = currently active.
+          schema:
+            type: string
+            enum: [open, closed, all]
+            default: open
+        - name: start
+          in: query
+          description: Only events with `startDate >= start` (ISO 8601).
+          schema:
+            type: string
+            format: date-time
+        - name: end
+          in: query
+          description: Only events with `startDate <= end` (ISO 8601).
+          schema:
+            type: string
+            format: date-time
+        - name: since
+          in: query
+          description: |
+            Only events ingested into our DB after this timestamp.
+            Used by the Notifier to poll for newly seen events without
+            re-scanning the whole table.
+          schema:
+            type: string
+            format: date-time
+        - name: sort
+          in: query
+          description: |
+            Sort order for results. Default is most recent event first,
+            which is what the map wants.
+          schema:
+            type: string
+            enum:
+              - startDate:desc
+              - startDate:asc
+              - ingestedAt:desc
+              - ingestedAt:asc
+            default: startDate:desc
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 500
+            default: 100
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        '200':
+          description: Page of events.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /events/{id}:
+    get:
+      tags: [events]
+      summary: Get a single event by id.
+      description: |
+        Backs shareable deep links. The `id` is the EONET event id we
+        ingested (e.g. `EONET_6543`).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "EONET_6543"
+      responses:
+        '200':
+          description: The event.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /events/count:
+    get:
+      tags: [events]
+      summary: Count events matching filters.
+      description: |
+        Cheap count endpoint. Same filter shape as `GET /events` but
+        returns only the total - used by the map to show "N events in
+        view" without paginating through results.
+      parameters:
+        - { $ref: '#/components/parameters/Bbox' }
+        - { $ref: '#/components/parameters/Category' }
+        - { $ref: '#/components/parameters/Status' }
+        - { $ref: '#/components/parameters/Start' }
+        - { $ref: '#/components/parameters/End' }
+      responses:
+        '200':
+          description: Count of matching events.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [total]
+                properties:
+                  total: { type: integer, example: 142 }
+
+  /categories:
+    get:
+      tags: [categories]
+      summary: List EONET event categories.
+      description: |
+        Drives the category filter UI on the frontend. Mirrors the
+        EONET category list as ingested by this service.
+      responses:
+        '200':
+          description: Categories.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Reserved for future protected endpoints (e.g. admin re-poll,
+        manual backfill trigger). No path currently requires
+        authentication; the entire read API is public.
+
+  parameters:
+    Bbox:
+      name: bbox
+      in: query
+      schema: { type: string }
+    Category:
+      name: category
+      in: query
+      schema:
+        type: array
+        items: { type: string }
+      style: form
+      explode: true
+    Status:
+      name: status
+      in: query
+      schema:
+        type: string
+        enum: [open, closed, all]
+        default: open
+    Start:
+      name: start
+      in: query
+      schema: { type: string, format: date-time }
+    End:
+      name: end
+      in: query
+      schema: { type: string, format: date-time }
+
+  schemas:
+    Event:
+      type: object
+      required: [id, title, category, status, startDate, geometry, sources]
+      properties:
+        id:
+          type: string
+          description: EONET event id; stable across updates.
+          example: "EONET_6543"
+        title:
+          type: string
+          example: "Wildfire - Sierra Nevada foothills"
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+          example: "wildfires"
+        status:
+          type: string
+          enum: [open, closed]
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+          nullable: true
+          description: Set when the event closes; null while open.
+        geometry:
+          $ref: '#/components/schemas/Geometry'
+        magnitudeValue:
+          type: number
+          nullable: true
+          description: |
+            EONET magnitude (e.g. acres burned for wildfires, VEI for
+            volcanoes). Null when EONET does not publish one.
+        magnitudeUnit:
+          type: string
+          nullable: true
+          example: "acres"
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/Source'
+        ingestedAt:
+          type: string
+          format: date-time
+          description: When this service first observed the event.
+        updatedAt:
+          type: string
+          format: date-time
+
+    Geometry:
+      type: object
+      description: GeoJSON-style point at the event's primary location.
+      required: [type, coordinates]
+      properties:
+        type:
+          type: string
+          enum: [Point]
+        coordinates:
+          type: array
+          description: "[longitude, latitude] (GeoJSON order)."
+          items: { type: number }
+          minItems: 2
+          maxItems: 2
+          example: [-120.5, 39.1]
+
+    Source:
+      type: object
+      required: [id, url]
+      properties:
+        id: { type: string, example: "InciWeb" }
+        url: { type: string, format: uri }
+
+    Category:
+      type: object
+      required: [id, title]
+      properties:
+        id: { type: string, example: "wildfires" }
+        title: { type: string, example: "Wildfires" }
+
+    EventPage:
+      type: object
+      required: [items, total, limit, offset]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Event' }
+        total: { type: integer, example: 142 }
+        limit: { type: integer, example: 100 }
+        offset: { type: integer, example: 0 }
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          description: Machine-readable error identifier.
+          enum:
+            - invalid_bbox
+            - invalid_date_range
+            - invalid_category
+            - invalid_sort
+            - limit_out_of_range
+            - event_not_found
+          example: "invalid_bbox"
+        message:
+          type: string
+          description: Human-readable explanation; do not parse.
+
+  responses:
+    BadRequest:
+      description: Invalid query parameters.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Event not found.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
