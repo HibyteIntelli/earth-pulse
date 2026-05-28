@@ -62,8 +62,7 @@ The app reads credentials directly from `application.properties`.
 
 ```
 1. Make your change
-2. /audit-endpoints      ← check for security gaps
-3. /tester <class>       ← generate and run tests
-4. /git-verify           ← safety check before committing
-5. git commit
+2. /tester <class>       ← generate and run tests
+3. /git-verify           ← safety check before committing
+4. git commit
 ```
