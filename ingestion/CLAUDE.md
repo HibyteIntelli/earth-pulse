@@ -82,17 +82,3 @@ All filtering is server-side (no client-side filtering in the frontend).
 - If the EONET API is unreachable, log the error and skip the cycle — do not crash the service.
 - Use Spring Data JPA named parameters — never string-concatenated queries.
 
----
-
-## Environment Variables
-
-See `.env.model` for the full list.
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `POSTGRES_USER` | — | PostgreSQL username |
-| `POSTGRES_PASSWORD` | — | PostgreSQL password |
-| `POSTGRES_DB` | — | PostgreSQL database name |
-| `INGESTION_POLL_INTERVAL_MS` | `3600000` | Polling interval (ms) |
-| `INGESTION_BACKFILL_DAYS` | `30` | Days to backfill on first boot |
-| `NOTIFIER_SERVICE_URL` | — | Base URL of the Notifier Service |
