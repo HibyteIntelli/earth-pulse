@@ -34,6 +34,7 @@ Each backend service owns its own Postgres database. **No cross-database joins**
 
 ## Frontend-specific notes
 
+- **Always use the `frontend-design` skill for any UI/design work** — building or styling components, pages, layouts, or visual polish. Invoke it before writing markup/CSS so the UI avoids generic AI aesthetics and stays production-grade.
 - Dev: `cd frontend && npm start` (proxies to `ng serve`).
 - Test: `npm test` (Vitest).
 - Build: `npm run build`.
