@@ -19,7 +19,7 @@ export class Map implements AfterViewInit, OnDestroy {
     });
 
     const greenIcon = L.icon({
-      iconUrl: 'leaves.png',
+      iconUrl: 'assets/leaves.png',
       iconSize: [38, 95],
       iconAnchor: [22, 94],
       popupAnchor: [-3, -76],
