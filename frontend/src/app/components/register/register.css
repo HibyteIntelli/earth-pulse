@@ -81,12 +81,14 @@
 
 /* ============================================================== EARTH */
 .globe {
-  --R: clamp(170px, 30vw, 380px);
+  /* register rests the earth lower-right and a touch larger than login, so the
+     shared-element transition glides + grows it across the screen on entry.
+     (Deliberately a different resting spot than login — this is the "travel"
+     variant, not the aligned one.) dvh keeps it stable against form height. */
+  --R: clamp(185px, 33vw, 420px);
   position: absolute;
-  /* anchored to the viewport (50dvh), not the stage height, so the earth sits
-     at the exact same level on login and register regardless of form height */
-  top: 50dvh;
-  left: 58%;
+  top: 74dvh;
+  left: 84%;
   width: calc(var(--R) * 2);
   height: calc(var(--R) * 2);
   margin: calc(var(--R) * -1) 0 0 calc(var(--R) * -1);

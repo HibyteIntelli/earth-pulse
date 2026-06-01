@@ -45,36 +45,37 @@ body {
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* the earth sits at the same spot on both pages, so instead of a positional
-   morph it gets a thematic scale + spin "settle" as the new page arrives */
+/* the earth rests at a different spot on login vs register, so the group tweens
+   its position + size — it glides across the screen. The old/new snapshots
+   crossfade with a gentle planet-spin layered on top of that travel. */
 ::view-transition-group(globe) {
-  animation-duration: 0.65s;
+  animation-duration: 0.75s;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 ::view-transition-old(globe) {
-  animation: vt-globe-out 0.45s ease both;
+  animation: vt-globe-out 0.55s ease both;
 }
 
 ::view-transition-new(globe) {
-  animation: vt-globe-in 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: vt-globe-in 0.75s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 @keyframes vt-globe-out {
   to {
     opacity: 0;
-    transform: scale(1.06) rotate(6deg);
+    transform: rotate(8deg);
   }
 }
 
 @keyframes vt-globe-in {
   from {
     opacity: 0;
-    transform: scale(0.84) rotate(-10deg);
+    transform: rotate(-12deg);
   }
   to {
     opacity: 1;
-    transform: scale(1) rotate(0);
+    transform: rotate(0);
   }
 }
 
