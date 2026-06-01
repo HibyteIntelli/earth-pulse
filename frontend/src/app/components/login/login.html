@@ -1,1 +1,148 @@
-<p>login works!</p>
+<main class="stage">
+  <!-- shared gradient for the seismic pulse: ocean blue -> land green -->
+  <svg class="defs" aria-hidden="true" width="0" height="0" focusable="false">
+    <defs>
+      <linearGradient id="pulseGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#2f7596" />
+        <stop offset="0.5" stop-color="#3f8f8a" />
+        <stop offset="1" stop-color="#3f7a4a" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <!-- atmosphere -->
+  <div class="grid" aria-hidden="true"></div>
+  <div class="glow" aria-hidden="true"></div>
+
+  <!-- rotating earth -->
+  <div class="globe" aria-hidden="true">
+    <div class="globe__atmo"></div>
+    <div class="globe__ball"></div>
+    <div class="globe__sphere">
+      <div class="globe__spin">
+        <i class="lon" style="--i: 0"></i>
+        <i class="lon" style="--i: 1"></i>
+        <i class="lon" style="--i: 2"></i>
+        <i class="lon" style="--i: 3"></i>
+        <i class="lon" style="--i: 4"></i>
+        <i class="lon" style="--i: 5"></i>
+        <span class="pin pin--fire" style="--lon: -58deg; --lat: 28deg; --d: 0s"></span>
+        <span class="pin pin--storm" style="--lon: 42deg; --lat: -12deg; --d: 0.7s"></span>
+        <span class="pin pin--volcano" style="--lon: 122deg; --lat: -6deg; --d: 1.4s"></span>
+        <span class="pin pin--flood" style="--lon: 86deg; --lat: 26deg; --d: 2.1s"></span>
+      </div>
+      <i class="lat lat--eq" style="--k: 0; --sc: 1"></i>
+      <i class="lat" style="--k: -0.5; --sc: 0.866"></i>
+      <i class="lat" style="--k: 0.5; --sc: 0.866"></i>
+      <i class="lat" style="--k: -0.866; --sc: 0.5"></i>
+      <i class="lat" style="--k: 0.866; --sc: 0.5"></i>
+    </div>
+    <div class="globe__shade"></div>
+  </div>
+
+  <!-- signature: live seismic pulse of the planet -->
+  <div class="seismo" aria-hidden="true">
+    <div class="seismo__base"></div>
+    <div class="seismo__track">
+      <svg viewBox="0 0 1200 300" preserveAspectRatio="none">
+        <polyline points="0,150 24,148 48,152 72,147 96,151 120,149 144,120 168,150 192,152 216,146 240,150 264,60 288,240 312,150 336,149 360,151 384,148 408,150 432,152 456,150 480,138 504,150 528,151 552,149 576,150 600,150 624,148 648,152 672,150 696,90 720,210 744,150 768,149 792,151 816,150 840,152 864,146 888,150 912,150 936,30 960,270 984,150 1008,151 1032,149 1056,150 1080,148 1104,152 1128,150 1152,149 1176,151 1200,150" />
+      </svg>
+      <svg viewBox="0 0 1200 300" preserveAspectRatio="none">
+        <polyline points="0,150 24,148 48,152 72,147 96,151 120,149 144,120 168,150 192,152 216,146 240,150 264,60 288,240 312,150 336,149 360,151 384,148 408,150 432,152 456,150 480,138 504,150 528,151 552,149 576,150 600,150 624,148 648,152 672,150 696,90 720,210 744,150 768,149 792,151 816,150 840,152 864,146 888,150 912,150 936,30 960,270 984,150 1008,151 1032,149 1056,150 1080,148 1104,152 1128,150 1152,149 1176,151 1200,150" />
+      </svg>
+    </div>
+  </div>
+
+  <div class="noise" aria-hidden="true"></div>
+
+  <!-- console status bar -->
+  <header class="hud">
+    <div class="hud__id">
+      <span class="dot"></span>
+      EARTH&nbsp;PULSE
+      <span class="hud__sub">// global event monitor</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- brand -->
+    <section class="brand">
+      <p class="brand__kicker">Station 01 · Live feed</p>
+      <h1 class="brand__word">
+        <span>Earth</span><span class="brand__word--hot">Pulse</span>
+      </h1>
+      <p class="brand__tag">
+        Reading the vital signs of a restless planet — wildfires, severe storms
+        and volcanoes, the moment they move.
+      </p>
+
+      <ul class="legend">
+        <li class="legend__item legend--wildfire">Wildfires</li>
+        <li class="legend__item legend--storm">Severe storms</li>
+        <li class="legend__item legend--volcano">Volcanoes</li>
+        <li class="legend__item legend--flood">Floods</li>
+        <li class="legend__item legend--drought">Drought</li>
+        <li class="legend__item legend--dust">Dust &amp; haze</li>
+        <li class="legend__item legend--quake">Earthquakes</li>
+        <li class="legend__item legend--landslide">Landslides</li>
+      </ul>
+    </section>
+
+    <!-- access terminal -->
+    <section class="terminal">
+      <div class="terminal__bar">
+        <span>Access terminal</span>
+        <span class="terminal__rec"><i></i>Secure</span>
+      </div>
+
+      <form class="form" (submit)="onSubmit($event)" novalidate>
+        <h2 class="form__title">Operator sign-in</h2>
+        <p class="form__hint">Authenticate to unlock AI briefings and personal watches.</p>
+
+        <label class="field">
+          <span class="field__label">Name</span>
+          <input
+            class="field__input"
+            id="login-name"
+            name="name"
+            type="text"
+            autocomplete="username"
+            placeholder="e.g. a.rivera"
+            spellcheck="false"
+          />
+        </label>
+
+        <label class="field">
+          <span class="field__label">Password</span>
+          <span class="field__wrap">
+            <input
+              class="field__input"
+              id="login-password"
+              name="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              autocomplete="current-password"
+              placeholder="••••••••••"
+            />
+            <button
+              class="reveal"
+              type="button"
+              (click)="togglePassword()"
+              [attr.aria-pressed]="showPassword()"
+            >
+              {{ showPassword() ? 'Hide' : 'Show' }}
+            </button>
+          </span>
+        </label>
+
+        <button class="submit" type="submit">
+          <span>Authenticate</span>
+          <span class="submit__arrow" aria-hidden="true">&#8594;</span>
+        </button>
+
+        <p class="form__foot">
+          No credentials? <a routerLink="/register">Request station access</a>
+        </p>
+      </form>
+    </section>
+  </div>
+</main>

@@ -1,11 +1,13 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withViewTransitions } from '@angular/router';
 
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes)
+    // withViewTransitions drives the cross-page morph between login and register.
+    // Browsers without the View Transitions API fall back to an instant swap.
+    provideRouter(routes, withViewTransitions())
   ]
 };

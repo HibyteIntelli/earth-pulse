@@ -1,2 +1,87 @@
 /* You can add global styles to this file, and also import other style files */
 @import 'leaflet/dist/leaflet.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: #f2efe9;
+  color: #213a33;
+  font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* ----------------------------------------------- route view transitions */
+/* Tuning lives here because ::view-transition pseudo-elements are attached to
+   the document root and are not reachable from component-scoped styles. The
+   shared names (globe, terminal, hud, …) are declared on the elements in the
+   login/register component CSS; these rules only shape the timing. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* the access-terminal card glides + resizes between the two forms */
+::view-transition-group(terminal) {
+  animation-duration: 0.55s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::view-transition-old(terminal),
+::view-transition-new(terminal) {
+  animation-duration: 0.45s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* the earth sits at the same spot on both pages, so instead of a positional
+   morph it gets a thematic scale + spin "settle" as the new page arrives */
+::view-transition-group(globe) {
+  animation-duration: 0.65s;
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+::view-transition-old(globe) {
+  animation: vt-globe-out 0.45s ease both;
+}
+
+::view-transition-new(globe) {
+  animation: vt-globe-in 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes vt-globe-out {
+  to {
+    opacity: 0;
+    transform: scale(1.06) rotate(6deg);
+  }
+}
+
+@keyframes vt-globe-in {
+  from {
+    opacity: 0;
+    transform: scale(0.84) rotate(-10deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

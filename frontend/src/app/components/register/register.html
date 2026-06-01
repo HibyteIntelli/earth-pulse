@@ -1,0 +1,235 @@
+<main class="stage">
+  <!-- shared gradient for the seismic pulse: ocean blue -> land green -->
+  <svg class="defs" aria-hidden="true" width="0" height="0" focusable="false">
+    <defs>
+      <linearGradient id="pulseGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#2f7596" />
+        <stop offset="0.5" stop-color="#3f8f8a" />
+        <stop offset="1" stop-color="#3f7a4a" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <!-- atmosphere -->
+  <div class="grid" aria-hidden="true"></div>
+  <div class="glow" aria-hidden="true"></div>
+
+  <!-- rotating earth -->
+  <div class="globe" aria-hidden="true">
+    <div class="globe__atmo"></div>
+    <div class="globe__ball"></div>
+    <div class="globe__sphere">
+      <div class="globe__spin">
+        <i class="lon" style="--i: 0"></i>
+        <i class="lon" style="--i: 1"></i>
+        <i class="lon" style="--i: 2"></i>
+        <i class="lon" style="--i: 3"></i>
+        <i class="lon" style="--i: 4"></i>
+        <i class="lon" style="--i: 5"></i>
+        <span class="pin pin--fire" style="--lon: -58deg; --lat: 28deg; --d: 0s"></span>
+        <span class="pin pin--storm" style="--lon: 42deg; --lat: -12deg; --d: 0.7s"></span>
+        <span class="pin pin--volcano" style="--lon: 122deg; --lat: -6deg; --d: 1.4s"></span>
+        <span class="pin pin--flood" style="--lon: 86deg; --lat: 26deg; --d: 2.1s"></span>
+      </div>
+      <i class="lat lat--eq" style="--k: 0; --sc: 1"></i>
+      <i class="lat" style="--k: -0.5; --sc: 0.866"></i>
+      <i class="lat" style="--k: 0.5; --sc: 0.866"></i>
+      <i class="lat" style="--k: -0.866; --sc: 0.5"></i>
+      <i class="lat" style="--k: 0.866; --sc: 0.5"></i>
+    </div>
+    <div class="globe__shade"></div>
+  </div>
+
+  <!-- signature: live seismic pulse of the planet -->
+  <div class="seismo" aria-hidden="true">
+    <div class="seismo__base"></div>
+    <div class="seismo__track">
+      <svg viewBox="0 0 1200 300" preserveAspectRatio="none">
+        <polyline points="0,150 24,148 48,152 72,147 96,151 120,149 144,120 168,150 192,152 216,146 240,150 264,60 288,240 312,150 336,149 360,151 384,148 408,150 432,152 456,150 480,138 504,150 528,151 552,149 576,150 600,150 624,148 648,152 672,150 696,90 720,210 744,150 768,149 792,151 816,150 840,152 864,146 888,150 912,150 936,30 960,270 984,150 1008,151 1032,149 1056,150 1080,148 1104,152 1128,150 1152,149 1176,151 1200,150" />
+      </svg>
+      <svg viewBox="0 0 1200 300" preserveAspectRatio="none">
+        <polyline points="0,150 24,148 48,152 72,147 96,151 120,149 144,120 168,150 192,152 216,146 240,150 264,60 288,240 312,150 336,149 360,151 384,148 408,150 432,152 456,150 480,138 504,150 528,151 552,149 576,150 600,150 624,148 648,152 672,150 696,90 720,210 744,150 768,149 792,151 816,150 840,152 864,146 888,150 912,150 936,30 960,270 984,150 1008,151 1032,149 1056,150 1080,148 1104,152 1128,150 1152,149 1176,151 1200,150" />
+      </svg>
+    </div>
+  </div>
+
+  <div class="noise" aria-hidden="true"></div>
+
+  <!-- console status bar -->
+  <header class="hud">
+    <div class="hud__id">
+      <span class="dot"></span>
+      EARTH&nbsp;PULSE
+      <span class="hud__sub">// global event monitor</span>
+    </div>
+    <div class="hud__step">Operator enrolment</div>
+  </header>
+
+  <div class="layout">
+    <!-- brand -->
+    <section class="brand">
+      <p class="brand__kicker">Station 01 · New operator</p>
+      <h1 class="brand__word">
+        <span>Earth</span><span class="brand__word--hot">Pulse</span>
+      </h1>
+      <p class="brand__tag">
+        Commission your operator profile to unlock AI briefings, draw personal
+        watch regions and receive alerts the moment the planet moves.
+      </p>
+
+      <ul class="perks">
+        <li class="perks__item">
+          <span class="perks__mark">AI</span>
+          Plain-language briefings on every active event.
+        </li>
+        <li class="perks__item">
+          <span class="perks__mark">▣</span>
+          Draw watch regions and pick the categories you care about.
+        </li>
+        <li class="perks__item">
+          <span class="perks__mark">✉</span>
+          Immediate or daily-digest email alerts, your call per watch.
+        </li>
+      </ul>
+    </section>
+
+    <!-- access terminal -->
+    <section class="terminal">
+      <div class="terminal__bar">
+        <span>New credentials</span>
+        <span class="terminal__rec"><i></i>Encrypted</span>
+      </div>
+
+      <form class="form" (submit)="onSubmit($event)" novalidate>
+        <h2 class="form__title">Commission operator</h2>
+        <p class="form__hint">Set your access keys. You can refine delivery preferences later in Profile.</p>
+
+        <label class="field">
+          <span class="field__label">Email</span>
+          <input
+            class="field__input"
+            id="register-email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            placeholder="operator@station.earth"
+            spellcheck="false"
+            required
+          />
+        </label>
+
+        <label class="field">
+          <span class="field__label">Operator name</span>
+          <input
+            class="field__input"
+            id="register-name"
+            name="name"
+            type="text"
+            autocomplete="username"
+            placeholder="e.g. a.rivera"
+            spellcheck="false"
+            required
+          />
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span class="field__label">Password</span>
+            <span class="field__wrap">
+              <input
+                class="field__input"
+                id="register-password"
+                name="password"
+                [type]="showPassword() ? 'text' : 'password'"
+                autocomplete="new-password"
+                placeholder="••••••••••"
+                (input)="password.set($any($event.target).value)"
+                required
+              />
+              <button
+                class="reveal"
+                type="button"
+                (click)="togglePassword()"
+                [attr.aria-pressed]="showPassword()"
+              >
+                {{ showPassword() ? 'Hide' : 'Show' }}
+              </button>
+            </span>
+          </label>
+
+          <label class="field">
+            <span class="field__label">Confirm</span>
+            <span class="field__wrap">
+              <input
+                class="field__input"
+                id="register-confirm"
+                name="confirm"
+                [type]="showConfirm() ? 'text' : 'password'"
+                autocomplete="new-password"
+                placeholder="••••••••••"
+                (input)="confirm.set($any($event.target).value)"
+                required
+              />
+              <button
+                class="reveal"
+                type="button"
+                (click)="toggleConfirm()"
+                [attr.aria-pressed]="showConfirm()"
+              >
+                {{ showConfirm() ? 'Hide' : 'Show' }}
+              </button>
+            </span>
+          </label>
+        </div>
+
+        <!-- live strength meter -->
+        <div class="strength" [attr.data-level]="strength()" aria-hidden="true">
+          <div class="strength__bars">
+            <span class="strength__bar" [class.is-on]="strength() >= 1"></span>
+            <span class="strength__bar" [class.is-on]="strength() >= 2"></span>
+            <span class="strength__bar" [class.is-on]="strength() >= 3"></span>
+            <span class="strength__bar" [class.is-on]="strength() >= 4"></span>
+          </div>
+          <span class="strength__label">Key integrity · {{ strengthLabel() }}</span>
+        </div>
+
+        @if (passwordsMatch() !== null) {
+          <p class="match" [class.match--ok]="passwordsMatch()" [class.match--bad]="!passwordsMatch()">
+            {{ passwordsMatch() ? '✓ Keys aligned' : '✕ Keys do not match' }}
+          </p>
+        }
+
+        <label class="field">
+          <span class="field__label">Delivery address <em>· optional</em></span>
+          <input
+            class="field__input"
+            id="register-delivery"
+            name="delivery"
+            type="email"
+            autocomplete="email"
+            placeholder="Defaults to your account email"
+            spellcheck="false"
+          />
+        </label>
+
+        <label class="consent">
+          <input type="checkbox" name="consent" required />
+          <span class="consent__box" aria-hidden="true"></span>
+          <span class="consent__text">
+            I understand briefings are AI-generated and I will always follow
+            guidance from local authorities during a real event.
+          </span>
+        </label>
+
+        <button class="submit" type="submit">
+          <span>Commission operator</span>
+          <span class="submit__arrow" aria-hidden="true">&#8594;</span>
+        </button>
+
+        <p class="form__foot">
+          Already commissioned? <a routerLink="/">Return to sign-in</a>
+        </p>
+      </form>
+    </section>
+  </div>
+</main>

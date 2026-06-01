@@ -61,7 +61,7 @@
   mask-image: radial-gradient(ellipse 82% 82% at 50% 45%, #000 22%, transparent 80%);
   opacity: 0.6;
   pointer-events: none;
-  /* paired with /register so the backdrop holds still through the route morph */
+  /* paired across pages so the backdrop holds perfectly still during the morph */
   view-transition-name: grid;
 }
 
@@ -283,6 +283,10 @@
   font-weight: 400;
 }
 
+.hud__step {
+  color: var(--water-deep);
+}
+
 .dot {
   width: 8px;
   height: 8px;
@@ -348,7 +352,7 @@
 
 .brand__tag {
   margin: 2rem 0 0;
-  max-width: 40ch;
+  max-width: 42ch;
   font-family: var(--display);
   font-weight: 400;
   font-size: clamp(1rem, 1.4vw, 1.18rem);
@@ -358,49 +362,43 @@
   animation-delay: 0.3s;
 }
 
-/* category legend */
-.legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
+/* what you unlock */
+.perks {
   margin: 2.2rem 0 0;
   padding: 0;
   list-style: none;
+  display: grid;
+  gap: 1rem;
+  max-width: 46ch;
   animation: rise 0.85s ease both;
   animation-delay: 0.4s;
 }
 
-.legend__item {
-  display: inline-flex;
+.perks__item {
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.42rem 0.8rem;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
+  gap: 0.85rem;
   font-family: var(--mono);
-  font-size: 0.68rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: 0.8rem;
+  line-height: 1.45;
   color: var(--ink-dim);
 }
 
-.legend__item::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--c, var(--forest-deep));
-  box-shadow: 0 0 6px var(--c, transparent);
+.perks__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: rgba(252, 251, 248, 0.6);
+  color: var(--water-deep);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
 }
-
-.legend--wildfire { --c: var(--ev-wildfire); }
-.legend--storm { --c: var(--ev-storm); }
-.legend--volcano { --c: var(--ev-volcano); }
-.legend--flood { --c: var(--ev-flood); }
-.legend--drought { --c: var(--ev-drought); }
-.legend--dust { --c: var(--ev-dust); }
-.legend--quake { --c: var(--ev-quake); }
-.legend--landslide { --c: var(--ev-landslide); }
 
 /* ------------------------------------------------------------ terminal */
 .terminal {
@@ -415,7 +413,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.7);
   animation: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: 0.22s;
-  /* the headline morph: this card tweens into the register card on /register */
+  /* the headline morph: this card tweens from the sign-in card on /login */
   view-transition-name: terminal;
 }
 
@@ -510,6 +508,13 @@
   color: var(--ink-faint);
 }
 
+.field__label em {
+  font-style: normal;
+  letter-spacing: 0.18em;
+  color: var(--ink-faint);
+  opacity: 0.7;
+}
+
 .field__wrap {
   display: flex;
   align-items: center;
@@ -547,6 +552,17 @@
   caret-color: var(--water-deep);
 }
 
+/* two fields side by side (password + confirm) */
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.4rem;
+}
+
+.field-row .field {
+  margin-bottom: 1.7rem;
+}
+
 .reveal {
   flex: none;
   margin-left: 0.75rem;
@@ -568,12 +584,138 @@
   outline: none;
 }
 
+/* ----------------------------------------------------- strength meter */
+.strength {
+  margin: -0.6rem 0 1.5rem;
+}
+
+.strength__bars {
+  display: flex;
+  gap: 6px;
+}
+
+.strength__bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line-strong);
+  transition: background 0.4s ease, box-shadow 0.4s ease;
+}
+
+.strength__bar.is-on {
+  background: var(--c, var(--forest-deep));
+  box-shadow: 0 0 8px var(--c, var(--forest-soft));
+}
+
+.strength[data-level='1'] { --c: var(--ev-wildfire); }
+.strength[data-level='2'] { --c: var(--ev-drought); }
+.strength[data-level='3'] { --c: var(--ev-flood); }
+.strength[data-level='4'] { --c: var(--forest-deep); }
+
+.strength__label {
+  display: block;
+  margin-top: 0.55rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  transition: color 0.3s ease;
+}
+
+.strength[data-level='3'] .strength__label,
+.strength[data-level='4'] .strength__label {
+  color: var(--forest-deep);
+}
+
+/* ------------------------------------------------- password match note */
+.match {
+  margin: -0.8rem 0 1.5rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  animation: rise 0.3s ease both;
+}
+
+.match--ok {
+  color: var(--forest-deep);
+}
+
+.match--bad {
+  color: var(--ev-volcano);
+}
+
+/* --------------------------------------------------------- consent box */
+.consent {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 0.75rem;
+  margin: 0.4rem 0 1.8rem;
+  cursor: pointer;
+}
+
+.consent input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.consent__box {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: rgba(252, 251, 248, 0.6);
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.consent__box::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid #f6faf2;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg) scale(0);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.consent input:checked + .consent__box {
+  border-color: var(--forest-deep);
+  background: var(--forest-deep);
+  box-shadow: 0 6px 16px -8px var(--forest-soft);
+}
+
+.consent input:checked + .consent__box::after {
+  transform: rotate(45deg) scale(1);
+}
+
+.consent input:focus-visible + .consent__box {
+  outline: 2px solid var(--water-deep);
+  outline-offset: 2px;
+}
+
+.consent__text {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--ink-dim);
+}
+
 /* submit */
 .submit {
   position: relative;
   overflow: hidden;
   width: 100%;
-  margin-top: 0.6rem;
+  margin-top: 0.2rem;
   padding: 1.05rem 1.4rem;
   display: flex;
   align-items: center;
@@ -749,6 +891,11 @@
   .hud__sub {
     display: none;
   }
+
+  .field-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
 }
 
 /* ------------------------------------------------------ reduced motion */
@@ -767,8 +914,9 @@
   .brand__kicker,
   .brand__word span,
   .brand__tag,
-  .legend,
-  .terminal {
+  .perks,
+  .terminal,
+  .match {
     animation: none;
   }
 
