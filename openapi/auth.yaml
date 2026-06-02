@@ -123,6 +123,11 @@ components:
           type: string
           format: email
           example: alice@example.com
+        readingLevel:
+          $ref: '#/components/schemas/ReadingLevel'
+          description: >
+            User's preferred reading level for AI briefings shown on the map.
+            Defaults to `DEFAULT` on signup.
 
     UpdateUserRequest:
       type: object
@@ -141,6 +146,9 @@ components:
           format: password
           minLength: 8
           description: Required when changing the password.
+        readingLevel:
+          $ref: '#/components/schemas/ReadingLevel'
+          description: Update the user's preferred reading level for map briefings.
 
     # --- Watches ------------------------------------------------------------
 
@@ -176,17 +184,18 @@ components:
 
     DigestMode:
       type: string
-      enum: [immediate, daily_digest]
+      enum: [IMMEDIATE, DAILY_DIGEST]
       description: >
         `immediate` — email sent as soon as a matching event is detected.
         `daily_digest` — matches are batched and sent once per day.
 
     ReadingLevel:
       type: string
-      enum: [default, simplified]
+      enum: [DEFAULT, SIMPLIFIED]
       description: >
-        Controls the complexity of the AI-generated summary in notifications
-        for this watch.
+        Controls the complexity of the AI-generated summary.
+        Used both as a per-watch notification preference and as a
+        user-level preference for briefings shown on the map.
 
     WatchDto:
       type: object
@@ -436,7 +445,7 @@ paths:
 
     put:
       tags: [Account]
-      summary: Update email or password
+      summary: Update email, password, or reading level
       operationId: updateMyProfile
       security:
         - BearerAuth: []
