@@ -1,5 +1,5 @@
-import { Component, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, signal, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -9,6 +9,7 @@ import { RouterLink } from '@angular/router';
 })
 export class Login {
   protected readonly showPassword = signal(false);
+  private readonly router = inject(Router);
 
   togglePassword(): void {
     this.showPassword.update((v) => !v);
@@ -17,5 +18,6 @@ export class Login {
   /** Non-functional for now — no backend wired yet. */
   onSubmit(event: Event): void {
     event.preventDefault();
+    this.router.navigate(['/map']);
   }
 }

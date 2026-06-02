@@ -132,8 +132,7 @@
           />
         </label>
 
-        <div class="field-row">
-          <label class="field">
+        <label class="field">
             <span class="field__label">Password</span>
             <span class="field__wrap">
               <input
@@ -180,7 +179,6 @@
               </button>
             </span>
           </label>
-        </div>
 
         <!-- live strength meter -->
         <div class="strength" [attr.data-level]="strength()" aria-hidden="true">
@@ -198,19 +196,6 @@
             {{ passwordsMatch() ? '✓ Keys aligned' : '✕ Keys do not match' }}
           </p>
         }
-
-        <label class="field">
-          <span class="field__label">Delivery address <em>· optional</em></span>
-          <input
-            class="field__input"
-            id="register-delivery"
-            name="delivery"
-            type="email"
-            autocomplete="email"
-            placeholder="Defaults to your account email"
-            spellcheck="false"
-          />
-        </label>
 
         <label class="consent">
           <input type="checkbox" name="consent" required />

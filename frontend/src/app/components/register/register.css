@@ -554,17 +554,6 @@
   caret-color: var(--water-deep);
 }
 
-/* two fields side by side (password + confirm) */
-.field-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.4rem;
-}
-
-.field-row .field {
-  margin-bottom: 1.7rem;
-}
-
 .reveal {
   flex: none;
   margin-left: 0.75rem;
@@ -892,11 +881,6 @@
 @media (max-width: 460px) {
   .hud__sub {
     display: none;
-  }
-
-  .field-row {
-    grid-template-columns: 1fr;
-    gap: 0;
   }
 }
 
