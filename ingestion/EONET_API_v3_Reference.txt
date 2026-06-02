@@ -1,20 +1,20 @@
 ================================================================================
   NASA EONET API v3
   Earth Observatory Natural Event Tracker
-  Documentație: https://eonet.gsfc.nasa.gov/docs/v3
+  Documentation: https://eonet.gsfc.nasa.gov/docs/v3
 ================================================================================
 
-PREZENTARE GENERALĂ
-────────────────────
-EONET (Earth Observatory Natural Event Tracker) este un API public al NASA
-care oferă acces la date despre evenimentele naturale de pe Pământ: incendii,
-furtuni severe, vulcani, inundații, etc. Nu necesită autentificare (API key).
+OVERVIEW
+────────
+EONET (Earth Observatory Natural Event Tracker) is a public NASA API that
+provides access to data about natural events on Earth: wildfires, severe
+storms, volcanoes, floods, etc. No authentication (API key) required.
 
 Base URL: https://eonet.gsfc.nasa.gov/api/v3
 
 
 ================================================================================
-  ENDPOINT-URI PRINCIPALE
+  MAIN ENDPOINTS
 ================================================================================
 
 1. EVENTS          → /api/v3/events
@@ -29,43 +29,43 @@ Base URL: https://eonet.gsfc.nasa.gov/api/v3
   1. EVENTS  —  GET /api/v3/events
 ================================================================================
 
-Returnează o listă de evenimente naturale (JSON standard).
+Returns a list of natural events (standard JSON).
 
-PARAMETRI DE FILTRARE:
+FILTER PARAMETERS:
 ┌──────────────┬─────────────────────────┬────────────────────────────────────────┐
-│ Parametru    │ Valori                  │ Descriere                              │
+│ Parameter    │ Values                  │ Description                            │
 ├──────────────┼─────────────────────────┼────────────────────────────────────────┤
-│ source       │ ID sursă (string)       │ Filtrare după sursă (ex: InciWeb, EO). │
-│              │                         │ Mai multe surse: virgulă separată (OR) │
-│ category     │ ID categorie (string)   │ Filtrare după tip eveniment.           │
-│              │                         │ Ex: wildfires, severeStorms            │
-│ status       │ open | closed | all     │ Default: open (doar evenimente active) │
-│ limit        │ număr întreg            │ Numărul maxim de evenimente returnate  │
-│ days         │ număr întreg            │ Zile anterioare (inclusiv azi)         │
-│ start        │ YYYY-MM-DD              │ Data de început a intervalului         │
-│ end          │ YYYY-MM-DD              │ Data de sfârșit a intervalului         │
-│ magID        │ ID magnitudine          │ Tipul magnitudinii (ex: mag_kts)       │
-│ magMin       │ număr zecimal           │ Valoare minimă magnitudine             │
-│ magMax       │ număr zecimal           │ Valoare maximă magnitudine             │
-│ bbox         │ minLon,maxLat,maxLon,   │ Bounding box geografic                 │
-│              │ minLat                  │ (colț stânga-sus, colț dreapta-jos)    │
+│ source       │ source ID (string)      │ Filter by source (e.g. InciWeb, EO).   │
+│              │                         │ Multiple sources: comma-separated (OR) │
+│ category     │ category ID (string)    │ Filter by event type.                  │
+│              │                         │ e.g. wildfires, severeStorms           │
+│ status       │ open | closed | all     │ Default: open (active events only)     │
+│ limit        │ integer                 │ Maximum number of events returned      │
+│ days         │ integer                 │ Previous days (including today)        │
+│ start        │ YYYY-MM-DD              │ Start date of the interval             │
+│ end          │ YYYY-MM-DD              │ End date of the interval               │
+│ magID        │ magnitude ID            │ Magnitude type (e.g. mag_kts)          │
+│ magMin       │ decimal number          │ Minimum magnitude value                │
+│ magMax       │ decimal number          │ Maximum magnitude value                │
+│ bbox         │ minLon,maxLat,maxLon,   │ Geographic bounding box                │
+│              │ minLat                  │ (top-left corner, bottom-right corner) │
 └──────────────┴─────────────────────────┴────────────────────────────────────────┘
 
-EXEMPLE:
-  # Toate evenimentele active
+EXAMPLES:
+  # All active events
   GET https://eonet.gsfc.nasa.gov/api/v3/events
 
-  # Ultimele 5 evenimente din ultimele 20 zile, sursă InciWeb, active
+  # Last 5 events from the past 20 days, source InciWeb, active
   GET https://eonet.gsfc.nasa.gov/api/v3/events?limit=5&days=20&source=InciWeb&status=open
 
-  # Furtuni severe și incendii din ianuarie 2019
+  # Severe storms and wildfires from January 2019
   GET https://eonet.gsfc.nasa.gov/api/v3/events?category=severeStorms,wildfires&start=2019-01-01&end=2019-01-31
 
-  # Evenimente dintr-o zonă geografică (bounding box SUA)
+  # Events within a geographic area (USA bounding box)
   GET https://eonet.gsfc.nasa.gov/api/v3/events?bbox=-129.02,50.73,-58.71,12.89
 
 
-STRUCTURA RĂSPUNS (JSON):
+RESPONSE STRUCTURE (JSON):
 {
   "title": "EONET Events",
   "description": "...",
@@ -76,7 +76,7 @@ STRUCTURA RĂSPUNS (JSON):
       "title": "Wildfires - Oregon, USA",
       "description": null,
       "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_5765",
-      "closed": null,                    // null = eveniment activ; data = închis
+      "closed": null,                    // null = active event; date = closed
       "categories": [
         { "id": "wildfires", "title": "Wildfires" }
       ],
@@ -89,30 +89,30 @@ STRUCTURA RĂSPUNS (JSON):
           "magnitudeUnit": null,
           "date": "2024-07-15T00:00:00Z",
           "type": "Point",
-          "coordinates": [-122.5, 44.2]  // [longitudine, latitudine]
+          "coordinates": [-122.5, 44.2]  // [longitude, latitude]
         }
       ]
     }
   ]
 }
 
-CÂMPURI IMPORTANTE:
-  - id         : identificator unic eveniment (string, ex: "EONET_5765")
-  - title      : titlu descriptiv
-  - closed     : null dacă activ; timestamp ISO 8601 dacă s-a încheiat
-  - categories : array cu categoria/categoriile evenimentului
-  - sources    : array cu sursele externe (URL-uri de referință)
-  - geometry   : array cu locații GeoJSON (Point sau Polygon) + timestamp
+KEY FIELDS:
+  - id         : unique event identifier (string, e.g. "EONET_5765")
+  - title      : descriptive title
+  - closed     : null if active; ISO 8601 timestamp if the event has ended
+  - categories : array with the event category/categories
+  - sources    : array with external sources (reference URLs)
+  - geometry   : array of GeoJSON locations (Point or Polygon) + timestamp
 
 
 ================================================================================
   2. EVENTS GeoJSON  —  GET /api/v3/events/geojson
 ================================================================================
 
-Aceiași parametri ca la /events, dar răspunsul respectă standardul GeoJSON
-(FeatureCollection). Util pentru hărți și biblioteci geo (Leaflet, Mapbox, etc.)
+Same parameters as /events, but the response follows the GeoJSON standard
+(FeatureCollection). Useful for maps and geo libraries (Leaflet, Mapbox, etc.)
 
-STRUCTURA RĂSPUNS:
+RESPONSE STRUCTURE:
 {
   "type": "FeatureCollection",
   "features": [
@@ -139,7 +139,7 @@ STRUCTURA RĂSPUNS:
   ]
 }
 
-EXEMPLU:
+EXAMPLE:
   GET https://eonet.gsfc.nasa.gov/api/v3/events/geojson?category=volcanoes&status=open
 
 
@@ -147,55 +147,55 @@ EXEMPLU:
   3. CATEGORIES  —  GET /api/v3/categories
 ================================================================================
 
-Lista tuturor categoriilor de evenimente disponibile.
+List of all available event categories.
 
   GET https://eonet.gsfc.nasa.gov/api/v3/categories
 
-Filtrare evenimente dintr-o categorie specifică:
+Filter events by a specific category:
   GET https://eonet.gsfc.nasa.gov/api/v3/categories/{categoryId}
 
-  Parametri suplimentari pentru categoria filtrată:
-    source, status, limit, days, start, end (identici cu /events)
+  Additional parameters for filtered category:
+    source, status, limit, days, start, end (same as /events)
 
-CATEGORII COMUNE (id → titlu):
-  drought         → Drought (Secetă)
-  dustHaze        → Dust and Haze (Praf și ceață)
-  earthquakes     → Earthquakes (Cutremure)
-  floods          → Floods (Inundații)
-  landslides      → Landslides (Alunecări de teren)
-  manmade         → Manmade (Provocate de om)
-  seaLakeIce      → Sea and Lake Ice (Gheață)
-  severeStorms    → Severe Storms (Furtuni severe)
-  snow            → Snow (Ninsoare)
-  tempExtremes    → Temperature Extremes (Extreme termice)
-  volcanoes       → Volcanoes (Vulcani)
-  waterColor      → Water Color (Culoarea apei)
-  wildfires       → Wildfires (Incendii)
+COMMON CATEGORIES (id → title):
+  drought         → Drought
+  dustHaze        → Dust and Haze
+  earthquakes     → Earthquakes
+  floods          → Floods
+  landslides      → Landslides
+  manmade         → Manmade
+  seaLakeIce      → Sea and Lake Ice
+  severeStorms    → Severe Storms
+  snow            → Snow
+  tempExtremes    → Temperature Extremes
+  volcanoes       → Volcanoes
+  waterColor      → Water Color
+  wildfires       → Wildfires
 
-STRUCTURA CÂMP CATEGORIE:
-  - id          : ID unic (string, folosit în query params)
-  - title       : titlu
-  - description : descriere scurtă
-  - link        : URL endpoint pentru această categorie
-  - layers      : URL endpoint pentru layerele asociate
+CATEGORY FIELD STRUCTURE:
+  - id          : unique ID (string, used in query params)
+  - title       : title
+  - description : short description
+  - link        : URL endpoint for this category
+  - layers      : URL endpoint for associated layers
 
 
 ================================================================================
   4. SOURCES  —  GET /api/v3/sources
 ================================================================================
 
-Lista tuturor surselor de date care alimentează EONET.
+List of all data sources that feed into EONET.
 
   GET https://eonet.gsfc.nasa.gov/api/v3/sources
 
-STRUCTURA CÂMP SURSĂ:
-  - id     : ID unic (ex: "InciWeb", "EO", "GDACS")
-  - title  : numele sursei
-  - source : URL homepage sursă
-  - link   : URL endpoint Events filtrat după această sursă
+SOURCE FIELD STRUCTURE:
+  - id     : unique ID (e.g. "InciWeb", "EO", "GDACS")
+  - title  : source name
+  - source : source homepage URL
+  - link   : Events endpoint URL filtered by this source
 
-SURSE FRECVENTE:
-  InciWeb   → Incident Information System (incendii SUA)
+COMMON SOURCES:
+  InciWeb   → Incident Information System (US wildfires)
   EO        → Earth Observatory (NASA)
   GDACS     → Global Disaster Alert and Coordination System
   PDC       → Pacific Disaster Center
@@ -206,40 +206,40 @@ SURSE FRECVENTE:
   5. LAYERS  —  GET /api/v3/layers
 ================================================================================
 
-Referințe la servicii web (WMS/WMTS) cu imagini satelitare NASA.
+References to NASA satellite imagery web services (WMS/WMTS).
 
   GET https://eonet.gsfc.nasa.gov/api/v3/layers
-  GET https://eonet.gsfc.nasa.gov/api/v3/layers/{categoryId}   # filtrat
+  GET https://eonet.gsfc.nasa.gov/api/v3/layers/{categoryId}   # filtered
 
-STRUCTURA CÂMP LAYER:
-  - name          : numele layerului în serviciul web
-  - serviceUrl    : URL-ul de bază al serviciului web
-  - serviceTypeId : tip și versiune (ex: "WMS", "WMTS/1.0.0/GoogleMapsCompatible")
-  - parameters    : parametri URL necesari pentru o cerere corectă
+LAYER FIELD STRUCTURE:
+  - name          : layer name in the web service
+  - serviceUrl    : base URL of the web service
+  - serviceTypeId : type and version (e.g. "WMS", "WMTS/1.0.0/GoogleMapsCompatible")
+  - parameters    : URL parameters required for a valid request
 
 
 ================================================================================
   6. MAGNITUDES  —  GET /api/v3/magnitudes
 ================================================================================
 
-Lista unităților de magnitudine disponibile pentru filtrare.
+List of available magnitude units for filtering.
 
   GET https://eonet.gsfc.nasa.gov/api/v3/magnitudes
 
-Exemplu de utilizare cu magnitudine:
-  # Furtuni cu viteză vânt între 1.5 și 20 noduri
+Example usage with magnitude:
+  # Storms with wind speed between 1.5 and 20 knots
   GET https://eonet.gsfc.nasa.gov/api/v3/events?magID=mag_kts&magMin=1.50&magMax=20
 
 
 ================================================================================
-  UTILIZARE ÎN COD (Python)
+  USAGE IN CODE (Python)
 ================================================================================
 
 import requests
 
 BASE_URL = "https://eonet.gsfc.nasa.gov/api/v3"
 
-# Incendii active din ultimele 30 zile
+# Active wildfires from the last 30 days
 def get_active_wildfires(days=30, limit=10):
     params = {
         "category": "wildfires",
@@ -251,60 +251,60 @@ def get_active_wildfires(days=30, limit=10):
     response.raise_for_status()
     return response.json()
 
-# Evenimente GeoJSON dintr-un bounding box
+# Events in GeoJSON within a bounding box
 def get_events_in_bbox(min_lon, max_lat, max_lon, min_lat):
     bbox = f"{min_lon},{max_lat},{max_lon},{min_lat}"
     response = requests.get(f"{BASE_URL}/events", params={"bbox": bbox})
     response.raise_for_status()
     return response.json()
 
-# Lista categorii disponibile
+# List available categories
 def get_categories():
     response = requests.get(f"{BASE_URL}/categories")
     response.raise_for_status()
     return response.json()
 
-# Exemple de apel
+# Example calls
 fires = get_active_wildfires(days=7, limit=5)
 for event in fires["events"]:
-    coords = event["geometry"][-1]["coordinates"]  # ultima locație înregistrată
+    coords = event["geometry"][-1]["coordinates"]  # last recorded location
     print(f"{event['title']} | coords: {coords} | closed: {event['closed']}")
 
 ================================================================================
-  NOTE IMPORTANTE
+  IMPORTANT NOTES
 ================================================================================
 
-  1. AUTENTIFICARE  : Nu este necesară. API-ul este public și gratuit.
+  1. AUTHENTICATION : Not required. The API is public and free.
 
-  2. RATE LIMITING  : Nu este documentat explicit, dar API-ul este destinat
-                      utilizării rezonabile. Evitați polling agresiv.
+  2. RATE LIMITING  : Not explicitly documented, but the API is intended for
+                      reasonable use. Avoid aggressive polling.
 
-  3. STATUS OPEN    : Un eveniment are closed=null atâta timp cât este activ.
-                      După încheiere, closed conține timestamp ISO 8601.
+  3. OPEN STATUS    : An event has closed=null as long as it is active.
+                      After ending, closed contains an ISO 8601 timestamp.
 
-  4. GEOMETRIE      : Câmpul geometry este un array — evenimentele pot avea
-                      multiple puncte în timp (traiectoria unui uragan, etc.)
-                      Coordonatele sunt în format GeoJSON: [longitudine, latitudine]
-                      (atenție: ordinea e inversă față de convențiile GPS clasice)
+  4. GEOMETRY       : The geometry field is an array — events can have
+                      multiple points over time (e.g. hurricane trajectory).
+                      Coordinates are in GeoJSON format: [longitude, latitude]
+                      (note: order is reversed compared to classic GPS conventions)
 
-  5. DEFAULT STATUS : Omiterea parametrului ?status returnează implicit
-                      doar evenimentele OPEN (active).
+  5. DEFAULT STATUS : Omitting the ?status parameter implicitly returns
+                      only OPEN (active) events.
 
-  6. VERSIUNI       : v3 este versiunea curentă. v2.1 este deprecated.
-                      Folosiți întotdeauna /api/v3/...
+  6. VERSIONS       : v3 is the current version. v2.1 is deprecated.
+                      Always use /api/v3/...
 
-  7. FORMAT DATE    : Câmpurile de dată respectă ISO 8601 (ex: 2024-07-15T00:00:00Z)
-                      Parametrii start/end acceptă formatul YYYY-MM-DD.
+  7. DATE FORMAT    : Date fields follow ISO 8601 (e.g. 2024-07-15T00:00:00Z)
+                      start/end parameters accept the YYYY-MM-DD format.
 
-  8. CORS           : API-ul permite cereri cross-origin — poate fi apelat
-                      direct din browser (frontend JavaScript).
+  8. CORS           : The API allows cross-origin requests — it can be called
+                      directly from the browser (frontend JavaScript).
 
 
 ================================================================================
-  RESURSE UTILE
+  USEFUL RESOURCES
 ================================================================================
 
-  Documentație oficială  : https://eonet.gsfc.nasa.gov/docs/v3
+  Official documentation : https://eonet.gsfc.nasa.gov/docs/v3
   Changelog              : https://eonet.gsfc.nasa.gov/docs/changelog
   How-to guides          : https://eonet.gsfc.nasa.gov/how-to-guide
   Events live            : https://eonet.gsfc.nasa.gov/api/v3/events
@@ -314,5 +314,5 @@ for event in fires["events"]:
   Magnitudes live        : https://eonet.gsfc.nasa.gov/api/v3/magnitudes
 
 ================================================================================
-  Generat pe baza documentației oficiale EONET v3 (last updated: March 9, 2026)
+  Generated based on the official EONET v3 documentation (last updated: March 9, 2026)
 ================================================================================
