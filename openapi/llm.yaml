@@ -17,29 +17,37 @@ tags:
   - name: Health
     description: Service health check
 
-# ---------------------------------------------------------------------------
-# Components
-# ---------------------------------------------------------------------------
 components:
 
-  # -------------------------------------------------------------------------
-  # Schemas
-  # -------------------------------------------------------------------------
-  schemas:
+  securitySchemes:
 
-    # --- Shared enums -------------------------------------------------------
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+    internalApiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
 
     ReadingLevel:
       type: string
-      enum: [DEFAULT, SIMPLIFIED]
+      enum:
+        - DEFAULT
+        - SIMPLIFIED
       description: >
         Controls the complexity and verbosity of the generated summary.
 
     Severity:
       type: string
-      enum: [LOW, MODERATE, HIGH, UNKNOWN]
-
-    # --- Briefings ----------------------------------------------------------
+      enum:
+        - LOW
+        - MODERATE
+        - HIGH
+        - UNKNOWN
 
     BriefingResponse:
       type: object
@@ -81,18 +89,8 @@ components:
           items:
             type: string
           example:
-            - "Stay indoors if smoke is visible in your area"
-            - "Follow evacuation instructions from local authorities"
-
-    BriefingListResponse:
-      type: object
-      properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/BriefingResponse'
-
-    # --- Errors -------------------------------------------------------------
+            - Stay indoors if smoke is visible in your area
+            - Follow evacuation instructions from local authorities
 
     ProblemDetail:
       type: object
@@ -127,12 +125,7 @@ components:
           type: string
           example: UP
 
-# ---------------------------------------------------------------------------
-# Paths
-# ---------------------------------------------------------------------------
 paths:
-
-  # --- Briefings ------------------------------------------------------------
 
   /briefings/{eventId}:
 
@@ -145,9 +138,14 @@ paths:
         description: EONET event ID.
 
     get:
-      tags: [Briefings]
-      summary: Get briefing (read-through cache)
+      tags:
+        - Briefings
+      summary: Get briefing
       operationId: getBriefing
+
+      security:
+        - bearerAuth: []
+
       description: >
         Returns a briefing for the specified event.
 
@@ -191,39 +189,50 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
 
-    post:
-      tags: [Briefings]
-      summary: Ensure briefing exists (create-if-missing)
-      operationId: ensureBriefing
+  /internal/briefings/{eventId}:
+
+    parameters:
+      - name: eventId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: EONET event ID.
+
+    get:
+      tags:
+        - Briefings
+      summary: Get briefing (internal)
+      operationId: getInternalBriefing
+
+      security:
+        - internalApiKey: []
+
       description: >
-        Ensures a briefing exists for the specified event and reading level.
+        Internal endpoint used by backend services.
+        Returns a briefing for the specified event and reading level.
 
-        Behavior:
-        - If shared fields are missing, they are generated.
-        - If the summary for (eventId, readingLevel) is missing,
-          it is generated.
-        - If everything already exists, the cached briefing is returned
-          without generating new content.
-
-        This endpoint is idempotent.
+        Read-through cache behavior:
+        - If shared fields (impact, severity, precautions) are missing,
+          they are generated and cached per event.
+        - If the summary for the requested reading level is missing,
+          it is generated and cached for (eventId, readingLevel).
+        - If everything already exists, the cached result is returned
+          without invoking the LLM.
 
       parameters:
         - name: readingLevel
           in: query
           required: false
+          description: >
+            Controls the complexity of the generated summary.
+            Defaults to DEFAULT when omitted.
           schema:
             $ref: '#/components/schemas/ReadingLevel'
 
       responses:
         "200":
-          description: Existing cached briefing returned.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BriefingResponse'
-
-        "201":
-          description: New briefing generated successfully.
+          description: Briefing returned successfully.
           content:
             application/json:
               schema:
@@ -243,29 +252,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
 
-  /briefings:
-    get:
-      tags: [Briefings]
-      summary: List cached briefings
-      operationId: listBriefings
-      description: >
-        Returns all cached briefings currently stored by the service.
-
-      responses:
-        "200":
-          description: List of cached briefings.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BriefingListResponse'
-
-  # --- Health ---------------------------------------------------------------
-
   /health:
     get:
-      tags: [Health]
+      tags:
+        - Health
       summary: Health check
       operationId: healthCheck
+
       responses:
         "200":
           description: Service is healthy.
