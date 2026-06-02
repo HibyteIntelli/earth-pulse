@@ -19,6 +19,8 @@ tags:
     description: Natural-event resources sourced from NASA EONET.
   - name: categories
     description: EONET category catalogue used by the filter UI.
+  - name: internal
+    description: Internal endpoints consumed by other services (shared-secret protected).
 
 paths:
   /events/search:
@@ -82,6 +84,35 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /internal/events/{id}:
+    get:
+      tags: [internal]
+      summary: Get a single event by id (internal).
+      description: |
+        Identical to `GET /events/{id}` but secured with a shared secret
+        instead of a JWT. Used by internal services (e.g. the Notifier)
+        that cannot obtain a user-scoped JWT.
+      security:
+        - internalSecret: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "EONET_6543"
+      responses:
+        '200':
+          description: The event.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /categories:
     get:
       tags: [categories]
@@ -114,6 +145,12 @@ components:
         Validated locally against the Auth service's JWKS. Required by all
         read endpoints; consumers (frontend map view, Notifier) send it as
         an `Authorization: Bearer <token>` header.
+
+    internalSecret:
+      type: apiKey
+      in: header
+      name: X-Internal-Secret
+      description: Shared secret for internal service-to-service calls. Not accessible to end users or the frontend.
 
   schemas:
     EventFilterBase:
