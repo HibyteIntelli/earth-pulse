@@ -26,6 +26,7 @@
               }
             ],
             "styles": [
+              "src/colors.css",
               "src/styles.css"
             ]
           },

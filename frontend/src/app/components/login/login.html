@@ -1,5 +1,5 @@
 <main class="stage">
-  <!-- shared gradient for the seismic pulse: ocean blue -> land green -->
+
   <svg class="defs" aria-hidden="true" width="0" height="0" focusable="false">
     <defs>
       <linearGradient id="pulseGrad" x1="0" y1="0" x2="1" y2="0">
@@ -10,11 +10,9 @@
     </defs>
   </svg>
 
-  <!-- atmosphere -->
   <div class="grid" aria-hidden="true"></div>
   <div class="glow" aria-hidden="true"></div>
 
-  <!-- rotating earth -->
   <div class="globe" aria-hidden="true">
     <div class="globe__atmo"></div>
     <div class="globe__ball"></div>
@@ -40,7 +38,6 @@
     <div class="globe__shade"></div>
   </div>
 
-  <!-- signature: live seismic pulse of the planet -->
   <div class="seismo" aria-hidden="true">
     <div class="seismo__base"></div>
     <div class="seismo__track">
@@ -55,7 +52,6 @@
 
   <div class="noise" aria-hidden="true"></div>
 
-  <!-- console status bar -->
   <header class="hud">
     <div class="hud__id">
       <span class="dot"></span>
@@ -65,7 +61,7 @@
   </header>
 
   <div class="layout">
-    <!-- brand -->
+
     <section class="brand">
       <p class="brand__kicker">Station 01 · Live feed</p>
       <h1 class="brand__word">
@@ -88,14 +84,13 @@
       </ul>
     </section>
 
-    <!-- access terminal -->
     <section class="terminal">
       <div class="terminal__bar">
         <span>Access terminal</span>
         <span class="terminal__rec"><i></i>Secure</span>
       </div>
 
-      <form class="form" (submit)="onSubmit($event)" novalidate>
+      <form class="form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
         <h2 class="form__title">Operator sign-in</h2>
         <p class="form__hint">Authenticate to unlock AI briefings and personal watches.</p>
 
@@ -104,12 +99,15 @@
           <input
             class="field__input"
             id="login-name"
-            name="name"
+            formControlName="name"
             type="text"
             autocomplete="username"
             placeholder="e.g. a.rivera"
             spellcheck="false"
           />
+          @if (form.controls.name.invalid && form.controls.name.touched) {
+            <span class="field__error">Name is required.</span>
+          }
         </label>
 
         <label class="field">
@@ -118,7 +116,7 @@
             <input
               class="field__input"
               id="login-password"
-              name="password"
+              formControlName="password"
               [type]="showPassword() ? 'text' : 'password'"
               autocomplete="current-password"
               placeholder="••••••••••"
@@ -132,6 +130,9 @@
               {{ showPassword() ? 'Hide' : 'Show' }}
             </button>
           </span>
+          @if (form.controls.password.invalid && form.controls.password.touched) {
+            <span class="field__error">Password is required.</span>
+          }
         </label>
 
         <button class="submit" type="submit">

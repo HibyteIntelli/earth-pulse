@@ -1,5 +1,5 @@
 <main class="stage">
-  <!-- shared gradient for the seismic pulse: ocean blue -> land green -->
+
   <svg class="defs" aria-hidden="true" width="0" height="0" focusable="false">
     <defs>
       <linearGradient id="pulseGrad" x1="0" y1="0" x2="1" y2="0">
@@ -10,11 +10,9 @@
     </defs>
   </svg>
 
-  <!-- atmosphere -->
   <div class="grid" aria-hidden="true"></div>
   <div class="glow" aria-hidden="true"></div>
 
-  <!-- rotating earth -->
   <div class="globe" aria-hidden="true">
     <div class="globe__atmo"></div>
     <div class="globe__ball"></div>
@@ -40,7 +38,6 @@
     <div class="globe__shade"></div>
   </div>
 
-  <!-- signature: live seismic pulse of the planet -->
   <div class="seismo" aria-hidden="true">
     <div class="seismo__base"></div>
     <div class="seismo__track">
@@ -55,7 +52,6 @@
 
   <div class="noise" aria-hidden="true"></div>
 
-  <!-- console status bar -->
   <header class="hud">
     <div class="hud__id">
       <span class="dot"></span>
@@ -66,7 +62,7 @@
   </header>
 
   <div class="layout">
-    <!-- brand -->
+
     <section class="brand">
       <p class="brand__kicker">Station 01 · New operator</p>
       <h1 class="brand__word">
@@ -93,7 +89,6 @@
       </ul>
     </section>
 
-    <!-- access terminal -->
     <section class="terminal">
       <div class="terminal__bar">
         <span>New credentials</span>
@@ -180,8 +175,7 @@
             </span>
           </label>
 
-        <!-- live strength meter -->
-        <div class="strength" [attr.data-level]="strength()" aria-hidden="true">
+        <div class="strength" [attr.data-level]="strength()" role="status" aria-live="polite">
           <div class="strength__bars">
             <span class="strength__bar" [class.is-on]="strength() >= 1"></span>
             <span class="strength__bar" [class.is-on]="strength() >= 2"></span>

@@ -1,33 +1,4 @@
 :host {
-  /* palette — pulled from the OpenStreetMap tiles the Leaflet map renders */
-  --paper: #f2efe9;          /* OSM land */
-  --paper-raised: #fcfbf8;   /* legend / card surface */
-  --ink: #213a33;            /* deep pine, ~OSM label text */
-  --ink-dim: rgba(33, 58, 51, 0.62);
-  --ink-faint: rgba(33, 58, 51, 0.34);
-  --line: rgba(33, 58, 51, 0.1);
-  --line-strong: rgba(33, 58, 51, 0.18);
-  --water: #aad3df;          /* OSM water */
-  --water-deep: #2f7596;     /* readable ocean blue */
-  --water-soft: rgba(47, 117, 150, 0.4);
-  --forest: #add19e;         /* OSM forest */
-  --forest-deep: #3f6b39;    /* readable land green */
-  --forest-soft: rgba(63, 107, 57, 0.4);
-
-  /* NASA EONET event categories (color-coded, per requirements) */
-  --ev-wildfire: #c8632b;
-  --ev-storm: #2f7596;
-  --ev-volcano: #a23b2b;
-  --ev-flood: #2f8f86;
-  --ev-drought: #c19a3e;
-  --ev-dust: #b08968;
-  --ev-quake: #8a5a3b;
-  --ev-landslide: #9c6b4a;
-
-  /* type */
-  --display: 'Bricolage Grotesque', system-ui, sans-serif;
-  --mono: 'IBM Plex Mono', ui-monospace, monospace;
-
   display: block;
 }
 
@@ -35,7 +6,6 @@
   position: absolute;
 }
 
-/* ------------------------------------------------------------------ stage */
 .stage {
   position: relative;
   min-height: 100dvh;
@@ -49,7 +19,6 @@
     var(--paper);
 }
 
-/* graticule grid */
 .grid {
   position: absolute;
   inset: 0;
@@ -61,11 +30,10 @@
   mask-image: radial-gradient(ellipse 82% 82% at 50% 45%, #000 22%, transparent 80%);
   opacity: 0.6;
   pointer-events: none;
-  /* paired with /register so the backdrop holds still through the route morph */
+
   view-transition-name: grid;
 }
 
-/* soft ocean wash */
 .glow {
   position: absolute;
   right: -16vw;
@@ -79,12 +47,10 @@
   view-transition-name: glow;
 }
 
-/* ============================================================== EARTH */
 .globe {
   --R: clamp(170px, 30vw, 380px);
   position: absolute;
-  /* anchored to the viewport (50dvh), not the stage height, so the earth sits
-     at the exact same level on login and register regardless of form height */
+
   top: 50dvh;
   left: 58%;
   width: calc(var(--R) * 2);
@@ -93,7 +59,7 @@
   z-index: 1;
   pointer-events: none;
   animation: globe-in 1.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-  /* the planet keeps its place across the route change */
+
   view-transition-name: globe;
 }
 
@@ -154,7 +120,6 @@
   border-color: rgba(47, 117, 150, 0.45);
 }
 
-/* event pins riding the surface */
 .pin {
   position: absolute;
   top: 50%;
@@ -192,7 +157,6 @@
   pointer-events: none;
 }
 
-/* ------------------------------------------------------ seismic pulse */
 .seismo {
   position: absolute;
   left: 0;
@@ -239,7 +203,6 @@
   opacity: 0.95;
 }
 
-/* paper grain */
 .noise {
   position: absolute;
   inset: 0;
@@ -250,7 +213,6 @@
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
 }
 
-/* --------------------------------------------------------------- HUD */
 .hud {
   position: relative;
   z-index: 3;
@@ -292,7 +254,6 @@
   animation: blink 2.4s ease-in-out infinite;
 }
 
-/* ------------------------------------------------------------ layout */
 .layout {
   position: relative;
   z-index: 2;
@@ -307,7 +268,6 @@
   gap: clamp(2.5rem, 6vw, 6rem);
 }
 
-/* --------------------------------------------------------------- brand */
 .brand__kicker {
   margin: 0 0 1.6rem;
   font-family: var(--mono);
@@ -327,7 +287,7 @@
   line-height: 0.82;
   letter-spacing: -0.045em;
   color: var(--ink);
-  /* the wordmark stays welded in place between pages */
+
   view-transition-name: brandword;
 }
 
@@ -337,12 +297,12 @@
 }
 
 .brand__word span:first-child {
-  color: var(--forest-deep); /* Earth = land green */
+  color: var(--forest-deep);
   animation-delay: 0.12s;
 }
 
 .brand__word--hot {
-  color: var(--water-deep); /* Pulse = water blue */
+  color: var(--water-deep);
   animation-delay: 0.2s !important;
 }
 
@@ -358,7 +318,6 @@
   animation-delay: 0.3s;
 }
 
-/* category legend */
 .legend {
   display: flex;
   flex-wrap: wrap;
@@ -402,7 +361,6 @@
 .legend--quake { --c: var(--ev-quake); }
 .legend--landslide { --c: var(--ev-landslide); }
 
-/* ------------------------------------------------------------ terminal */
 .terminal {
   position: relative;
   background: rgba(252, 251, 248, 0.82);
@@ -415,11 +373,10 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.7);
   animation: rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: 0.22s;
-  /* the headline morph: this card tweens into the register card on /register */
+
   view-transition-name: terminal;
 }
 
-/* instrument corner ticks */
 .terminal::before,
 .terminal::after {
   content: '';
@@ -473,7 +430,6 @@
   animation: blink 1.6s steps(1) infinite;
 }
 
-/* --------------------------------------------------------------- form */
 .form {
   padding: clamp(1.6rem, 3vw, 2.6rem);
 }
@@ -515,6 +471,15 @@
   align-items: center;
 }
 
+.field__error {
+  display: block;
+  margin-top: 0.5rem;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  color: var(--ev-volcano);
+}
+
 .field__input {
   width: 100%;
   padding: 0.55rem 0;
@@ -539,7 +504,6 @@
   box-shadow: 0 1px 0 0 var(--water-deep);
 }
 
-/* tame the autofill flash */
 .field__input:-webkit-autofill,
 .field__input:-webkit-autofill:focus {
   -webkit-text-fill-color: var(--ink);
@@ -568,7 +532,6 @@
   outline: none;
 }
 
-/* submit */
 .submit {
   position: relative;
   overflow: hidden;
@@ -645,7 +608,6 @@
   color: var(--water-deep);
 }
 
-/* ----------------------------------------------------------- keyframes */
 @keyframes spin {
   to {
     transform: rotateY(360deg);
@@ -718,7 +680,6 @@
   }
 }
 
-/* ---------------------------------------------------------- responsive */
 @media (max-width: 980px) {
   .globe {
     left: 72%;
@@ -751,7 +712,6 @@
   }
 }
 
-/* ------------------------------------------------------ reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .seismo__track,
   .glow,
