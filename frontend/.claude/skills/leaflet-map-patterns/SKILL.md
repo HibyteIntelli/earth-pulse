@@ -17,7 +17,7 @@ If the spec and this skill disagree, the spec wins. Update this skill in the sam
 
 ## Project conventions
 
-- **Library:** Leaflet. Do not introduce alternatives (Mapbox, MapLibre, OpenLayers). For drawing rectangles use `leaflet-draw` (or `leaflet-geoman` if you prefer; pick one and stick to it across the codebase).
+- **Library:** Leaflet. Do not introduce alternatives (Mapbox, MapLibre, OpenLayers). For drawing rectangles use `leaflet-geoman` — it is the chosen drawing library across the codebase; do not introduce `leaflet-draw`.
 - **Component location:** all map code lives under `frontend/src/app/components/map/`. Sub-features (side panel, draw controls, filter bar) are sibling components that communicate with `Map` via a shared service, not via `@Input/@Output` chains.
 - **State container:** a `MapStateService` (Angular service, singleton) owns: selected event ID, current viewport bbox, active category filter, active time window, draw mode. Components read from it via signals; the URL syncs to and from it (see Deep links).
 - **Lifecycle:** create the Leaflet map in `ngAfterViewInit`, destroy it in `ngOnDestroy` with `leafletMap.remove()`. The current `map.ts` already does this — keep it that way.
@@ -99,9 +99,9 @@ Per `REQUIREMENTS.md`, filtering is **server-side**. The frontend never filters 
 
 Authenticated users draw a rectangle to define a watch region.
 
-- Use `leaflet-draw`'s rectangle tool, mounted as an `L.Control.Draw` instance with `draw: { rectangle: {...}, polygon: false, circle: false, polyline: false, marker: false, circlemarker: false }`.
-- Draw mode is **opt-in**: the control is hidden by default and shown when `MapStateService.drawMode === true`. The "Create watch" button (from a separate UI shell) sets this flag.
-- On `leafletMap.on(L.Draw.Event.CREATED, ...)`, take the rectangle bounds, write them to `MapStateService.pendingWatchRegion`, and open the watch-creation modal.
+- Use `leaflet-geoman`'s rectangle tool. Keep the default toolbar hidden (`leafletMap.pm.addControls(...)` is not used) and trigger drawing programmatically with `leafletMap.pm.enableDraw('Rectangle', {...})`; the other shapes stay disabled because you never enable them.
+- Draw mode is **opt-in**: drawing is off by default and enabled (via `pm.enableDraw('Rectangle')`) when `MapStateService.drawMode === true`; leaving draw mode calls `leafletMap.pm.disableDraw()`. The "Create watch" button (from a separate UI shell) sets this flag.
+- On `leafletMap.on('pm:create', (e) => ...)`, take the layer's rectangle bounds (`e.layer.getBounds()`), write them to `MapStateService.pendingWatchRegion`, and open the watch-creation modal.
 - Cancelling the modal must clear `pendingWatchRegion` *and* `drawMode` so the UI returns to the default browse state.
 - Anonymous users never enter draw mode. Gate the "Create watch" button on auth state — do not gate it inside the map component.
 
