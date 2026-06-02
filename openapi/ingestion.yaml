@@ -231,7 +231,7 @@ components:
 
     Event:
       type: object
-      required: [id, title, category, status, startDate, geometry]
+      required: [id, title, category, status, eventDate, geometry]
       properties:
         id:
           type: string
