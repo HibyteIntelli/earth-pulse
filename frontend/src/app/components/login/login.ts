@@ -6,7 +6,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
   selector: 'app-login',
   imports: [RouterLink, ReactiveFormsModule],
   templateUrl: './login.html',
-  styleUrl: './login.css',
+  styleUrls: ['../auth-scene.css', './login.css'],
 })
 export class Login {
   protected readonly showPassword = signal(false);

@@ -5,7 +5,7 @@ import { RouterLink } from '@angular/router';
   selector: 'app-register',
   imports: [RouterLink],
   templateUrl: './register.html',
-  styleUrl: './register.css',
+  styleUrls: ['../auth-scene.css', './register.css'],
 })
 export class Register {
   protected readonly showPassword = signal(false);
