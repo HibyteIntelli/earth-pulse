@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import {
@@ -8,6 +8,11 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
+import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
+import { CheckboxModule } from 'primeng/checkbox';
+import { ButtonModule } from 'primeng/button';
+import { MessageModule } from 'primeng/message';
 
 const STRENGTH_LABELS = ['Awaiting key', 'Weak', 'Fair', 'Strong', 'Fortified'] as const;
 
@@ -37,14 +42,19 @@ function passwordsMatchValidator(group: AbstractControl): ValidationErrors | nul
 
 @Component({
   selector: 'app-register',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [
+    RouterLink,
+    ReactiveFormsModule,
+    InputTextModule,
+    PasswordModule,
+    CheckboxModule,
+    ButtonModule,
+    MessageModule,
+  ],
   templateUrl: './register.html',
   styleUrls: ['../auth-scene.css', './register.css'],
 })
 export class Register {
-  protected readonly showPassword = signal(false);
-  protected readonly showConfirm = signal(false);
-
   private readonly fb = inject(FormBuilder);
 
   protected readonly form = this.fb.nonNullable.group(
@@ -71,14 +81,6 @@ export class Register {
     if (!confirm) return null;
     return password === confirm;
   });
-
-  togglePassword(): void {
-    this.showPassword.update((v) => !v);
-  }
-
-  toggleConfirm(): void {
-    this.showConfirm.update((v) => !v);
-  }
 
   onSubmit(): void {
     if (this.form.invalid) {

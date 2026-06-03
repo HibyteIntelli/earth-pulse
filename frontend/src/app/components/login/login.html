@@ -97,6 +97,7 @@
         <label class="field">
           <span class="field__label">Name</span>
           <input
+            pInputText
             class="field__input"
             formControlName="name"
             type="text"
@@ -105,35 +106,29 @@
             spellcheck="false"
           />
           @if (form.controls.name.invalid && form.controls.name.touched) {
-            <span class="field__error">Name is required.</span>
+            <p-message severity="error" variant="simple" text="Name is required." />
           }
         </label>
 
         <label class="field">
           <span class="field__label">Password</span>
-          <span class="field__wrap">
-            <input
-              class="field__input"
-              formControlName="password"
-              [type]="showPassword() ? 'text' : 'password'"
-              autocomplete="current-password"
-              placeholder="••••••••••"
-            />
-            <button
-              class="reveal"
-              type="button"
-              (click)="togglePassword()"
-              [attr.aria-pressed]="showPassword()"
-            >
-              {{ showPassword() ? 'Hide' : 'Show' }}
-            </button>
-          </span>
+          <p-password
+            formControlName="password"
+            [toggleMask]="true"
+            [feedback]="false"
+            [fluid]="true"
+            autocomplete="current-password"
+            placeholder="••••••••••"
+          >
+            <ng-template #showicon><span class="reveal-text">Show</span></ng-template>
+            <ng-template #hideicon><span class="reveal-text">Hide</span></ng-template>
+          </p-password>
           @if (form.controls.password.invalid && form.controls.password.touched) {
-            <span class="field__error">Password is required.</span>
+            <p-message severity="error" variant="simple" text="Password is required." />
           }
         </label>
 
-        <button class="submit" type="submit">
+        <button pButton class="submit" type="submit">
           <span>Authenticate</span>
           <span class="submit__arrow" aria-hidden="true">&#8594;</span>
         </button>

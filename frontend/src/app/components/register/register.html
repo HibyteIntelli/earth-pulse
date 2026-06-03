@@ -102,6 +102,7 @@
         <label class="field">
           <span class="field__label">Email</span>
           <input
+            pInputText
             class="field__input"
             id="register-email"
             formControlName="email"
@@ -111,19 +112,18 @@
             spellcheck="false"
           />
           @if (form.controls.email.invalid && form.controls.email.touched) {
-            <span class="field__error">
-              @if (form.controls.email.errors?.['required']) {
-                Email is required.
-              } @else {
-                Enter a valid email address.
-              }
-            </span>
+            <p-message
+              severity="error"
+              variant="simple"
+              [text]="form.controls.email.errors?.['required'] ? 'Email is required.' : 'Enter a valid email address.'"
+            />
           }
         </label>
 
         <label class="field">
           <span class="field__label">Operator name</span>
           <input
+            pInputText
             class="field__input"
             id="register-name"
             formControlName="name"
@@ -133,53 +133,39 @@
             spellcheck="false"
           />
           @if (form.controls.name.invalid && form.controls.name.touched) {
-            <span class="field__error">Operator name is required.</span>
+            <p-message severity="error" variant="simple" text="Operator name is required." />
           }
         </label>
 
         <label class="field">
-            <span class="field__label">Password</span>
-            <span class="field__wrap">
-              <input
-                class="field__input"
-                id="register-password"
-                formControlName="password"
-                [type]="showPassword() ? 'text' : 'password'"
-                autocomplete="new-password"
-                placeholder="••••••••••"
-              />
-              <button
-                class="reveal"
-                type="button"
-                (click)="togglePassword()"
-                [attr.aria-pressed]="showPassword()"
-              >
-                {{ showPassword() ? 'Hide' : 'Show' }}
-              </button>
-            </span>
-          </label>
+          <span class="field__label">Password</span>
+          <p-password
+            formControlName="password"
+            [toggleMask]="true"
+            [feedback]="false"
+            [fluid]="true"
+            autocomplete="new-password"
+            placeholder="••••••••••"
+          >
+            <ng-template #showicon><span class="reveal-text">Show</span></ng-template>
+            <ng-template #hideicon><span class="reveal-text">Hide</span></ng-template>
+          </p-password>
+        </label>
 
-          <label class="field">
-            <span class="field__label">Confirm</span>
-            <span class="field__wrap">
-              <input
-                class="field__input"
-                id="register-confirm"
-                formControlName="confirm"
-                [type]="showConfirm() ? 'text' : 'password'"
-                autocomplete="new-password"
-                placeholder="••••••••••"
-              />
-              <button
-                class="reveal"
-                type="button"
-                (click)="toggleConfirm()"
-                [attr.aria-pressed]="showConfirm()"
-              >
-                {{ showConfirm() ? 'Hide' : 'Show' }}
-              </button>
-            </span>
-          </label>
+        <label class="field">
+          <span class="field__label">Confirm</span>
+          <p-password
+            formControlName="confirm"
+            [toggleMask]="true"
+            [feedback]="false"
+            [fluid]="true"
+            autocomplete="new-password"
+            placeholder="••••••••••"
+          >
+            <ng-template #showicon><span class="reveal-text">Show</span></ng-template>
+            <ng-template #hideicon><span class="reveal-text">Hide</span></ng-template>
+          </p-password>
+        </label>
 
         <div class="strength" [attr.data-level]="strength()" role="status" aria-live="polite">
           <div class="strength__bars">
@@ -198,18 +184,17 @@
         }
 
         <label class="consent">
-          <input type="checkbox" formControlName="consent" />
-          <span class="consent__box" aria-hidden="true"></span>
+          <p-checkbox formControlName="consent" [binary]="true" inputId="consent" />
           <span class="consent__text">
             I understand briefings are AI-generated and I will always follow
             guidance from local authorities during a real event.
           </span>
         </label>
         @if (form.controls.consent.invalid && form.controls.consent.touched) {
-          <span class="field__error">You must acknowledge this to continue.</span>
+          <p-message severity="error" variant="simple" text="You must acknowledge this to continue." />
         }
 
-        <button class="submit" type="submit">
+        <button pButton class="submit" type="submit">
           <span>Commission operator</span>
           <span class="submit__arrow" aria-hidden="true">&#8594;</span>
         </button>

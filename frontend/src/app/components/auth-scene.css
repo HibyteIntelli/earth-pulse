@@ -418,20 +418,6 @@
   color: var(--ink-faint);
 }
 
-.field__wrap {
-  display: flex;
-  align-items: center;
-}
-
-.field__error {
-  display: block;
-  margin-top: 0.5rem;
-  font-family: var(--mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.06em;
-  color: var(--ev-volcano);
-}
-
 .field__input {
   width: 100%;
   padding: 0.55rem 0;
@@ -461,27 +447,6 @@
   -webkit-text-fill-color: var(--ink);
   -webkit-box-shadow: 0 0 0 1000px var(--paper-raised) inset;
   caret-color: var(--water-deep);
-}
-
-.reveal {
-  flex: none;
-  margin-left: 0.75rem;
-  padding: 0.35rem 0.2rem;
-  border: 0;
-  background: none;
-  color: var(--ink-faint);
-  font-family: var(--mono);
-  font-size: 0.64rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.reveal:hover,
-.reveal:focus-visible {
-  color: var(--water-deep);
-  outline: none;
 }
 
 .submit {
@@ -685,4 +650,94 @@
   .submit::before {
     display: none;
   }
+}
+
+/* PrimeNG components, re-skinned to the field-station look. ::ng-deep reaches
+   the elements PrimeNG renders inside its own views. The password input also
+   carries the pInputText directive, so Aura's boxed .p-inputtext styles apply
+   to it — the box-resets below use !important to override that and make it
+   render as the same underline-only field as the plain name/email inputs. */
+
+:host ::ng-deep .p-password {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+:host ::ng-deep .p-password-input {
+  width: 100%;
+  padding: 0.55rem 3.5rem 0.55rem 0 !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--line-strong) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  caret-color: var(--water-deep);
+  box-shadow: none !important;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+:host ::ng-deep .p-password-input::placeholder {
+  color: var(--ink-faint);
+}
+
+:host ::ng-deep .p-password-input:enabled:hover {
+  border-bottom-color: var(--line-strong) !important;
+}
+
+:host ::ng-deep .p-password-input:enabled:focus,
+:host ::ng-deep .p-password-input:focus {
+  outline: none;
+  border-bottom-color: var(--water-deep) !important;
+  box-shadow: 0 1px 0 0 var(--water-deep) !important;
+}
+
+/* the mono "Show / Hide" reveal, in place of the default eye icon */
+:host ::ng-deep .p-password-toggle-mask-icon {
+  width: auto;
+  height: auto;
+  cursor: pointer;
+}
+
+:host ::ng-deep .reveal-text {
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  transition: color 0.2s ease;
+}
+
+:host ::ng-deep .p-password-toggle-mask-icon:hover .reveal-text {
+  color: var(--water-deep);
+}
+
+/* validation messages — match the old .field__error: plain mono red text */
+:host ::ng-deep .p-message {
+  display: block;
+  margin-top: 0.5rem;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
+:host ::ng-deep .p-message-content,
+:host ::ng-deep .p-message-content-wrapper {
+  padding: 0;
+  gap: 0;
+}
+
+:host ::ng-deep .p-message-icon {
+  display: none;
+}
+
+:host ::ng-deep .p-message-text {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  color: var(--ev-volcano);
 }

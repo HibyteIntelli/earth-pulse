@@ -1,15 +1,18 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { InputTextModule } from 'primeng/inputtext';
+import { PasswordModule } from 'primeng/password';
+import { ButtonModule } from 'primeng/button';
+import { MessageModule } from 'primeng/message';
 
 @Component({
   selector: 'app-login',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, InputTextModule, PasswordModule, ButtonModule, MessageModule],
   templateUrl: './login.html',
   styleUrls: ['../auth-scene.css', './login.css'],
 })
 export class Login {
-  protected readonly showPassword = signal(false);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
 
@@ -18,11 +21,6 @@ export class Login {
     password: ['', Validators.required],
   });
 
-  togglePassword(): void {
-    this.showPassword.update((v) => !v);
-  }
-
-  // TODO: Implement login
   onSubmit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();

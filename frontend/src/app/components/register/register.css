@@ -125,49 +125,36 @@
   cursor: pointer;
 }
 
-.consent input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.consent__box {
-  position: relative;
+:host ::ng-deep .consent .p-checkbox {
   width: 18px;
   height: 18px;
   margin-top: 1px;
+}
+
+:host ::ng-deep .consent .p-checkbox-box {
+  width: 18px;
+  height: 18px;
   border: 1px solid var(--line-strong);
   border-radius: 4px;
   background: rgba(252, 251, 248, 0.6);
+  box-shadow: none;
   transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
-.consent__box::after {
-  content: '';
-  position: absolute;
-  left: 5px;
-  top: 1px;
-  width: 5px;
-  height: 10px;
-  border: solid #f6faf2;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg) scale(0);
-  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.consent input:checked + .consent__box {
+:host ::ng-deep .consent .p-checkbox-checked .p-checkbox-box {
   border-color: var(--forest-deep);
   background: var(--forest-deep);
   box-shadow: 0 6px 16px -8px var(--forest-soft);
 }
 
-.consent input:checked + .consent__box::after {
-  transform: rotate(45deg) scale(1);
+:host ::ng-deep .consent .p-checkbox-icon {
+  width: 11px;
+  height: 11px;
+  font-size: 11px;
+  color: #f6faf2;
 }
 
-.consent input:focus-visible + .consent__box {
+:host ::ng-deep .consent .p-checkbox-input:focus-visible + .p-checkbox-box {
   outline: 2px solid var(--water-deep);
   outline-offset: 2px;
 }
