@@ -95,7 +95,7 @@
         <span class="terminal__rec"><i></i>Encrypted</span>
       </div>
 
-      <form class="form" (submit)="onSubmit($event)" novalidate>
+      <form class="form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
         <h2 class="form__title">Commission operator</h2>
         <p class="form__hint">Set your access keys. You can refine delivery preferences later in Profile.</p>
 
@@ -104,13 +104,21 @@
           <input
             class="field__input"
             id="register-email"
-            name="email"
+            formControlName="email"
             type="email"
             autocomplete="email"
             placeholder="operator@station.earth"
             spellcheck="false"
-            required
           />
+          @if (form.controls.email.invalid && form.controls.email.touched) {
+            <span class="field__error">
+              @if (form.controls.email.errors?.['required']) {
+                Email is required.
+              } @else {
+                Enter a valid email address.
+              }
+            </span>
+          }
         </label>
 
         <label class="field">
@@ -118,13 +126,15 @@
           <input
             class="field__input"
             id="register-name"
-            name="name"
+            formControlName="name"
             type="text"
             autocomplete="username"
             placeholder="e.g. a.rivera"
             spellcheck="false"
-            required
           />
+          @if (form.controls.name.invalid && form.controls.name.touched) {
+            <span class="field__error">Operator name is required.</span>
+          }
         </label>
 
         <label class="field">
@@ -133,12 +143,10 @@
               <input
                 class="field__input"
                 id="register-password"
-                name="password"
+                formControlName="password"
                 [type]="showPassword() ? 'text' : 'password'"
                 autocomplete="new-password"
                 placeholder="••••••••••"
-                (input)="password.set($any($event.target).value)"
-                required
               />
               <button
                 class="reveal"
@@ -157,12 +165,10 @@
               <input
                 class="field__input"
                 id="register-confirm"
-                name="confirm"
+                formControlName="confirm"
                 [type]="showConfirm() ? 'text' : 'password'"
                 autocomplete="new-password"
                 placeholder="••••••••••"
-                (input)="confirm.set($any($event.target).value)"
-                required
               />
               <button
                 class="reveal"
@@ -192,13 +198,16 @@
         }
 
         <label class="consent">
-          <input type="checkbox" name="consent" required />
+          <input type="checkbox" formControlName="consent" />
           <span class="consent__box" aria-hidden="true"></span>
           <span class="consent__text">
             I understand briefings are AI-generated and I will always follow
             guidance from local authorities during a real event.
           </span>
         </label>
+        @if (form.controls.consent.invalid && form.controls.consent.touched) {
+          <span class="field__error">You must acknowledge this to continue.</span>
+        }
 
         <button class="submit" type="submit">
           <span>Commission operator</span>
