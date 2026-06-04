@@ -16,13 +16,10 @@ import java.util.Set;
 @NoArgsConstructor
 @Entity
 @Table(name = "natural_events")
-public class NaturalEvent {
+public class Event {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false)
     private String eonetId;
 
     @Column(nullable = false)
@@ -41,7 +38,7 @@ public class NaturalEvent {
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(
             name = "event_categories",
-            joinColumns = @JoinColumn(name = "event_id")
+            joinColumns = @JoinColumn(name = "eonet_id")
     )
     @Column(name = "category_id")
     private Set<String> categoryIds = new HashSet<>();
