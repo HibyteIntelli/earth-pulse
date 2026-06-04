@@ -1,6 +1,6 @@
 spring.application.name=notifier
 
-spring.datasource.url=jdbc:postgresql://localhost:<PORT>>/notifier
+spring.datasource.url=jdbc:postgresql://localhost:<PORT>/notifier
 spring.datasource.username=...
 spring.datasource.password=...
 spring.jpa.hibernate.ddl-auto=update
