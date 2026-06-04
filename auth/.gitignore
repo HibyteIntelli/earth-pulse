@@ -1,6 +1,7 @@
 ### Custom ###
 application.properties
 .env
+requests.http
 
 
 HELP.md
