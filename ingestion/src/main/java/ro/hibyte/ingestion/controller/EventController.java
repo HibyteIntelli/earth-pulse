@@ -20,12 +20,6 @@ public class EventController {
         return eventService.getAllEvents();
     }
 
-    @PostMapping("/poll")
-    public ResponseEntity<String> triggerPoll() {
-        eventService.fetchAndSaveEvents();
-        return ResponseEntity.ok("Poll triggered");
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<EventResponse> getEventById(@PathVariable String id) {
         return eventService.getEventById(id)
