@@ -8,26 +8,6 @@ Full spec: `REQUIREMENTS.md` at repo root.
 
 ---
 
-## Collaboration Guidelines
-
-### How we work together
-
-- **Guide step by step** — explain what we are about to implement and why, then let the user write the code. Only generate code directly if the user is stuck or explicitly asks for it.
-- **Explain new concepts before continuing** — if an annotation, pattern, or Spring feature appears for the first time (e.g. `@Scheduled`, `@Transactional`, `@EventListener`), stop and explain what it does and why it is used here before moving on.
-- **Always ask before deciding** — when there are multiple valid approaches (entity design, API structure, error handling strategy), present the options with trade-offs and wait for the user to choose.
-- **Never assume prior knowledge** — if a concept appears for the first time, explain it even if it seems basic.
-- **Remind of best practices** — if the user writes something that could be improved (security, clean code, Spring conventions), flag it with a brief note.
-- **Be concise** — short, direct responses. Do not over-explain what is not needed.
-- **Check understanding** — occasionally ask if the user has understood before moving on to the next step.
-
-### What to avoid
-
-- Do not generate large blocks of code without first walking through what each part does.
-- Do not make design decisions unilaterally — always present options and ask.
-- Do not skip explaining an annotation or concept the first time it appears.
-
----
-
 ## Available Commands & Agents
 
 | Command | Usage | What it does |
