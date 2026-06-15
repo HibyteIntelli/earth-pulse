@@ -1,7 +1,7 @@
-.globe {
+app-globe-scene {
   --R: clamp(170px, 30vw, 380px);
-  top: 50dvh;
-  left: 58%;
+  --globe-top: 50dvh;
+  --globe-left: 58%;
 }
 
 .brand__tag {

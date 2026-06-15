@@ -13,6 +13,8 @@ import { PasswordModule } from 'primeng/password';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
+import { GlobeScene } from '../shared/globe-scene';
+import { SeismoScene } from '../shared/seismo-scene';
 
 const STRENGTH_LABELS = ['Awaiting key', 'Weak', 'Fair', 'Strong', 'Fortified'] as const;
 
@@ -50,6 +52,8 @@ function passwordsMatchValidator(group: AbstractControl): ValidationErrors | nul
     CheckboxModule,
     ButtonModule,
     MessageModule,
+    GlobeScene,
+    SeismoScene,
   ],
   templateUrl: './register.html',
   styleUrls: ['../auth-scene.css', './register.css'],

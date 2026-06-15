@@ -47,158 +47,6 @@
   view-transition-name: glow;
 }
 
-.globe {
-  position: absolute;
-  width: calc(var(--R) * 2);
-  height: calc(var(--R) * 2);
-  margin: calc(var(--R) * -1) 0 0 calc(var(--R) * -1);
-  z-index: 1;
-  pointer-events: none;
-  animation: globe-in 1.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-
-  view-transition-name: globe;
-}
-
-.globe__atmo {
-  position: absolute;
-  inset: -16%;
-  border-radius: 50%;
-  background: radial-gradient(circle, transparent 56%, rgba(122, 184, 205, 0.34) 70%, transparent 78%);
-  filter: blur(8px);
-}
-
-.globe__ball {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle at 36% 30%, rgba(173, 209, 158, 0.28), transparent 42%),
-    radial-gradient(circle at 38% 32%, rgba(170, 211, 223, 0.42), rgba(47, 117, 150, 0.26) 56%, rgba(33, 58, 51, 0.14) 100%);
-  box-shadow:
-    inset -22px -26px 60px rgba(20, 40, 35, 0.32),
-    inset 18px 16px 46px rgba(225, 240, 235, 0.4),
-    0 30px 80px -30px rgba(47, 117, 150, 0.45);
-}
-
-.globe__sphere {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  transform: rotateZ(-12deg) rotateX(16deg);
-}
-
-.globe__spin {
-  position: absolute;
-  inset: 0;
-  transform-style: preserve-3d;
-  animation: spin 44s linear infinite;
-}
-
-.lon,
-.lat {
-  position: absolute;
-  inset: 0;
-  border: 1px solid var(--water-soft);
-  border-radius: 50%;
-}
-
-.lon {
-  transform: rotateY(calc(var(--i) * 30deg));
-  border-color: rgba(47, 117, 150, 0.26);
-}
-
-.lat {
-  transform: rotateX(90deg) translateZ(calc(var(--R) * var(--k))) scale(var(--sc));
-  border-color: rgba(47, 117, 150, 0.22);
-}
-
-.lat--eq {
-  border-color: rgba(47, 117, 150, 0.45);
-}
-
-.pin {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 9px;
-  height: 9px;
-  margin: -4.5px 0 0 -4.5px;
-  border-radius: 50%;
-  background: var(--c);
-  box-shadow: 0 0 9px var(--c);
-  backface-visibility: hidden;
-  transform: rotateY(var(--lon)) rotateX(var(--lat)) translateZ(var(--R));
-}
-
-.pin::after {
-  content: '';
-  position: absolute;
-  inset: -3px;
-  border-radius: 50%;
-  border: 1px solid var(--c);
-  animation: ping 2.8s ease-out infinite;
-  animation-delay: var(--d, 0s);
-}
-
-.pin--fire { --c: var(--ev-wildfire); }
-.pin--storm { --c: var(--ev-storm); }
-.pin--volcano { --c: var(--ev-volcano); }
-.pin--flood { --c: var(--ev-flood); }
-
-.globe__shade {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: radial-gradient(circle at 72% 76%, rgba(20, 40, 35, 0.28), transparent 52%);
-  pointer-events: none;
-}
-
-.seismo {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 47%;
-  height: 340px;
-  transform: translateY(-50%);
-  pointer-events: none;
-  z-index: 1;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
-  view-transition-name: seismo;
-}
-
-.seismo__base {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: repeating-linear-gradient(90deg, var(--line-strong) 0 6px, transparent 6px 14px);
-}
-
-.seismo__track {
-  display: flex;
-  width: 200%;
-  height: 100%;
-  animation: scroll 19s linear infinite;
-}
-
-.seismo__track svg {
-  flex: 0 0 50%;
-  height: 100%;
-}
-
-.seismo__track polyline {
-  fill: none;
-  stroke: url(#pulseGrad);
-  stroke-width: 2.5;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 1px 6px rgba(47, 117, 150, 0.35));
-  opacity: 0.95;
-}
-
 .noise {
   position: absolute;
   inset: 0;
@@ -524,43 +372,6 @@
   color: var(--water-deep);
 }
 
-@keyframes spin {
-  to {
-    transform: rotateY(360deg);
-  }
-}
-
-@keyframes globe-in {
-  from {
-    opacity: 0;
-    transform: scale(0.92);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes ping {
-  0% {
-    transform: scale(0.6);
-    opacity: 0.9;
-  }
-  70% {
-    opacity: 0;
-  }
-  100% {
-    transform: scale(2.6);
-    opacity: 0;
-  }
-}
-
-@keyframes scroll {
-  to {
-    transform: translateX(-50%);
-  }
-}
-
 @keyframes breathe {
   0%,
   100% {
@@ -596,14 +407,6 @@
   }
 }
 
-@media (max-width: 980px) {
-  .globe {
-    left: 72%;
-    top: 30dvh;
-    opacity: 0.5;
-  }
-}
-
 @media (max-width: 860px) {
   .layout {
     grid-template-columns: 1fr;
@@ -615,11 +418,6 @@
     max-width: 460px;
     width: 100%;
   }
-
-  .seismo {
-    top: 34%;
-    opacity: 0.7;
-  }
 }
 
 @media (max-width: 460px) {
@@ -629,13 +427,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .seismo__track,
   .glow,
   .dot,
-  .terminal__rec i,
-  .globe,
-  .globe__spin,
-  .pin::after {
+  .terminal__rec i {
     animation: none;
   }
 

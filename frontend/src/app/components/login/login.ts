@@ -5,10 +5,21 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
+import { GlobeScene } from '../shared/globe-scene';
+import { SeismoScene } from '../shared/seismo-scene';
 
 @Component({
   selector: 'app-login',
-  imports: [RouterLink, ReactiveFormsModule, InputTextModule, PasswordModule, ButtonModule, MessageModule],
+  imports: [
+    RouterLink,
+    ReactiveFormsModule,
+    InputTextModule,
+    PasswordModule,
+    ButtonModule,
+    MessageModule,
+    GlobeScene,
+    SeismoScene,
+  ],
   templateUrl: './login.html',
   styleUrls: ['../auth-scene.css', './login.css'],
 })
