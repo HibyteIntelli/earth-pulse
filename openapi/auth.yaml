@@ -215,7 +215,7 @@ components:
         Used both as a per-watch notification preference and as a
         user-level preference for briefings shown on the map.
 
-    WatchDto:
+    Watch:
       type: object
       properties:
         id:
@@ -713,46 +713,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
 
-  /watches/{id}/resume:
-    parameters:
-      - name: id
-        in: path
-        required: true
-        schema:
-          type: string
-          format: uuid
-
-    patch:
-      tags: [Watches]
-      summary: Resume a paused watch
-      operationId: resumeWatch
-      security:
-        - BearerAuth: []
-      responses:
-        "200":
-          description: Watch with updated paused state.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WatchDto'
-        "401":
-          description: Missing or invalid JWT.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetail'
-        "403":
-          description: Watch belongs to another user.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetail'
-        "404":
-          description: Watch not found.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProblemDetail'
+  
 
   # --- Internal (Notifier) --------------------------------------------------
 
