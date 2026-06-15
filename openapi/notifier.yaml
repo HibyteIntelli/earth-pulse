@@ -16,8 +16,7 @@ tags:
     description: Notification history for authenticated users (consumed by the frontend)
   - name: Internal
     description: Inbound push endpoint called by the Ingestion Service (shared-secret protected)
-  - name: Health
-    description: Service health check
+
 
 # ---------------------------------------------------------------------------
 # Security schemes
@@ -90,11 +89,11 @@ components:
             - "Stay indoors and keep windows closed if smoke is visible in your area"
             - "Use N95 masks or respirators if you must go outside"
 
-    NotificationDto:
+    Notification:
       type: object
       description: >
         One delivery record, keyed by (watch, event). For DAILY_DIGEST mode,
-        multiple NotificationDto entries may have been bundled into a single
+        multiple Notification entries may have been bundled into a single
         email; each still appears as a separate history entry so the user can
         navigate to each individual event.
       properties:
@@ -122,11 +121,15 @@ components:
           format: uri
           description: Deep link to the event on the map.
           example: "http://localhost:4200/map?event=EONET_6543"
+        eventDate:
+          type: string
+          format: date-time
+          description: When the event was first observed/reported (from EONET).
         deliveryMode:
           $ref: '#/components/schemas/DeliveryMode'
         readingLevel:
           $ref: '#/components/schemas/ReadingLevel'
-        sentAt:
+        deliveredAt:
           type: string
           format: date-time
           description: >
@@ -142,7 +145,7 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/NotificationDto'
+            $ref: '#/components/schemas/Notification'
         total:
           type: integer
           example: 42
@@ -174,7 +177,7 @@ components:
 
     NewEventPayload:
       type: object
-      required: [eventId, title, categories, geometry, ingestedAt]
+      required: [eventId, title, categories, geometry, eventDate, ingestedAt]
       description: >
         Pushed by the Ingestion Service immediately after it stores a
         previously unseen event. The Notifier uses this to trigger the
@@ -206,6 +209,10 @@ components:
           type: string
           nullable: true
           example: "acres"
+        eventDate:
+          type: string
+          format: date-time
+          description: When the event was first observed/reported (from EONET).
         ingestedAt:
           type: string
           format: date-time
@@ -235,13 +242,6 @@ components:
           format: uri
           example: "/internal/events/new"
 
-    HealthResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          example: UP
-
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
@@ -256,7 +256,7 @@ paths:
       operationId: listNotifications
       description: >
         Returns the notification history for the currently authenticated user,
-        sorted by `sentAt` descending (newest first). Each entry represents one
+        sorted by `deliveredAt` descending (newest first). Each entry represents one
         (watch, event) delivery record — a digest email with N events creates N
         separate history entries, each with `deliveryMode: DAILY_DIGEST`.
       security:
@@ -337,7 +337,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NotificationDto'
+                $ref: '#/components/schemas/Notification'
         "401":
           description: Missing or invalid JWT.
           content:
@@ -407,18 +407,3 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProblemDetail'
-
-  # --- Health ---------------------------------------------------------------
-
-  /health:
-    get:
-      tags: [Health]
-      summary: Health check
-      operationId: healthCheck
-      responses:
-        "200":
-          description: Service is healthy.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HealthResponse'
