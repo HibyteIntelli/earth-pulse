@@ -5,7 +5,6 @@ import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
-import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
@@ -15,11 +14,14 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.earthpulse.www.dto.JwkKeyDto;
+import com.earthpulse.www.dto.JwksDto;
+
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -61,8 +63,17 @@ public class JwtService {
         return jwt.serialize();
     }
 
-    public Map<String, Object> getJwks() {
-        return new JWKSet(rsaKey.toPublicJWK()).toJSONObject();
+    public JwksDto getJwks() {
+        RSAKey pub = rsaKey.toPublicJWK();
+        JwkKeyDto key = new JwkKeyDto(
+                pub.getKeyType().getValue(),
+                pub.getKeyUse().identifier(),
+                pub.getKeyID(),
+                pub.getAlgorithm().getName(),
+                pub.getModulus().toString(),
+                pub.getPublicExponent().toString()
+        );
+        return new JwksDto(List.of(key));
     }
 
     public JWTClaimsSet validateToken(String token) throws ParseException, JOSEException {

@@ -35,4 +35,9 @@ public class User {
     @Setter(AccessLevel.NONE)
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
+
+    public User(String email, String passwordHash) {
+        this.email = email;
+        this.passwordHash = passwordHash;
+    }
 }

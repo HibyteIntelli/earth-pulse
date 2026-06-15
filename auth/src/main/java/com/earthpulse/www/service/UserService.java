@@ -27,9 +27,7 @@ public class UserService {
         if (userRepository.existsByEmail(dto.email())) {
             throw new DuplicateEmailException(dto.email());
         }
-        User user = new User();
-        user.setEmail(dto.email());
-        user.setPasswordHash(passwordEncoder.encode(dto.password()));
+        var user = new User(dto.email(), passwordEncoder.encode(dto.password()));
         try {
             userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
@@ -39,7 +37,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public AuthResponseDto login(LoginRequestDto dto) {
-        User user = userRepository.findByEmail(dto.email())
+        var user = userRepository.findByEmail(dto.email())
                 .orElseThrow(InvalidCredentialsException::new);
         if (!passwordEncoder.matches(dto.password(), user.getPasswordHash())) {
             throw new InvalidCredentialsException();

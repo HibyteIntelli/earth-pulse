@@ -1,6 +1,7 @@
 package com.earthpulse.www.controller;
 
 import com.earthpulse.www.dto.AuthResponseDto;
+import com.earthpulse.www.dto.JwksDto;
 import com.earthpulse.www.dto.LoginRequestDto;
 import com.earthpulse.www.dto.SignupRequestDto;
 import com.earthpulse.www.service.JwtService;
@@ -10,8 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,7 +31,7 @@ public class AuthController {
     }
 
     @GetMapping("/.well-known/jwks.json")
-    public ResponseEntity<Map<String, Object>> jwks() {
+    public ResponseEntity<JwksDto> jwks() {
         return ResponseEntity.ok(jwtService.getJwks());
     }
 }
