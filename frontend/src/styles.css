@@ -1,4 +1,3 @@
-/* You can add global styles to this file, and also import other style files */
 @import 'leaflet/dist/leaflet.css';
 @import 'primeicons/primeicons.css';
 
@@ -23,18 +22,12 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* ----------------------------------------------- route view transitions */
-/* Tuning lives here because ::view-transition pseudo-elements are attached to
-   the document root and are not reachable from component-scoped styles. The
-   shared names (globe, terminal, hud, …) are declared on the elements in the
-   login/register component CSS; these rules only shape the timing. */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation-duration: 0.5s;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* the access-terminal card glides + resizes between the two forms */
 ::view-transition-group(terminal) {
   animation-duration: 0.55s;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
@@ -46,9 +39,6 @@ body {
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* the earth rests at a different spot on login vs register, so the group tweens
-   its position + size — it glides across the screen. The old/new snapshots
-   crossfade with a gentle planet-spin layered on top of that travel. */
 ::view-transition-group(globe) {
   animation-duration: 0.75s;
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);

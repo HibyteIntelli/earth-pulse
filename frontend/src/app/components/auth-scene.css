@@ -446,12 +446,6 @@
   }
 }
 
-/* PrimeNG components, re-skinned to the field-station look. ::ng-deep reaches
-   the elements PrimeNG renders inside its own views. The password input also
-   carries the pInputText directive, so Aura's boxed .p-inputtext styles apply
-   to it — the box-resets below use !important to override that and make it
-   render as the same underline-only field as the plain name/email inputs. */
-
 :host ::ng-deep .p-password {
   position: relative;
   display: block;
@@ -489,7 +483,6 @@
   box-shadow: 0 1px 0 0 var(--water-deep) !important;
 }
 
-/* the mono "Show / Hide" reveal, in place of the default eye icon */
 :host ::ng-deep .p-password-toggle-mask-icon {
   width: auto;
   height: auto;
@@ -509,7 +502,6 @@
   color: var(--water-deep);
 }
 
-/* validation messages — match the old .field__error: plain mono red text */
 :host ::ng-deep .p-message {
   display: block;
   margin-top: 0.5rem;

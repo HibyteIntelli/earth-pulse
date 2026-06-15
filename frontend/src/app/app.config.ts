@@ -8,8 +8,6 @@ import Aura from '@primeuix/themes/aura';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    // withViewTransitions drives the cross-page morph between login and register.
-    // Browsers without the View Transitions API fall back to an instant swap.
     provideRouter(routes, withViewTransitions()),
     providePrimeNG({
       theme: {
