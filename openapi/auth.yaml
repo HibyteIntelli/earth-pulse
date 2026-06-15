@@ -112,7 +112,7 @@ components:
 
     # --- Account ------------------------------------------------------------
 
-    UserDto:
+    User:
       type: object
       properties:
         id:
@@ -372,7 +372,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDto'
+                $ref: '#/components/schemas/User'
         "409":
           description: Email already registered.
           content:
@@ -453,7 +453,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDto'
+                $ref: '#/components/schemas/User'
         "401":
           description: Missing or invalid JWT.
           content:
@@ -479,7 +479,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDto'
+                $ref: '#/components/schemas/User'
         "400":
           description: Validation error or incorrect current password.
           content:
@@ -516,7 +516,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/WatchDto'
+                  $ref: '#/components/schemas/Watch'
         "401":
           description: Missing or invalid JWT.
           content:
@@ -542,7 +542,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WatchDto'
+                $ref: '#/components/schemas/Watch'
         "400":
           description: Validation error.
           content:
@@ -578,7 +578,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WatchDto'
+                $ref: '#/components/schemas/Watch'
         "401":
           description: Missing or invalid JWT.
           content:
@@ -616,7 +616,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WatchDto'
+                $ref: '#/components/schemas/Watch'
         "400":
           description: Validation error.
           content:
@@ -681,10 +681,10 @@ paths:
 
     patch:
       tags: [Watches]
-      summary: Toggle pause state of a watch
+      summary: Toggle the state of a watch
       operationId: toggleWatchPause
       description: >
-        Sets `paused = true`. To resume, call PATCH /watches/{id}/resume.
+        Toggles the `paused` field: pauses an active watch or resumes a paused one.
       security:
         - BearerAuth: []
       responses:
@@ -693,7 +693,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WatchDto'
+                $ref: '#/components/schemas/Watch'
         "401":
           description: Missing or invalid JWT.
           content:
