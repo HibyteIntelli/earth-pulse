@@ -1,10 +1,10 @@
-package com.api.llmbriefing;
+package com.api.llm;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class LlmBriefingApplicationTests {
+class LlmApplicationTests {
 
     @Test
     void contextLoads() {
