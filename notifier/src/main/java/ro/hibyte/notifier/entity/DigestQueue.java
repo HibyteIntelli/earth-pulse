@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(
@@ -18,17 +19,20 @@ import java.time.OffsetDateTime;
 public class DigestQueue {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(name = "watch_id", nullable = false)
-    private Long watchId;
+    private UUID watchId;
 
     @Column(name = "event_id", nullable = false, length = 100)
     private String eventId;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private UUID userId;
+
+    @Column(name = "user_email", nullable = false, length = 255)
+    private String userEmail;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "reading_level", nullable = false)

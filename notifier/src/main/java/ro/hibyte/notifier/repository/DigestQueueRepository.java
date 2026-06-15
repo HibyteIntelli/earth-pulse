@@ -4,12 +4,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import ro.hibyte.notifier.entity.DigestQueue;
 
 import java.util.List;
+import java.util.UUID;
 
-public interface DigestQueueRepository extends JpaRepository<DigestQueue, Long> {
+public interface DigestQueueRepository extends JpaRepository<DigestQueue, UUID> {
 
-    boolean existsByWatchIdAndEventId(Long watchId, String eventId);
+    boolean existsByWatchIdAndEventId(UUID watchId, String eventId);
 
-    List<DigestQueue> findByWatchId(Long watchId);
+    List<DigestQueue> findByWatchId(UUID watchId);
 
-    void deleteByWatchId(Long watchId);
+    void deleteByWatchId(UUID watchId);
 }

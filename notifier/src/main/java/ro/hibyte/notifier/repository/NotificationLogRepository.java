@@ -4,10 +4,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import ro.hibyte.notifier.entity.NotificationLog;
 
 import java.util.List;
+import java.util.UUID;
 
-public interface NotificationLogRepository extends JpaRepository<NotificationLog, Long> {
+public interface NotificationLogRepository extends JpaRepository<NotificationLog, UUID> {
 
-    boolean existsByWatchIdAndEventId(Long watchId, String eventId);
+    boolean existsByWatchIdAndEventId(UUID watchId, String eventId);
 
-    List<NotificationLog> findByUserIdOrderByDeliveredAtDesc(Long userId);
+    List<NotificationLog> findByUserIdOrderByDeliveredAtDesc(UUID userId);
 }
