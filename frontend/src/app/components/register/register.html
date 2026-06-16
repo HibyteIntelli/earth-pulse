@@ -1,0 +1,175 @@
+<main class="stage">
+
+  <svg class="defs" aria-hidden="true" width="0" height="0" focusable="false">
+    <defs>
+      <linearGradient id="pulseGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#2f7596" />
+        <stop offset="0.5" stop-color="#3f8f8a" />
+        <stop offset="1" stop-color="#3f7a4a" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <div class="grid" aria-hidden="true"></div>
+  <div class="glow" aria-hidden="true"></div>
+
+  <app-globe-scene />
+
+  <app-seismo-scene />
+
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="hud">
+    <div class="hud__id">
+      <span class="dot"></span>
+      EARTH&nbsp;PULSE
+      <span class="hud__sub">// global event monitor</span>
+    </div>
+    <div class="hud__step">Operator enrolment</div>
+  </header>
+
+  <div class="layout">
+
+    <section class="brand">
+      <p class="brand__kicker">Station 01 · New operator</p>
+      <h1 class="brand__word">
+        <span>Earth</span><span class="brand__word--hot">Pulse</span>
+      </h1>
+      <p class="brand__tag">
+        Commission your operator profile to unlock AI briefings, draw personal
+        watch regions and receive alerts the moment the planet moves.
+      </p>
+
+      <ul class="perks">
+        <li class="perks__item">
+          <span class="perks__mark">AI</span>
+          Plain-language briefings on every active event.
+        </li>
+        <li class="perks__item">
+          <span class="perks__mark">▣</span>
+          Draw watch regions and pick the categories you care about.
+        </li>
+        <li class="perks__item">
+          <span class="perks__mark">✉</span>
+          Immediate or daily-digest email alerts, your call per watch.
+        </li>
+      </ul>
+    </section>
+
+    <section class="terminal">
+      <div class="terminal__bar">
+        <span>New credentials</span>
+        <span class="terminal__rec"><i></i>Encrypted</span>
+      </div>
+
+      <form class="form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <h2 class="form__title">Commission operator</h2>
+        <p class="form__hint">Set your access keys. You can refine delivery preferences later in Profile.</p>
+
+        <label class="field">
+          <span class="field__label">Email</span>
+          <input
+            pInputText
+            class="field__input"
+            id="register-email"
+            formControlName="email"
+            type="email"
+            autocomplete="email"
+            placeholder="operator@station.earth"
+            spellcheck="false"
+          />
+          @if (form.controls.email.invalid && form.controls.email.touched) {
+            <p-message
+              severity="error"
+              variant="simple"
+              [text]="form.controls.email.errors?.['required'] ? 'Email is required.' : 'Enter a valid email address.'"
+            />
+          }
+        </label>
+
+        <label class="field">
+          <span class="field__label">Operator name</span>
+          <input
+            pInputText
+            class="field__input"
+            id="register-name"
+            formControlName="name"
+            type="text"
+            autocomplete="username"
+            placeholder="e.g. a.rivera"
+            spellcheck="false"
+          />
+          @if (form.controls.name.invalid && form.controls.name.touched) {
+            <p-message severity="error" variant="simple" text="Operator name is required." />
+          }
+        </label>
+
+        <label class="field">
+          <span class="field__label">Password</span>
+          <p-password
+            formControlName="password"
+            [toggleMask]="true"
+            [feedback]="false"
+            [fluid]="true"
+            autocomplete="new-password"
+            placeholder="••••••••••"
+          >
+            <ng-template #showicon><span class="reveal-text">Show</span></ng-template>
+            <ng-template #hideicon><span class="reveal-text">Hide</span></ng-template>
+          </p-password>
+        </label>
+
+        <label class="field">
+          <span class="field__label">Confirm</span>
+          <p-password
+            formControlName="confirm"
+            [toggleMask]="true"
+            [feedback]="false"
+            [fluid]="true"
+            autocomplete="new-password"
+            placeholder="••••••••••"
+          >
+            <ng-template #showicon><span class="reveal-text">Show</span></ng-template>
+            <ng-template #hideicon><span class="reveal-text">Hide</span></ng-template>
+          </p-password>
+        </label>
+
+        <div class="strength" [attr.data-level]="strength()" role="status" aria-live="polite">
+          <div class="strength__bars">
+            <span class="strength__bar" [class.is-on]="strength() >= 1"></span>
+            <span class="strength__bar" [class.is-on]="strength() >= 2"></span>
+            <span class="strength__bar" [class.is-on]="strength() >= 3"></span>
+            <span class="strength__bar" [class.is-on]="strength() >= 4"></span>
+          </div>
+          <span class="strength__label">Key integrity · {{ strengthLabel() }}</span>
+        </div>
+
+        @if (passwordsMatch() !== null) {
+          <p class="match" [class.match--ok]="passwordsMatch()" [class.match--bad]="!passwordsMatch()">
+            {{ passwordsMatch() ? '✓ Keys aligned' : '✕ Keys do not match' }}
+          </p>
+        }
+
+        <label class="consent">
+          <p-checkbox formControlName="consent" [binary]="true" inputId="consent" />
+          <span class="consent__text">
+            I understand briefings are AI-generated and I will always follow
+            guidance from local authorities during a real event.
+          </span>
+        </label>
+        @if (form.controls.consent.invalid && form.controls.consent.touched) {
+          <p-message severity="error" variant="simple" text="You must acknowledge this to continue." />
+        }
+
+        <button pButton class="submit" type="submit">
+          <span>Commission operator</span>
+          <span class="submit__arrow" aria-hidden="true">&#8594;</span>
+        </button>
+
+        <p class="form__foot">
+          Already commissioned? <a routerLink="/">Return to sign-in</a>
+        </p>
+      </form>
+    </section>
+  </div>
+</main>

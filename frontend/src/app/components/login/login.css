@@ -1,0 +1,67 @@
+.stage {
+  height: 100dvh;
+  overflow: hidden;
+}
+
+app-globe-scene {
+  --R: clamp(170px, 30vw, 380px);
+  --globe-top: 50dvh;
+  --globe-left: 58%;
+}
+
+.brand__tag {
+  max-width: 40ch;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 2.2rem 0 0;
+  padding: 0;
+  list-style: none;
+  animation: rise 0.85s ease both;
+  animation-delay: 0.4s;
+}
+
+.legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.42rem 0.8rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+.legend__item::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--c, var(--forest-deep));
+  box-shadow: 0 0 6px var(--c, transparent);
+}
+
+.legend--wildfire { --c: var(--ev-wildfire); }
+.legend--storm { --c: var(--ev-storm); }
+.legend--volcano { --c: var(--ev-volcano); }
+.legend--flood { --c: var(--ev-flood); }
+.legend--drought { --c: var(--ev-drought); }
+.legend--dust { --c: var(--ev-dust); }
+.legend--quake { --c: var(--ev-quake); }
+.legend--landslide { --c: var(--ev-landslide); }
+
+.submit {
+  margin-top: 0.6rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .legend {
+    animation: none;
+  }
+}
