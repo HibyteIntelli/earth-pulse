@@ -37,7 +37,7 @@ public class SecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain publicFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain publicFilterChain(HttpSecurity http) {
         http
                 .securityMatcher("/auth/**", "/.well-known/jwks.json")
                 .csrf(AbstractHttpConfigurer::disable)
@@ -48,7 +48,7 @@ public class SecurityConfig {
 
     @Bean
     @Order(3)
-    public SecurityFilterChain authenticatedFilterChain(HttpSecurity http, JwtService jwtService) throws Exception {
+    public SecurityFilterChain authenticatedFilterChain(HttpSecurity http, JwtService jwtService){
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

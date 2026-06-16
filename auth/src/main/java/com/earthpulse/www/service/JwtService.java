@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -72,12 +73,19 @@ public class JwtService {
     private void writeGeneratedKeyToFile(String jwk) {
         Path out = Path.of("generated-jwk.json");
         try {
-            Files.writeString(out, jwk);
-            // Linux / MacOS - owner read only
+            Files.deleteIfExists(out);
             try {
-                Files.setPosixFilePermissions(out, EnumSet.of(PosixFilePermission.OWNER_READ));
-            } catch (UnsupportedOperationException ignored) {
+                // Create the file with owner-read-only permissions atomically before writing
+                // any content — this eliminates the window where the key is world-readable.
+                Files.createFile(out, PosixFilePermissions.asFileAttribute(
+                        EnumSet.of(PosixFilePermission.OWNER_READ)));
+            } catch (UnsupportedOperationException e) {
+                // Non-POSIX (Windows): cannot set permissions at creation time.
+                Files.createFile(out);
+                log.warn("Non-POSIX filesystem: generated-jwk.json has default permissions. " +
+                         "Set APP_JWT_PRIVATE_KEY in your .env to avoid writing the key to disk.");
             }
+            Files.writeString(out, jwk);
         } catch (IOException e) {
             throw new IllegalStateException("Could not write generated JWK to file", e);
         }
