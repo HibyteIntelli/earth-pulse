@@ -10,7 +10,8 @@ import java.util.UUID;
 @Entity
 @Table(
         name = "notification_log",
-        uniqueConstraints = @UniqueConstraint(columnNames = {"watch_id", "event_id"})
+        uniqueConstraints = @UniqueConstraint(columnNames = {"watch_id", "event_id"}),
+        indexes = @Index(name = "idx_notification_log_user_delivered", columnList = "user_id, delivered_at DESC")
 )
 @Getter
 @Setter

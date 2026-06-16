@@ -1,5 +1,4 @@
 .env
-application.properties
 **/application-local.properties
 
 HELP.md
