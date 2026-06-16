@@ -16,8 +16,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.earthpulse.www.dto.JwkKeyDto;
 import com.earthpulse.www.dto.JwksDto;
+import com.earthpulse.www.mapper.JwksMapper;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,7 +28,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -43,8 +42,14 @@ public class JwtService {
     @Value("${APP_JWT_PRIVATE_KEY:}")
     private String privateKeyJwk;
 
+    private final JwksMapper jwksMapper;
+
     private RSAKey rsaKey;
     private RSASSASigner signer;
+
+    public JwtService(JwksMapper jwksMapper) {
+        this.jwksMapper = jwksMapper;
+    }
 
     @PostConstruct
     public void init() throws JOSEException, ParseException {
@@ -78,35 +83,30 @@ public class JwtService {
         }
     }
 
-    public String issueToken(UUID userId) throws JOSEException {
-        Instant now = Instant.now();
-        JWTClaimsSet claims = new JWTClaimsSet.Builder()
-                .subject(userId.toString())
-                .issuer(baseUrl)
-                .audience("earth-pulse")
-                .issueTime(Date.from(now))
-                .expirationTime(Date.from(now.plus(TOKEN_EXPIRY_HOURS, ChronoUnit.HOURS)))
-                .build();
+    public String issueToken(UUID userId) {
+        try {
+            Instant now = Instant.now();
+            JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                    .subject(userId.toString())
+                    .issuer(baseUrl)
+                    .audience("earth-pulse")
+                    .issueTime(Date.from(now))
+                    .expirationTime(Date.from(now.plus(TOKEN_EXPIRY_HOURS, ChronoUnit.HOURS)))
+                    .build();
 
-        SignedJWT jwt = new SignedJWT(
-                new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(rsaKey.getKeyID()).build(),
-                claims
-        );
-        jwt.sign(signer);
-        return jwt.serialize();
+            SignedJWT jwt = new SignedJWT(
+                    new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(rsaKey.getKeyID()).build(),
+                    claims
+            );
+            jwt.sign(signer);
+            return jwt.serialize();
+        } catch (JOSEException e) {
+            throw new IllegalStateException("Token signing failed", e);
+        }
     }
 
     public JwksDto getJwks() {
-        RSAKey pub = rsaKey.toPublicJWK();
-        JwkKeyDto key = new JwkKeyDto(
-                pub.getKeyType().getValue(),
-                pub.getKeyUse().identifier(),
-                pub.getKeyID(),
-                pub.getAlgorithm().getName(),
-                pub.getModulus().toString(),
-                pub.getPublicExponent().toString()
-        );
-        return new JwksDto(List.of(key));
+        return jwksMapper.toDto(rsaKey);
     }
 
     public JWTClaimsSet validateToken(String token) throws ParseException, JOSEException {
