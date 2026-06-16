@@ -1,0 +1,269 @@
+openapi: 3.0.3
+
+info:
+  title: EarthPulse — LLM Briefing Service
+  description: >
+    Generates and serves AI-powered natural disaster briefings using a local
+    LLM (Ollama) with read-through caching for performance and consistency.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8082
+    description: Local development
+
+tags:
+  - name: Briefings
+    description: AI-generated disaster briefings and cached summaries
+  - name: Health
+    description: Service health check
+
+components:
+
+  securitySchemes:
+
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+    internalApiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+  schemas:
+
+    ReadingLevel:
+      type: string
+      enum:
+        - DEFAULT
+        - SIMPLIFIED
+      description: >
+        Controls the complexity and verbosity of the generated summary.
+
+    Severity:
+      type: string
+      enum:
+        - LOW
+        - MODERATE
+        - HIGH
+        - UNKNOWN
+
+    BriefingResponse:
+      type: object
+      description: >
+        AI-generated disaster briefing associated with a single EONET event.
+        Shared fields (impact, severity, precautions) are cached per event,
+        while the summary is cached per (eventId, readingLevel).
+      properties:
+        eventId:
+          type: string
+          description: EONET event ID.
+          example: "EONET_6543"
+
+        readingLevel:
+          $ref: '#/components/schemas/ReadingLevel'
+
+        generatedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the briefing was generated or refreshed.
+
+        summary:
+          type: string
+          example: >
+            A wildfire has been spreading across the Sierra Nevada foothills
+            since May 10, affecting nearby communities and reducing air quality.
+
+        impact:
+          type: string
+          example: >
+            Smoke may reduce air quality across nearby regions and disrupt
+            local transportation routes.
+
+        severity:
+          $ref: '#/components/schemas/Severity'
+
+        precautions:
+          type: array
+          items:
+            type: string
+          example:
+            - Stay indoors if smoke is visible in your area
+            - Follow evacuation instructions from local authorities
+
+    ProblemDetail:
+      type: object
+      description: RFC 7807 problem detail.
+      properties:
+        type:
+          type: string
+          format: uri
+          example: "https://earthpulse.io/errors/not-found"
+
+        title:
+          type: string
+          example: "Resource Not Found"
+
+        status:
+          type: integer
+          example: 404
+
+        detail:
+          type: string
+          example: "Briefing for event EONET_6543 was not found"
+
+        instance:
+          type: string
+          format: uri
+          example: "/briefings/EONET_6543"
+
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: UP
+
+paths:
+
+  /briefings/{eventId}:
+
+    parameters:
+      - name: eventId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: EONET event ID.
+
+    get:
+      tags:
+        - Briefings
+      summary: Get briefing
+      operationId: getBriefing
+
+      security:
+        - bearerAuth: []
+
+      description: >
+        Returns a briefing for the specified event.
+
+        Read-through cache behavior:
+        - If shared fields (impact, severity, precautions) are missing,
+          they are generated and cached per event.
+        - If the summary for the requested reading level is missing,
+          it is generated and cached for (eventId, readingLevel).
+        - If everything already exists, the cached result is returned
+          without invoking the LLM.
+
+      parameters:
+        - name: readingLevel
+          in: query
+          required: false
+          description: >
+            Controls the complexity of the generated summary.
+            Defaults to DEFAULT when omitted.
+          schema:
+            $ref: '#/components/schemas/ReadingLevel'
+
+      responses:
+        "200":
+          description: Briefing returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BriefingResponse'
+
+        "404":
+          description: Event not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+        "503":
+          description: LLM service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /internal/briefings/{eventId}:
+
+    parameters:
+      - name: eventId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: EONET event ID.
+
+    get:
+      tags:
+        - Briefings
+      summary: Get briefing (internal)
+      operationId: getInternalBriefing
+
+      security:
+        - internalApiKey: []
+
+      description: >
+        Internal endpoint used by backend services.
+        Returns a briefing for the specified event and reading level.
+
+        Read-through cache behavior:
+        - If shared fields (impact, severity, precautions) are missing,
+          they are generated and cached per event.
+        - If the summary for the requested reading level is missing,
+          it is generated and cached for (eventId, readingLevel).
+        - If everything already exists, the cached result is returned
+          without invoking the LLM.
+
+      parameters:
+        - name: readingLevel
+          in: query
+          required: false
+          description: >
+            Controls the complexity of the generated summary.
+            Defaults to DEFAULT when omitted.
+          schema:
+            $ref: '#/components/schemas/ReadingLevel'
+
+      responses:
+        "200":
+          description: Briefing returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BriefingResponse'
+
+        "404":
+          description: Event not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+        "503":
+          description: LLM service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProblemDetail'
+
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      operationId: healthCheck
+
+      responses:
+        "200":
+          description: Service is healthy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
