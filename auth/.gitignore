@@ -2,6 +2,7 @@
 application.properties
 .env
 generated-jwk.json
+.serena
 
 
 HELP.md

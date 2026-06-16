@@ -102,6 +102,8 @@ Check `pom.xml` for `flyway-core`. If it's not there, add:
 ```
 (Version is managed by the Spring Boot BOM — no explicit version needed.)
 
+Before writing the `<dependency>` block, check whether the **Context7 MCP** server is available (`mcp__context7__resolve-library-id` / `mcp__context7__query-docs`). If it is, query `flyway-database-postgresql` to confirm the correct artifact ID and whether the Spring Boot BOM still manages the version for the current Boot release. Apply whatever the docs say; skip this step only when Context7 is unavailable.
+
 ### 7. Report what was done
 
 Tell the user:

@@ -27,6 +27,11 @@ Skills are defined in `.claude/skills/` and the tester subagent in `.claude/agen
 
 **Tip:** Run `/git-verify` before every commit. Run `/generate-migration` whenever you change the schema instead of relying on `ddl-auto=update`.
 
+**MCP Servers (use when available):**
+
+- **Serena MCP** — semantic code navigation and editing. If the `serena` MCP server is available in the session, call `mcp__serena__initial_instructions` at the start of any non-trivial coding task to load its working instructions. Prefer Serena tools (`find_symbol`, `find_implementations`, `replace_symbol_body`, etc.) over plain grep/read/edit when navigating or refactoring Java source.
+- **Context7 MCP** — up-to-date library documentation. Use whenever adding or modifying a dependency (see [Adding Dependencies](#adding-dependencies) below).
+
 ---
 
 ## Running Locally
@@ -148,6 +153,8 @@ Before adding a new dependency, check whether the Spring Boot BOM already manage
     <version>9.40</version>
 </dependency>
 ```
+
+**When adding or modifying any dependency:** If the **Context7 MCP** server is available in the session, use it to look up the latest stable version, API surface, and any breaking changes before pinning a version. Invoke it with the library name (e.g. `nimbus-jose-jwt`, `spring-boot`, `lombok`) to get up-to-date docs. Only fall back to Maven Central / Spring BOM docs manually when Context7 is unavailable.
 
 ---
 
