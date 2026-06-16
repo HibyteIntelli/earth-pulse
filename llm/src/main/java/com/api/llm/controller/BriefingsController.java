@@ -19,3 +19,5 @@ public class BriefingsController {
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(Map.of("status", "Not implemented yet"));
     }
 }
+
+
