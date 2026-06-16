@@ -1,0 +1,109 @@
+<main class="stage">
+
+  <svg class="defs" aria-hidden="true" width="0" height="0" focusable="false">
+    <defs>
+      <linearGradient id="pulseGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#2f7596" />
+        <stop offset="0.5" stop-color="#3f8f8a" />
+        <stop offset="1" stop-color="#3f7a4a" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <div class="grid" aria-hidden="true"></div>
+  <div class="glow" aria-hidden="true"></div>
+
+  <app-globe-scene />
+
+  <app-seismo-scene />
+
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="hud">
+    <div class="hud__id">
+      <span class="dot"></span>
+      EARTH&nbsp;PULSE
+      <span class="hud__sub">| global event monitor</span>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <section class="brand">
+      <p class="brand__kicker">Station 01 · Live feed</p>
+      <h1 class="brand__word">
+        <span>Earth</span><span class="brand__word--hot">Pulse</span>
+      </h1>
+      <p class="brand__tag">
+        Reading the vital signs of a restless planet — wildfires, severe storms
+        and volcanoes, the moment they move.
+      </p>
+
+      <ul class="legend">
+        <li class="legend__item legend--wildfire">Wildfires</li>
+        <li class="legend__item legend--storm">Severe storms</li>
+        <li class="legend__item legend--volcano">Volcanoes</li>
+        <li class="legend__item legend--flood">Floods</li>
+        <li class="legend__item legend--drought">Drought</li>
+        <li class="legend__item legend--dust">Dust &amp; haze</li>
+        <li class="legend__item legend--quake">Earthquakes</li>
+        <li class="legend__item legend--landslide">Landslides</li>
+      </ul>
+    </section>
+
+    <section class="terminal">
+      <div class="terminal__bar">
+        <span>Access terminal</span>
+        <span class="terminal__rec"><i></i>Secure</span>
+      </div>
+
+      <form class="form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+        <h2 class="form__title">Operator sign-in</h2>
+        <p class="form__hint">Authenticate to unlock AI briefings and personal watches.</p>
+
+        <label class="field">
+          <span class="field__label">Name</span>
+          <input
+            pInputText
+            class="field__input"
+            formControlName="name"
+            type="text"
+            autocomplete="username"
+            placeholder="e.g. a.rivera"
+            spellcheck="false"
+          />
+          @if (form.controls.name.invalid && form.controls.name.touched) {
+            <p-message severity="error" variant="simple" text="Name is required." />
+          }
+        </label>
+
+        <label class="field">
+          <span class="field__label">Password</span>
+          <p-password
+            formControlName="password"
+            [toggleMask]="true"
+            [feedback]="false"
+            [fluid]="true"
+            autocomplete="current-password"
+            placeholder="••••••••••"
+          >
+            <ng-template #showicon><span class="reveal-text">Show</span></ng-template>
+            <ng-template #hideicon><span class="reveal-text">Hide</span></ng-template>
+          </p-password>
+          @if (form.controls.password.invalid && form.controls.password.touched) {
+            <p-message severity="error" variant="simple" text="Password is required." />
+          }
+        </label>
+
+        <button pButton class="submit" type="submit">
+          <span>Authenticate</span>
+          <span class="submit__arrow" aria-hidden="true">&#8594;</span>
+        </button>
+
+        <p class="form__foot">
+          No credentials? <a routerLink="/register">Request station access</a>
+        </p>
+      </form>
+    </section>
+  </div>
+</main>
