@@ -1,7 +1,6 @@
 package com.api.llm.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,6 +10,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.time.Duration;
 import java.util.Map;
 
+// To do
+
 @RestController
 @RequestMapping("/api")
 @Slf4j
@@ -18,10 +19,8 @@ public class HealthController {
 
     private final WebClient webClient;
 
-    public HealthController(WebClient.Builder webClientBuilder, @Value("${ollama.baseUrl}")  String llmUrl) {
-        this.webClient = webClientBuilder
-                .baseUrl(llmUrl)
-                .build();
+    public HealthController(WebClient ollamaWebClient) {
+        this.webClient = ollamaWebClient;
     }
 
     @GetMapping("/health")
