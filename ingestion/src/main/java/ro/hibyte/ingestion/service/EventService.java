@@ -1,6 +1,5 @@
 package ro.hibyte.ingestion.service;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,6 +14,7 @@ import ro.hibyte.ingestion.model.Event;
 import ro.hibyte.ingestion.model.EventStatus;
 import ro.hibyte.ingestion.repository.EventRepository;
 
+import javax.xml.stream.EventFilter;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -28,10 +28,7 @@ public class EventService {
     private final EventRepository eventRepository;
     private final EonetClient eonetClient;
 
-    private Event mapToEntity(EonetEvent eonetEvent) {
-        Event event = new Event();
-
-        event.setEonetId(eonetEvent.getId());
+    private void applyFields(Event event, EonetEvent eonetEvent) {
         event.setTitle(eonetEvent.getTitle());
         event.setDescription(eonetEvent.getDescription());
         event.setLink(eonetEvent.getLink());
@@ -59,30 +56,29 @@ public class EventService {
                 event.setLatitude(((Number) coords.get(1)).doubleValue());
             }
         }
-        return event;
     }
 
     private void upsertEvent(EonetEvent eonetEvent) {
-        Optional<Event> existing = eventRepository.findById(eonetEvent.getId());
-
-        if (existing.isPresent()) {
-            Event event = existing.get();
-            event.setStatus(eonetEvent.getClosed() == null ? EventStatus.OPEN : EventStatus.CLOSED);
-            event.setClosedAt(eonetEvent.getClosed());
-            eventRepository.save(event);
-        } else {
-            eventRepository.save(mapToEntity(eonetEvent));
-        }
+        Event event = eventRepository.findById(eonetEvent.getId())
+                .orElseGet(Event::new);
+        event.setEonetId(eonetEvent.getId());
+        applyFields(event, eonetEvent);
+        eventRepository.save(event);
     }
 
-    @Transactional
     @Scheduled(fixedRateString = "${eonet.poll-interval-ms}")
     public void fetchAndSaveEvents(){
         try{
             EonetResponse response = eonetClient.fetchEvents();
 
             if (response != null && response.getEvents() != null) {
-                response.getEvents().forEach(this::upsertEvent);
+                response.getEvents().forEach(event -> {
+                    try {
+                        upsertEvent(event);
+                    } catch (Exception e) {
+                        log.error("Failed to upsert event {}", event.getId(), e);
+                    }
+                });
             }
         } catch (Exception e){
             log.error("Failed to fetch events from EONET", e);
@@ -117,5 +113,17 @@ public class EventService {
     public Optional<EventResponse> getEventById(String eonetId){
         return eventRepository.findById(eonetId)
                 .map(this::mapToResponse);
+    }
+
+    public List<String> getCategories(){
+        return eventRepository.findDistinctCategoryIds()
+                .stream()
+                .sorted()
+                .collect(Collectors.toList());
+    }
+
+    public List<EventResponse> searchEvents(EventFilter filter){
+        // TODO
+        return null;
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ro.hibyte.ingestion.dto.EventResponse;
 import ro.hibyte.ingestion.service.EventService;
 
+import javax.xml.stream.EventFilter;
 import java.util.List;
 
 @RestController
@@ -15,10 +16,6 @@ public class EventController {
 
     private final EventService eventService;
 
-    @GetMapping
-    public List<EventResponse> getEvents() {
-        return eventService.getAllEvents();
-    }
 
     @GetMapping("/{id}")
     public ResponseEntity<EventResponse> getEventById(@PathVariable String id) {
@@ -26,4 +23,15 @@ public class EventController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/categories")
+    public ResponseEntity<List<String>> getCategories() {
+        return ResponseEntity.ok(eventService.getCategories());
+    }
+
+    @PostMapping("events/search")
+    public ResponseEntity<EventResponse> searchEvents(@RequestBody(required = false) EventFilter filter) {
+        //TO DO
+    }
+
 }
