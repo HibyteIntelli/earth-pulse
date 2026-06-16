@@ -11,38 +11,71 @@ import com.nimbusds.jose.jwk.gen.RSAKeyGenerator;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.earthpulse.www.dto.JwkKeyDto;
 import com.earthpulse.www.dto.JwksDto;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermission;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 
 @Service
 public class JwtService {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtService.class);
     private static final int TOKEN_EXPIRY_HOURS = 1;
 
     @Value("${app.base-url}")
     private String baseUrl;
 
+    @Value("${APP_JWT_PRIVATE_KEY:}")
+    private String privateKeyJwk;
+
     private RSAKey rsaKey;
     private RSASSASigner signer;
 
     @PostConstruct
-    public void init() throws JOSEException {
-        rsaKey = new RSAKeyGenerator(2048)
-                .keyUse(KeyUse.SIGNATURE)
-                .keyID(UUID.randomUUID().toString())
-                .algorithm(JWSAlgorithm.RS256)
-                .generate();
+    public void init() throws JOSEException, ParseException {
+        if (privateKeyJwk != null && !privateKeyJwk.isBlank()) {
+            rsaKey = RSAKey.parse(privateKeyJwk);
+            log.info("RSA signing key loaded from configuration.");
+        } else {
+            rsaKey = new RSAKeyGenerator(2048)
+                    .keyUse(KeyUse.SIGNATURE)
+                    .keyID(UUID.randomUUID().toString())
+                    .algorithm(JWSAlgorithm.RS256)
+                    .generate();
+            writeGeneratedKeyToFile(rsaKey.toJSONString());
+            log.warn("APP_JWT_PRIVATE_KEY not set — ephemeral RSA key generated. " +
+                     "Copy the value from generated-jwk.json into your .env, then delete the file.");
+        }
         signer = new RSASSASigner(rsaKey);
+    }
+
+    private void writeGeneratedKeyToFile(String jwk) {
+        Path out = Path.of("generated-jwk.json");
+        try {
+            Files.writeString(out, jwk);
+            // Linux / MacOS - owner read only
+            try {
+                Files.setPosixFilePermissions(out, EnumSet.of(PosixFilePermission.OWNER_READ));
+            } catch (UnsupportedOperationException ignored) {
+            }
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not write generated JWK to file", e);
+        }
     }
 
     public String issueToken(UUID userId) throws JOSEException {
