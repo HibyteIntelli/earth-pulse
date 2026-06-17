@@ -1,6 +1,7 @@
 ### Custom ###
 application.properties
 .env
+generated-jwk.json
 
 
 HELP.md

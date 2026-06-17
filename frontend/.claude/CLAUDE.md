@@ -32,15 +32,9 @@ Each backend service owns its own Postgres database. **No cross-database joins**
 - **Auth:** User Service implements JWT signing + JWKS publication **by hand** (libraries like `nimbus-jose-jwt` / `jjwt` are fine; Spring Authorization Server is not). Other services use `spring-boot-starter-oauth2-resource-server` to validate.
 - **External:** NASA EONET API (events), Ollama (briefings), SMTP/Mailpit (email).
 
-## Skills
-
-Two skills back frontend work — invoke the matching one before starting:
-
-- **`leaflet-map-patterns`** — the reference for how the Earth Pulse map is built (event pins, category-colored markers, clustering, click-to-open side panel, viewport-driven server-side queries, `leaflet-geoman` rectangle drawing for watches, and URL ↔ map-state deep links). Use it for any task touching `frontend/src/app/components/map/` or the map's URL state, marker layer, or panel state.
-- **`frontend-design`** — produces distinctive, production-grade UI. Use it when building or restyling any non-map UI surface (login/register, side panel chrome, filter bar, modals, landing/brand sections) so the result avoids generic AI aesthetics.
-
 ## Frontend-specific notes
 
+- **Always use the `frontend-design` skill for any UI/design work** — building or styling components, pages, layouts, or visual polish. Invoke it before writing markup/CSS so the UI avoids generic AI aesthetics and stays production-grade.
 - Dev: `cd frontend && npm start` (proxies to `ng serve`).
 - Test: `npm test` (Vitest).
 - Build: `npm run build`.

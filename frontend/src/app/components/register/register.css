@@ -1,0 +1,178 @@
+app-globe-scene {
+  --R: clamp(185px, 33vw, 420px);
+  --globe-top: 74dvh;
+  --globe-left: 84%;
+}
+
+.hud__step {
+  color: var(--water-deep);
+}
+
+.brand__tag {
+  max-width: 42ch;
+}
+
+.perks {
+  margin: 2.2rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1rem;
+  max-width: 46ch;
+  animation: rise 0.85s ease both;
+  animation-delay: 0.4s;
+}
+
+.perks__item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.85rem;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--ink-dim);
+}
+
+.perks__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: rgba(252, 251, 248, 0.6);
+  color: var(--water-deep);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.field__label em {
+  font-style: normal;
+  letter-spacing: 0.18em;
+  color: var(--ink-faint);
+  opacity: 0.7;
+}
+
+.strength {
+  margin: -0.6rem 0 1.5rem;
+}
+
+.strength__bars {
+  display: flex;
+  gap: 6px;
+}
+
+.strength__bar {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line-strong);
+  transition: background 0.4s ease, box-shadow 0.4s ease;
+}
+
+.strength__bar.is-on {
+  background: var(--c, var(--forest-deep));
+  box-shadow: 0 0 8px var(--c, var(--forest-soft));
+}
+
+.strength[data-level='1'] { --c: var(--ev-wildfire); }
+.strength[data-level='2'] { --c: var(--ev-drought); }
+.strength[data-level='3'] { --c: var(--ev-flood); }
+.strength[data-level='4'] { --c: var(--forest-deep); }
+
+.strength__label {
+  display: block;
+  margin-top: 0.55rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  transition: color 0.3s ease;
+}
+
+.strength[data-level='3'] .strength__label,
+.strength[data-level='4'] .strength__label {
+  color: var(--forest-deep);
+}
+
+.match {
+  margin: -0.8rem 0 1.5rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  animation: rise 0.3s ease both;
+}
+
+.match--ok {
+  color: var(--forest-deep);
+}
+
+.match--bad {
+  color: var(--ev-volcano);
+}
+
+.consent {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 0.75rem;
+  margin: 0.4rem 0 1.8rem;
+  cursor: pointer;
+}
+
+:host ::ng-deep .consent .p-checkbox {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+}
+
+:host ::ng-deep .consent .p-checkbox-box {
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: rgba(252, 251, 248, 0.6);
+  box-shadow: none;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+:host ::ng-deep .consent .p-checkbox-checked .p-checkbox-box {
+  border-color: var(--forest-deep);
+  background: var(--forest-deep);
+  box-shadow: 0 6px 16px -8px var(--forest-soft);
+}
+
+:host ::ng-deep .consent .p-checkbox-icon {
+  width: 11px;
+  height: 11px;
+  font-size: 11px;
+  color: #f6faf2;
+}
+
+:host ::ng-deep .consent .p-checkbox-input:focus-visible + .p-checkbox-box {
+  outline: 2px solid var(--water-deep);
+  outline-offset: 2px;
+}
+
+.consent__text {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  color: var(--ink-dim);
+}
+
+.submit {
+  margin-top: 0.2rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .perks,
+  .match {
+    animation: none;
+  }
+}

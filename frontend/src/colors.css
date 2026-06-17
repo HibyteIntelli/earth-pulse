@@ -1,0 +1,27 @@
+:root {
+  --paper: #f2efe9;
+  --paper-raised: #fcfbf8;
+  --ink: #213a33;
+  --ink-dim: rgba(33, 58, 51, 0.62);
+  --ink-faint: rgba(33, 58, 51, 0.34);
+  --line: rgba(33, 58, 51, 0.1);
+  --line-strong: rgba(33, 58, 51, 0.18);
+  --water: #aad3df;
+  --water-deep: #2f7596;
+  --water-soft: rgba(47, 117, 150, 0.4);
+  --forest: #add19e;
+  --forest-deep: #3f6b39;
+  --forest-soft: rgba(63, 107, 57, 0.4);
+
+  --ev-wildfire: #c8632b;
+  --ev-storm: #2f7596;
+  --ev-volcano: #a23b2b;
+  --ev-flood: #2f8f86;
+  --ev-drought: #c19a3e;
+  --ev-dust: #b08968;
+  --ev-quake: #8a5a3b;
+  --ev-landslide: #9c6b4a;
+
+  --display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
