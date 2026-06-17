@@ -2,6 +2,8 @@
 
 Service 4 of the EarthPulse platform. Handles identity, JWT issuance, JWKS publication, user management, watch/subscription CRUD, and the internal Notifier API.
 
+Runs on **port 8083**.
+
 **Stack:** Java 25 · Spring Boot 4.x · Spring Security · Spring Data JPA · PostgreSQL · Lombok
 
 ---
@@ -26,12 +28,14 @@ POSTGRES_DB=...
 
 ### 2. Configure the app
 
-Copy `src/main/resources/application.properties.model` to `application.properties` in the same folder and fill in the same values:
+Copy `src/main/resources/application.properties.model` to `application.properties` in the same folder and fill in the placeholders:
 
 ```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/<POSTGRES_DB>
 spring.datasource.username=<POSTGRES_USER>
 spring.datasource.password=<POSTGRES_PASSWORD>
+app.base-url=http://localhost:8083
+app.internal-secret=<RANDOM_SECRET_MIN_32_CHARS>
 ```
 
 `application.properties` is gitignored — never commit it.
@@ -52,40 +56,52 @@ Docker Compose reads credentials from `.env` automatically.
 
 ---
 
-## API Overview
+## API Endpoints
 
-| Endpoint | Method | Auth | Description |
-|----------|--------|------|-------------|
-| `/.well-known/jwks.json` | GET | Public | RSA public key for downstream JWT validation |
-| `/auth/signup` | POST | Public | Register a new user |
-| `/auth/login` | POST | Public | Authenticate and receive a signed JWT |
-| `/watches` | GET | Bearer JWT | List the authenticated user's watches |
-| `/watches` | POST | Bearer JWT | Create a new watch |
-| `/watches/{id}` | PUT | Bearer JWT | Update a watch |
-| `/watches/{id}` | DELETE | Bearer JWT | Delete a watch |
-| `/internal/notifier` | POST | Secret header | Query subscriptions matching an event |
+### Public (no token required)
 
-JWTs carry `sub` (user UUID), `iss`, `iat`, `exp`, and `aud: earth-pulse`. Tokens are RSA-2048 signed — no Spring Authorization Server, no symmetric secrets.
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/auth/signup` | Register a new user — `{ email, password }` |
+| `POST` | `/auth/login` | Login and receive a JWT — `{ email, password }` → `{ token }` |
+| `GET` | `/.well-known/jwks.json` | RSA public key in JWKS format for downstream token validation |
+
+### Authenticated (Bearer JWT required)
+
+All other endpoints require `Authorization: Bearer <token>` header.
+
+### Internal (Notifier Service only)
+
+All `/internal/**` endpoints require `X-Internal-Secret: <app.internal-secret>` header instead of a JWT.
+
+---
+
+## JWT Details
+
+- **Algorithm:** RS256 (RSA-2048)
+- **Keypair:** Generated in memory on startup — all tokens are invalidated on restart
+- **Expiry:** 1 hour
+- **Claims:** `sub` (user UUID), `iss` (app.base-url), `aud` (earth-pulse), `iat`, `exp`
+
+Downstream services (Ingestion, LLM, Notifier) fetch the public key from `/.well-known/jwks.json` at startup and validate tokens locally — no introspection calls needed.
+
+---
+
+## Testing
+
+Use `requests.http` at the project root to manually test all endpoints in IntelliJ or any HTTP client that supports `.http` files.
 
 ---
 
 ## Skills & Agents
-
-### Skills
 
 | Command | When to use | Example |
 |---------|-------------|---------|
 | `/explain` | Understand a file, class, method, or feature in plain English | `/explain JwtService` |
 | `/git-verify` | Before every commit — checks for secrets, conflict markers, wrong branch | `/git-verify` |
 | `/generate-migration` | Any schema change — creates a versioned Flyway SQL file and updates the entity | `/generate-migration add refreshToken to User` |
+| `/tester` | Generate and run JUnit 5 tests for any class or feature | `/tester AuthController` |
 
-### Agent
-
-| Agent | When to use | Example |
-|-------|-------------|---------|
-| `tester` | Generate and run JUnit 5 tests for any class or feature | `/tester AuthController` |
-
-Covers unit tests (Mockito), MockMvc integration tests, and DataJpaTest. Includes security cases: 401/403, expired JWT, `alg: none` rejection.
 
 ### Recommended workflow
 
