@@ -24,7 +24,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+
+import org.mockito.ArgumentCaptor;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
@@ -70,6 +73,41 @@ public class UserServiceTest {
                 .isInstanceOf(DuplicateEmailException.class);
 
         verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("signup: passwordEncoder.encode is called with the raw (unhashed) password")
+    void signup_passwordEncoder_calledWithRawPassword() {
+        SignupRequestDto dto = new SignupRequestDto("alice@example.com", "rawPassword1");
+        User mappedUser = new User("alice@example.com", "hashed");
+
+        when(userRepository.existsByEmail(dto.email())).thenReturn(false);
+        when(passwordEncoder.encode(dto.password())).thenReturn("hashed");
+        when(userMapper.toEntity(dto, "hashed")).thenReturn(mappedUser);
+        when(userRepository.save(mappedUser)).thenReturn(mappedUser);
+
+        userService.signup(dto);
+
+        verify(passwordEncoder).encode(eq("rawPassword1"));
+    }
+
+    @Test
+    @DisplayName("signup: userMapper.toEntity receives the hashed password, not the raw password")
+    void signup_hashedPassword_passedToMapper() {
+        SignupRequestDto dto = new SignupRequestDto("alice@example.com", "rawPassword1");
+        User mappedUser = new User("alice@example.com", "hashed");
+
+        when(userRepository.existsByEmail(dto.email())).thenReturn(false);
+        when(passwordEncoder.encode(dto.password())).thenReturn("hashed");
+        when(userMapper.toEntity(dto, "hashed")).thenReturn(mappedUser);
+        when(userRepository.save(mappedUser)).thenReturn(mappedUser);
+
+        userService.signup(dto);
+
+        ArgumentCaptor<String> passwordCaptor = ArgumentCaptor.forClass(String.class);
+        verify(userMapper).toEntity(any(SignupRequestDto.class), passwordCaptor.capture());
+        assertThat(passwordCaptor.getValue()).isEqualTo("hashed");
+        assertThat(passwordCaptor.getValue()).isNotEqualTo("rawPassword1");
     }
 
     @Test
@@ -132,6 +170,40 @@ public class UserServiceTest {
                 .isInstanceOf(InvalidCredentialsException.class);
 
         verify(jwtService, never()).issueToken(any());
+    }
+
+    @Test
+    @DisplayName("login: jwtService.issueToken is called with the authenticated user's UUID")
+    void login_issueToken_calledWithCorrectUserId() {
+        UUID userId = UUID.randomUUID();
+        LoginRequestDto dto = new LoginRequestDto("alice@example.com", "password123");
+        User user = new User("alice@example.com", "hashed");
+        user.setId(userId);
+
+        when(userRepository.findByEmail(dto.email())).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches(dto.password(), "hashed")).thenReturn(true);
+        when(jwtService.issueToken(userId)).thenReturn("signed.jwt.token");
+
+        userService.login(dto);
+
+        verify(jwtService).issueToken(eq(userId));
+    }
+
+    @Test
+    @DisplayName("login: IllegalStateException from jwtService.issueToken propagates unwrapped")
+    void login_issueToken_throwsIllegalStateException_propagates() {
+        UUID userId = UUID.randomUUID();
+        LoginRequestDto dto = new LoginRequestDto("alice@example.com", "password123");
+        User user = new User("alice@example.com", "hashed");
+        user.setId(userId);
+
+        when(userRepository.findByEmail(dto.email())).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches(dto.password(), "hashed")).thenReturn(true);
+        when(jwtService.issueToken(userId)).thenThrow(new IllegalStateException("Token signing failed"));
+
+        assertThatThrownBy(() -> userService.login(dto))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Token signing failed");
     }
 
     @Test

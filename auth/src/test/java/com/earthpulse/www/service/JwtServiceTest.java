@@ -214,6 +214,62 @@ public class JwtServiceTest {
     }
 
     @Test
+    @DisplayName("validateToken: completely malformed input throws ParseException")
+    void validateToken_completelyMalformedInput_throwsParseException() {
+        assertThatThrownBy(() -> jwtService.validateToken("notajwt"))
+                .isInstanceOf(ParseException.class);
+    }
+
+    @Test
+    @DisplayName("validateToken: token with missing exp claim is rejected with JOSEException")
+    void validateToken_missingExpClaim_rejected() throws JOSEException {
+        RSAKey rsaKey = (RSAKey) ReflectionTestUtils.getField(jwtService, "rsaKey");
+        RSASSASigner signer = new RSASSASigner(rsaKey);
+
+        Instant now = Instant.now();
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .subject(UUID.randomUUID().toString())
+                .issuer(BASE_URL)
+                .audience("earth-pulse")
+                .issueTime(Date.from(now))
+                .build();
+
+        SignedJWT jwt = new SignedJWT(
+                new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(rsaKey.getKeyID()).build(),
+                claims
+        );
+        jwt.sign(signer);
+
+        assertThatThrownBy(() -> jwtService.validateToken(jwt.serialize()))
+                .isInstanceOf(JOSEException.class)
+                .hasMessageContaining("expired");
+    }
+
+    @Test
+    @DisplayName("validateToken: token with missing sub passes (design gap — sub is not validated)")
+    void validateToken_missingSub_passesWithNullSubject() throws JOSEException, ParseException {
+        RSAKey rsaKey = (RSAKey) ReflectionTestUtils.getField(jwtService, "rsaKey");
+        RSASSASigner signer = new RSASSASigner(rsaKey);
+
+        Instant now = Instant.now();
+        JWTClaimsSet claims = new JWTClaimsSet.Builder()
+                .issuer(BASE_URL)
+                .audience("earth-pulse")
+                .issueTime(Date.from(now))
+                .expirationTime(Date.from(now.plus(1, ChronoUnit.HOURS)))
+                .build();
+
+        SignedJWT jwt = new SignedJWT(
+                new JWSHeader.Builder(JWSAlgorithm.RS256).keyID(rsaKey.getKeyID()).build(),
+                claims
+        );
+        jwt.sign(signer);
+
+        JWTClaimsSet result = jwtService.validateToken(jwt.serialize());
+        assertThat(result.getSubject()).isNull();
+    }
+
+    @Test
     @DisplayName("validateToken: alg:none token (unsigned) is rejected")
     void validateToken_algNone_rejected() {
         String header = java.util.Base64.getUrlEncoder().withoutPadding()
@@ -231,6 +287,21 @@ public class JwtServiceTest {
     }
 
     // getJwks
+
+    @Test
+    @DisplayName("issueToken: iat claim is set and within a few seconds of the call time")
+    void issueToken_iatIsSetAndCloseToNow() throws ParseException, JOSEException {
+        Instant before = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.SECONDS);
+        String token = jwtService.issueToken(UUID.randomUUID());
+        Instant after = Instant.now().plusSeconds(1);
+
+        JWTClaimsSet claims = jwtService.validateToken(token);
+
+        assertThat(claims.getIssueTime()).isNotNull();
+        Instant iat = claims.getIssueTime().toInstant();
+        assertThat(iat).isAfterOrEqualTo(before);
+        assertThat(iat).isBeforeOrEqualTo(after);
+    }
 
     @Test
     @DisplayName("getJwks: returns a JwksDto with at least one key")
@@ -252,6 +323,23 @@ public class JwtServiceTest {
         assertThat(key.alg()).isEqualTo("RS256");
         assertThat(key.n()).isNotBlank();
         assertThat(key.e()).isNotBlank();
+    }
+
+    @Test
+    @DisplayName("getJwks: returned key contains only public key material — no private key fields")
+    void getJwks_exposesOnlyPublicKey_noPrivateKeyFields() throws ParseException {
+        JwkKeyDto key = jwtService.getJwks().keys().getFirst();
+
+        String jwkJson = "{\"kty\":\"" + key.kty() + "\","
+                + "\"use\":\"" + key.use() + "\","
+                + "\"kid\":\"" + key.kid() + "\","
+                + "\"alg\":\"" + key.alg() + "\","
+                + "\"n\":\"" + key.n() + "\","
+                + "\"e\":\"" + key.e() + "\"}";
+
+        RSAKey parsed = RSAKey.parse(jwkJson);
+        assertThat(parsed.isPrivate()).isFalse();
+        assertThat(parsed.getPrivateExponent()).isNull();
     }
 
     @Test
