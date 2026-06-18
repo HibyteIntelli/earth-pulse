@@ -103,13 +103,6 @@ public class EventService {
         return eventResponse;
     }
 
-    public List<EventResponse> getAllEvents(){
-        return eventRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList());
-    }
-
     public Optional<EventResponse> getEventById(String eonetId){
         return eventRepository.findById(eonetId)
                 .map(this::mapToResponse);
