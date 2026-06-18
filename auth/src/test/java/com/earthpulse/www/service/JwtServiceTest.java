@@ -23,14 +23,13 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @ExtendWith(MockitoExtension.class)
-class JwtServiceTest {
+public class JwtServiceTest {
 
     private JwtService jwtService;
 
@@ -108,7 +107,7 @@ class JwtServiceTest {
 
     @Test
     @DisplayName("validateToken: expired token is rejected")
-    void validateToken_expiredToken_rejected() throws JOSEException, ParseException {
+    void validateToken_expiredToken_rejected() throws JOSEException {
         RSAKey rsaKey = (RSAKey) ReflectionTestUtils.getField(jwtService, "rsaKey");
         RSASSASigner signer = new RSASSASigner(rsaKey);
 
@@ -135,7 +134,7 @@ class JwtServiceTest {
 
     @Test
     @DisplayName("validateToken: wrong issuer is rejected")
-    void validateToken_wrongIssuer_rejected() throws JOSEException, ParseException {
+    void validateToken_wrongIssuer_rejected() throws JOSEException {
         RSAKey rsaKey = (RSAKey) ReflectionTestUtils.getField(jwtService, "rsaKey");
         RSASSASigner signer = new RSASSASigner(rsaKey);
 
@@ -161,7 +160,7 @@ class JwtServiceTest {
 
     @Test
     @DisplayName("validateToken: wrong audience is rejected")
-    void validateToken_wrongAudience_rejected() throws JOSEException, ParseException {
+    void validateToken_wrongAudience_rejected() throws JOSEException {
         RSAKey rsaKey = (RSAKey) ReflectionTestUtils.getField(jwtService, "rsaKey");
         RSASSASigner signer = new RSASSASigner(rsaKey);
 
