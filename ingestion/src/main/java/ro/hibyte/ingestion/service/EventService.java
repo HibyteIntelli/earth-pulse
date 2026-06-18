@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ro.hibyte.ingestion.client.EonetClient;
-import ro.hibyte.ingestion.dto.EventResponse;
+import ro.hibyte.ingestion.dto.response.EventResponse;
 import ro.hibyte.ingestion.dto.eonet.EonetCategory;
 import ro.hibyte.ingestion.dto.eonet.EonetEvent;
 import ro.hibyte.ingestion.dto.eonet.EonetGeometry;
@@ -14,7 +14,7 @@ import ro.hibyte.ingestion.model.Event;
 import ro.hibyte.ingestion.model.EventStatus;
 import ro.hibyte.ingestion.repository.EventRepository;
 
-import javax.xml.stream.EventFilter;
+import ro.hibyte.ingestion.dto.request.EventFilter;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -124,6 +124,6 @@ public class EventService {
 
     public List<EventResponse> searchEvents(EventFilter filter){
         // TODO
-        return null;
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 }

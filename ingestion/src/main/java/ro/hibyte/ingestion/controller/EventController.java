@@ -1,12 +1,13 @@
 package ro.hibyte.ingestion.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ro.hibyte.ingestion.dto.EventResponse;
+import ro.hibyte.ingestion.dto.response.EventResponse;
 import ro.hibyte.ingestion.service.EventService;
+import ro.hibyte.ingestion.dto.request.EventFilter;
 
-import javax.xml.stream.EventFilter;
 import java.util.List;
 
 @RestController
@@ -15,7 +16,6 @@ import java.util.List;
 public class EventController {
 
     private final EventService eventService;
-
 
     @GetMapping("/{id}")
     public ResponseEntity<EventResponse> getEventById(@PathVariable String id) {
@@ -29,9 +29,9 @@ public class EventController {
         return ResponseEntity.ok(eventService.getCategories());
     }
 
-    @PostMapping("events/search")
+    @PostMapping("/search")
     public ResponseEntity<EventResponse> searchEvents(@RequestBody(required = false) EventFilter filter) {
         //TO DO
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
     }
-
 }

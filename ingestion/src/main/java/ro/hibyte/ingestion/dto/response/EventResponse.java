@@ -1,4 +1,4 @@
-package ro.hibyte.ingestion.dto;
+package ro.hibyte.ingestion.dto.response;
 
 import lombok.Data;
 import ro.hibyte.ingestion.model.EventStatus;
