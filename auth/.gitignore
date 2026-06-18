@@ -1,6 +1,7 @@
 ### Custom ###
 application.properties
 .env
+.serena/project.local.yml
 generated-jwk.json
 
 

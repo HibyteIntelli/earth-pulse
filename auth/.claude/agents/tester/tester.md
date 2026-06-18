@@ -42,7 +42,17 @@ For each target, write tests that cover:
 - Name: `<ClassName>Test.java` for unit tests, `<ClassName>IT.java` for full Spring context tests.
 - Check if a test file already exists for this target. If it does, add missing cases rather than replacing the file.
 
-### 5. Write the tests
+### 5. Check test dependencies (Context7)
+
+Before writing tests, verify the testing APIs you plan to use are available and up to date. If the **Context7 MCP** server is available, query it for any library you're about to use that isn't trivially familiar:
+- `junit-jupiter` — confirm assertion/annotation API for the JUnit 5 version on the classpath
+- `mockito` — confirm `@MockitoBean` vs `@MockBean` for the Spring Boot version in use
+- `assertj-core` — confirm `assertThat` fluent API
+- `spring-boot-test` — confirm `@WebMvcTest`, `@DataJpaTest`, `MockMvc` usage
+
+Skip this step only when Context7 is unavailable.
+
+### 6. Write the tests
 
 Write clean, readable JUnit 5 tests:
 - Use `@DisplayName("...")` with a plain-English description on each test method.
@@ -51,7 +61,7 @@ Write clean, readable JUnit 5 tests:
 - For JWT tests, actually sign a token with a test RSA key and verify it round-trips correctly.
 - Do not mock the database in `@DataJpaTest` — let it use the in-memory H2 (or Testcontainers if the test needs PostgreSQL-specific behaviour).
 
-### 6. Run the tests
+### 7. Run the tests
 
 After writing, run:
 
@@ -63,7 +73,7 @@ After writing, run:
 
 If a test fails, read the error output carefully, fix the test or the production code as appropriate, and re-run.
 
-### 7. Report back
+### 8. Report back
 
 Tell the user:
 - Which test file(s) were created or modified
