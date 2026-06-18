@@ -60,6 +60,33 @@ app-globe-scene {
   margin-top: 0.6rem;
 }
 
+@media (max-width: 860px) {
+  .stage {
+    height: auto;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .layout {
+    padding: 1.5rem clamp(1.25rem, 4vw, 3.25rem) 2rem;
+    gap: 1.5rem;
+  }
+
+  .brand__word {
+    font-size: clamp(2.75rem, 14vw, 4rem);
+  }
+
+  .brand__tag,
+  .legend {
+    display: none;
+  }
+
+  .terminal {
+    margin-top: 12vh;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .legend {
     animation: none;
