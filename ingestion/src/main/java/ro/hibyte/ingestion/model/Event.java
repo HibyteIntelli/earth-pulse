@@ -87,9 +87,11 @@ public class Event {
             setMagnitudeUnit(latest.getMagnitudeUnit());
 
             List<Object> coords = latest.getCoordinates();
-            if (coords != null && coords.size() >= 2 && coords.get(0) instanceof Number) {
-                setLongitude(((Number) coords.get(0)).doubleValue());
-                setLatitude(((Number) coords.get(1)).doubleValue());
+            if (coords != null && coords.size() >= 2
+                    && coords.get(0) instanceof Number lon
+                    && coords.get(1) instanceof Number lat) {
+                setLongitude(lon.doubleValue());
+                setLatitude(lat.doubleValue());
             }
         }
     }
