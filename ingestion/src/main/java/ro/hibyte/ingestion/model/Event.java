@@ -6,10 +6,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import ro.hibyte.ingestion.dto.eonet.EonetCategory;
+import ro.hibyte.ingestion.dto.eonet.EonetEvent;
+import ro.hibyte.ingestion.dto.eonet.EonetGeometry;
 
 import java.time.OffsetDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -58,4 +63,34 @@ public class Event {
     @UpdateTimestamp
     @Column(nullable = false)
     private OffsetDateTime updatedAt;
+
+    public void applyFields(EonetEvent eonetEvent) {
+        setTitle(eonetEvent.getTitle());
+        setDescription(eonetEvent.getDescription());
+        setLink(eonetEvent.getLink());
+
+        setStatus(eonetEvent.getClosed() == null ? EventStatus.OPEN : EventStatus.CLOSED);
+        setClosedAt(eonetEvent.getClosed());
+
+        if (eonetEvent.getCategories() != null) {
+            Set<String> categoryIds = eonetEvent.getCategories().stream()
+                    .map(EonetCategory::getId)
+                    .collect(Collectors.toSet());
+            setCategoryIds(categoryIds);
+        }
+
+        List<EonetGeometry> geometries = eonetEvent.getGeometry();
+        if (geometries != null && !geometries.isEmpty()) {
+            EonetGeometry latest = geometries.getLast();
+            setEventDate(latest.getDate());
+            setMagnitudeValue(latest.getMagnitudeValue());
+            setMagnitudeUnit(latest.getMagnitudeUnit());
+
+            List<Object> coords = latest.getCoordinates();
+            if (coords != null && coords.size() >= 2 && coords.get(0) instanceof Number) {
+                setLongitude(((Number) coords.get(0)).doubleValue());
+                setLatitude(((Number) coords.get(1)).doubleValue());
+            }
+        }
+    }
 }

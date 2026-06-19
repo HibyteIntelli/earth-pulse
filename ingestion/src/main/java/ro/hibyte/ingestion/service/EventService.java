@@ -5,20 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ro.hibyte.ingestion.client.EonetClient;
-import ro.hibyte.ingestion.dto.response.EventResponse;
-import ro.hibyte.ingestion.dto.eonet.EonetCategory;
 import ro.hibyte.ingestion.dto.eonet.EonetEvent;
-import ro.hibyte.ingestion.dto.eonet.EonetGeometry;
 import ro.hibyte.ingestion.dto.eonet.EonetResponse;
+import ro.hibyte.ingestion.dto.request.EventFilter;
+import ro.hibyte.ingestion.dto.response.EventPage;
+import ro.hibyte.ingestion.dto.response.EventResponse;
 import ro.hibyte.ingestion.model.Event;
-import ro.hibyte.ingestion.model.EventStatus;
 import ro.hibyte.ingestion.repository.EventRepository;
 
-import ro.hibyte.ingestion.dto.request.EventFilter;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,41 +23,11 @@ public class EventService {
     private final EventRepository eventRepository;
     private final EonetClient eonetClient;
 
-    private void applyFields(Event event, EonetEvent eonetEvent) {
-        event.setTitle(eonetEvent.getTitle());
-        event.setDescription(eonetEvent.getDescription());
-        event.setLink(eonetEvent.getLink());
-
-        event.setStatus(eonetEvent.getClosed() == null ? EventStatus.OPEN : EventStatus.CLOSED);
-        event.setClosedAt(eonetEvent.getClosed());
-
-        if (eonetEvent.getCategories() != null) {
-            Set<String> categoryIds = eonetEvent.getCategories().stream()
-                    .map(EonetCategory::getId)
-                    .collect(Collectors.toSet());
-            event.setCategoryIds(categoryIds);
-        }
-
-        List<EonetGeometry> geometries = eonetEvent.getGeometry();
-        if (geometries != null && !geometries.isEmpty()) {
-            EonetGeometry latest = geometries.get(geometries.size() - 1);
-            event.setEventDate(latest.getDate());
-            event.setMagnitudeValue(latest.getMagnitudeValue());
-            event.setMagnitudeUnit(latest.getMagnitudeUnit());
-
-            List<Object> coords = latest.getCoordinates();
-            if (coords != null && coords.size() >= 2 && coords.get(0) instanceof Number) {
-                event.setLongitude(((Number) coords.get(0)).doubleValue());
-                event.setLatitude(((Number) coords.get(1)).doubleValue());
-            }
-        }
-    }
-
     private void upsertEvent(EonetEvent eonetEvent) {
         Event event = eventRepository.findById(eonetEvent.getId())
                 .orElseGet(Event::new);
         event.setEonetId(eonetEvent.getId());
-        applyFields(event, eonetEvent);
+        event.applyFields(eonetEvent);
         eventRepository.save(event);
     }
 
@@ -71,51 +36,26 @@ public class EventService {
         try{
             EonetResponse response = eonetClient.fetchEvents();
 
-            if (response != null && response.getEvents() != null) {
-                response.getEvents().forEach(event -> {
-                    try {
-                        upsertEvent(event);
-                    } catch (Exception e) {
-                        log.error("Failed to upsert event {}", event.getId(), e);
-                    }
-                });
-            }
+            if (response == null || response.getEvents() == null) return;
+
+            response.getEvents().forEach(event -> {
+                try {
+                    upsertEvent(event);
+                } catch (Exception e) {
+                    log.error("Failed to upsert event {}", event.getId(), e);
+                }
+            });
         } catch (Exception e){
             log.error("Failed to fetch events from EONET", e);
         }
     }
 
-    private EventResponse mapToResponse(Event event){
-        EventResponse eventResponse = new EventResponse();
-        eventResponse.setEonetId(event.getEonetId());
-        eventResponse.setTitle(event.getTitle());
-        eventResponse.setDescription(event.getDescription());
-        eventResponse.setLink(event.getLink());
-        eventResponse.setStatus(event.getStatus());
-        eventResponse.setClosedAt(event.getClosedAt());
-        eventResponse.setCategoryIds(event.getCategoryIds());
-        eventResponse.setEventDate(event.getEventDate());
-        eventResponse.setLatitude(event.getLatitude());
-        eventResponse.setLongitude(event.getLongitude());
-        eventResponse.setMagnitudeValue(event.getMagnitudeValue());
-        eventResponse.setMagnitudeUnit(event.getMagnitudeUnit());
-
-        return eventResponse;
-    }
-
     public Optional<EventResponse> getEventById(String eonetId){
         return eventRepository.findById(eonetId)
-                .map(this::mapToResponse);
+                .map(EventResponse::new);
     }
 
-    public List<String> getCategories(){
-        return eventRepository.findDistinctCategoryIds()
-                .stream()
-                .sorted()
-                .collect(Collectors.toList());
-    }
-
-    public List<EventResponse> searchEvents(EventFilter filter){
+    public EventPage searchEvents(EventFilter filter){
         // TODO
         throw new UnsupportedOperationException("Not yet implemented");
     }
