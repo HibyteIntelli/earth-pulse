@@ -3,11 +3,13 @@ package ro.hibyte.notifier.controller;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import ro.hibyte.notifier.dto.NotificationDto;
 import ro.hibyte.notifier.dto.NotificationPageDto;
 import ro.hibyte.notifier.entity.DeliveryMode;
@@ -33,7 +35,7 @@ public class NotificationController {
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit,
             @RequestParam(defaultValue = "0") @Min(0) int offset) {
 
-        UUID userId = UUID.fromString(jwt.getSubject());
+        UUID userId = subjectAsUuid(jwt);
         return ResponseEntity.ok(
                 notificationService.listNotifications(userId, eventId, category, deliveryMode, since, limit, offset));
     }
@@ -43,7 +45,15 @@ public class NotificationController {
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID id) {
 
-        UUID userId = UUID.fromString(jwt.getSubject());
+        UUID userId = subjectAsUuid(jwt);
         return ResponseEntity.ok(notificationService.getNotification(id, userId));
+    }
+
+    private UUID subjectAsUuid(Jwt jwt) {
+        try {
+            return UUID.fromString(jwt.getSubject());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid token subject");
+        }
     }
 }

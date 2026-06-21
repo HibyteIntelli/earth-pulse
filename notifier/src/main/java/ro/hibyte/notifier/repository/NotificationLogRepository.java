@@ -16,9 +16,10 @@ public interface NotificationLogRepository extends JpaRepository<NotificationLog
 
     boolean existsByWatchIdAndEventId(UUID watchId, String eventId);
 
-    List<NotificationLog> findByUserIdOrderByDeliveredAtDesc(UUID userId);
+    List<NotificationLog> findByUserIdAndDeliveredAtIsNotNullOrderByDeliveredAtDesc(UUID userId);
 
     @Query("SELECT DISTINCT n FROM NotificationLog n WHERE n.userId = :userId " +
+           "AND n.deliveredAt IS NOT NULL " +
            "AND (:eventId IS NULL OR n.eventId = :eventId) " +
            "AND (:category IS NULL OR :category MEMBER OF n.eventCategories) " +
            "AND (:deliveryMode IS NULL OR n.deliveryMode = :deliveryMode) " +

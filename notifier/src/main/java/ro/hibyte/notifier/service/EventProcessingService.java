@@ -47,7 +47,6 @@ public class EventProcessingService {
                     .eventDate(payload.getEventDate())
                     .deliveryMode(watch.deliveryMode())
                     .readingLevel(watch.readingLevel())
-                    .deliveredAt(OffsetDateTime.now())
                     .briefingSummary(briefing != null ? briefing.getSummary() : "")
                     .briefingImpact(briefing != null ? briefing.getImpact() : "")
                     .briefingSeverity(briefing != null ? briefing.getSeverity() : Severity.LOW)
@@ -57,9 +56,11 @@ public class EventProcessingService {
             notificationLogRepository.save(log);
 
             if (watch.deliveryMode() == DeliveryMode.IMMEDIATE) {
-                // TODO: send immediate email
+                // TODO: send immediate email — on success, stamp delivery:
+                // log.setDeliveredAt(OffsetDateTime.now());
+                // notificationLogRepository.save(log);
             }
-            // DAILY_DIGEST matches are picked up by the scheduled digest job
+            // DAILY_DIGEST: deliveredAt stays null; the digest job sets it after sending
         }
     }
 

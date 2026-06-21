@@ -59,7 +59,7 @@ public class NotificationLog {
     @Column(name = "reading_level", nullable = false)
     private ReadingLevel readingLevel;
 
-    @Column(name = "delivered_at", nullable = false)
+    @Column(name = "delivered_at")
     private OffsetDateTime deliveredAt;
 
     @Column(name = "briefing_summary", nullable = false, columnDefinition = "TEXT")
