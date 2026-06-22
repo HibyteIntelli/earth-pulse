@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record SignupRequestDto(
-        @NotBlank @Email String email,
-        @NotBlank @Size(min = 8, message = "Password must be at least 8 characters") String password
+        @NotBlank @Email(message = "Invalid email format") String email,
+        @NotBlank @Size(min = 8, message = "Password must be at least 8 characters") String password,
+        @NotBlank(message = "Name is required") String name
 ) {}
