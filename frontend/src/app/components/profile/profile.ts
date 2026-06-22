@@ -21,7 +21,7 @@ export class Profile {
   private readonly fb = inject(FormBuilder);
 
   protected readonly form = this.fb.nonNullable.group({
-    name: [CURRENT_OPERATOR.name, Validators.required],
+    name: [CURRENT_OPERATOR.name, [Validators.required, Validators.pattern(/\S+/)]],
     email: [
       { value: CURRENT_OPERATOR.email, disabled: true },
       [Validators.required, Validators.email],
