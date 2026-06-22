@@ -21,7 +21,7 @@ import { SeismoScene } from '../shared/seismo-scene';
     SeismoScene,
   ],
   templateUrl: './login.html',
-  styleUrls: ['../auth-scene.css', './login.css'],
+  styleUrls: ['../shared/form-kit.css', '../shared/auth-scene.css', './login.css'],
 })
 export class Login {
   private readonly router = inject(Router);
