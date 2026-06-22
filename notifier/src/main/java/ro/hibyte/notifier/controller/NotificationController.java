@@ -21,11 +21,12 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @Validated
+@RequestMapping("/notifications")
 public class NotificationController {
 
     private final NotificationService notificationService;
 
-    @GetMapping("/notifications")
+    @GetMapping
     public ResponseEntity<NotificationPageDto> listNotifications(
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam(required = false) String eventId,
@@ -40,7 +41,7 @@ public class NotificationController {
                 notificationService.listNotifications(userId, eventId, category, deliveryMode, since, limit, offset));
     }
 
-    @GetMapping("/notifications/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<NotificationDto> getNotification(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID id) {

@@ -31,6 +31,10 @@ public class NotificationService {
             int limit,
             int offset) {
 
+        if (limit <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "limit must be > 0");
+        }
+
         PageRequest pageRequest = PageRequest.of(
                 offset / limit, limit,
                 Sort.by(Sort.Direction.DESC, "deliveredAt"));
