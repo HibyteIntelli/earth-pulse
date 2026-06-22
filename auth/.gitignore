@@ -4,6 +4,7 @@ application.properties
 .serena/project.local.yml
 generated-jwk.json
 requests.http
+db.migration
 
 
 HELP.md
