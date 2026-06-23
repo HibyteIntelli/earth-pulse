@@ -59,7 +59,7 @@ class BriefingServiceTest {
 
         BriefingId expectedId = new BriefingId();
         expectedId.setEventId("event-123");
-        expectedId.setReadingLevel("BEGINNER");
+        expectedId.setReadingLevel("DEFAULT");
 
         assertThat(saved.getId()).isEqualTo(expectedId);
     }

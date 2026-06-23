@@ -6,10 +6,13 @@ import com.api.llm.dto.BriefingRequestDto;
 import com.api.llm.dto.BriefingResponseDto;
 import com.api.llm.entity.Briefing;
 import com.api.llm.repository.BriefingRepository;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -19,15 +22,21 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@Slf4j
 class BriefingServiceIntegrationTest {
 
     private BriefingService briefingService;
     private BriefingRepository briefingRepository;
 
+    @Value("${ollama.baseUrl}")
+    private String ollamaBaseUrl;
+
     @BeforeEach
     void setUp() {
+
         WebClient webClient = WebClient.builder()
-                .baseUrl("http://localhost:11434")
+                .baseUrl(ollamaBaseUrl)
                 .build();
 
         OllamaService ollamaService = new OllamaService(webClient);
@@ -47,10 +56,10 @@ class BriefingServiceIntegrationTest {
 
         BriefingLLMResponseDto result = briefingService.getLLMSection(request);
 
-        System.out.println("=== Real LLM Response ===");
-        System.out.println("Summary:     " + result.getSummary());
-        System.out.println("Impact:      " + result.getImpact());
-        System.out.println("Precautions: " + result.getPrecautions());
+        log.info("=== Real LLM Response ===");
+        log.info("Summary:     {}", result.getSummary());
+        log.info("Impact:      {}", result.getImpact());
+        log.info("Precautions: {}", result.getPrecautions());
 
         assertThat(result.getSummary()).isNotBlank();
         assertThat(result.getImpact()).isNotBlank();
@@ -74,18 +83,18 @@ class BriefingServiceIntegrationTest {
         verify(briefingRepository).save(captor.capture());
         Briefing saved = captor.getValue();
 
-        System.out.println("=== Saved Briefing Entity ===");
-        System.out.println("EventId:      " + saved.getId().getEventId());
-        System.out.println("ReadingLevel: " + saved.getId().getReadingLevel());
+        log.info("=== Saved Briefing Entity ===");
+        log.info("EventId:      {}", saved.getId().getEventId());
+        log.info("ReadingLevel: {}", saved.getId().getReadingLevel());
 
-        System.out.println("\n=== Real LLM Briefing Response ===");
-        System.out.println("EventId:      " + result.getEventId());
-        System.out.println("ReadingLevel: " + result.getReadingLevel());
-        System.out.println("Summary:      " + result.getSummary());
-        System.out.println("Severity:     " + result.getSeverity());
-        System.out.println("Impact:       " + result.getImpact());
-        System.out.println("Precautions:  " + result.getPrecautions());
-        System.out.println("GeneratedAt:  " + result.getGeneratedAt());
+        log.info("=== Real LLM Briefing Response ===");
+        log.info("EventId:      {}", result.getEventId());
+        log.info("ReadingLevel: {}", result.getReadingLevel());
+        log.info("Summary:      {}", result.getSummary());
+        log.info("Severity:     {}", result.getSeverity());
+        log.info("Impact:       {}", result.getImpact());
+        log.info("Precautions:  {}", result.getPrecautions());
+        log.info("GeneratedAt:  {}", result.getGeneratedAt());
 
         assertThat(result.getEventId()).isEqualTo("event-001");
         assertThat(result.getReadingLevel()).isEqualTo("DEFAULT");
@@ -112,18 +121,19 @@ class BriefingServiceIntegrationTest {
         verify(briefingRepository).save(captor.capture());
         Briefing saved = captor.getValue();
 
-        System.out.println("=== Saved Briefing Entity ===");
-        System.out.println("EventId:      " + saved.getId().getEventId());
-        System.out.println("ReadingLevel: " + saved.getId().getReadingLevel());
 
-        System.out.println("\n=== Real LLM Briefing Response ===");
-        System.out.println("EventId:      " + result.getEventId());
-        System.out.println("ReadingLevel: " + result.getReadingLevel());
-        System.out.println("Summary:      " + result.getSummary());
-        System.out.println("Severity:     " + result.getSeverity());
-        System.out.println("Impact:       " + result.getImpact());
-        System.out.println("Precautions:  " + result.getPrecautions());
-        System.out.println("GeneratedAt:  " + result.getGeneratedAt());
+        log.info("=== Saved Briefing Entity ===");
+        log.info("EventId:      {}", saved.getId().getEventId());
+        log.info("ReadingLevel: {}", saved.getId().getReadingLevel());
+
+        log.info("=== Real LLM Briefing Response ===");
+        log.info("EventId:      {}", result.getEventId());
+        log.info("ReadingLevel: {}", result.getReadingLevel());
+        log.info("Summary:      {}", result.getSummary());
+        log.info("Severity:     {}", result.getSeverity());
+        log.info("Impact:       {}", result.getImpact());
+        log.info("Precautions:  {}", result.getPrecautions());
+        log.info("GeneratedAt:  {}", result.getGeneratedAt());
 
         assertThat(result.getEventId()).isEqualTo("event-001");
         assertThat(result.getReadingLevel()).isEqualTo("SIMPLIFIED");
