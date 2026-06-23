@@ -2,7 +2,7 @@ package com.earthpulse.www.service;
 
 import com.earthpulse.www.dto.JwkKeyDto;
 import com.earthpulse.www.dto.JwksDto;
-import com.earthpulse.www.mapper.JwksMapper;
+import com.earthpulse.www.mapper.JwksMapperImpl;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
@@ -16,6 +16,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -31,20 +33,20 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @ExtendWith(MockitoExtension.class)
 public class JwtServiceTest {
 
+    @Spy
+    private JwksMapperImpl jwksMapper;
+
+    @InjectMocks
     private JwtService jwtService;
 
     private static final String BASE_URL = "http://localhost:8083";
 
     @BeforeEach
     void setUp() throws JOSEException, ParseException {
-        JwksMapper jwksMapper = new com.earthpulse.www.mapper.JwksMapperImpl();
-        jwtService = new JwtService(jwksMapper);
         ReflectionTestUtils.setField(jwtService, "baseUrl", BASE_URL);
         ReflectionTestUtils.setField(jwtService, "privateKeyJwk", "");
         jwtService.init();
     }
-
-    // issueToken
 
     @Test
     @DisplayName("issueToken: returns a non-blank JWT string")
@@ -81,8 +83,6 @@ public class JwtServiceTest {
         assertThat(exp).isAfter(before.plus(55, ChronoUnit.MINUTES));
         assertThat(exp).isBefore(after.plus(65, ChronoUnit.MINUTES));
     }
-
-    // validateToken
 
     @Test
     @DisplayName("validateToken: valid token passes without throwing")
@@ -285,8 +285,6 @@ public class JwtServiceTest {
         assertThatThrownBy(() -> jwtService.validateToken(algNoneToken))
                 .isInstanceOf(ParseException.class);
     }
-
-    // getJwks
 
     @Test
     @DisplayName("issueToken: iat claim is set and within a few seconds of the call time")

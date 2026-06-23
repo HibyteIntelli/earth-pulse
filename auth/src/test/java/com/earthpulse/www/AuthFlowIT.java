@@ -57,16 +57,10 @@ class AuthFlowIT {
     @Autowired
     private ObjectMapper objectMapper;
 
-
-    // signup
-
-
     @Test
     @DisplayName("POST /auth/signup: valid payload returns 201 Created with empty body")
     void signup_happyPath_returns201() throws Exception {
-        String body = """
-                {"email":"newuser@example.com","password":"securePass1"}
-                """;
+        String body = "{\"email\":\"newuser@example.com\",\"password\":\"securePass1\"}";
 
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -77,11 +71,8 @@ class AuthFlowIT {
     @Test
     @DisplayName("POST /auth/signup: duplicate email returns 409 Conflict")
     void signup_duplicateEmail_returns409() throws Exception {
-        String body = """
-                {"email":"duplicate@example.com","password":"securePass1"}
-                """;
+        String body = "{\"email\":\"duplicate@example.com\",\"password\":\"securePass1\"}";
 
-        // First registration should succeed
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -96,9 +87,7 @@ class AuthFlowIT {
     @Test
     @DisplayName("POST /auth/signup: missing email returns 400 with validation error")
     void signup_missingEmail_returns400() throws Exception {
-        String body = """
-                {"password":"securePass1"}
-                """;
+        String body = "{\"password\":\"securePass1\"}";
 
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -111,9 +100,7 @@ class AuthFlowIT {
     @Test
     @DisplayName("POST /auth/signup: invalid email format returns 400 with validation error")
     void signup_invalidEmailFormat_returns400() throws Exception {
-        String body = """
-                {"email":"not-an-email","password":"securePass1"}
-                """;
+        String body = "{\"email\":\"not-an-email\",\"password\":\"securePass1\"}";
 
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -125,9 +112,7 @@ class AuthFlowIT {
     @Test
     @DisplayName("POST /auth/signup: password shorter than 8 characters returns 400 with validation error")
     void signup_shortPassword_returns400() throws Exception {
-        String body = """
-                {"email":"shortpass@example.com","password":"short"}
-                """;
+        String body = "{\"email\":\"shortpass@example.com\",\"password\":\"short\"}";
 
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -139,9 +124,7 @@ class AuthFlowIT {
     @Test
     @DisplayName("POST /auth/signup: blank password returns 400 with validation error")
     void signup_blankPassword_returns400() throws Exception {
-        String body = """
-                {"email":"blankpass@example.com","password":""}
-                """;
+        String body = "{\"email\":\"blankpass@example.com\",\"password\":\"\"}";
 
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -162,9 +145,7 @@ class AuthFlowIT {
     @Test
     @DisplayName("POST /auth/signup: both email and password empty returns 400 with validation errors on both fields")
     void signup_bothFieldsEmpty_returns400() throws Exception {
-        String body = """
-                {"email":"","password":""}
-                """;
+        String body = "{\"email\":\"\",\"password\":\"\"}";
 
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -174,14 +155,10 @@ class AuthFlowIT {
                 .andExpect(jsonPath("$.fields.password").exists());
     }
 
-    // login
-
     @Test
     @DisplayName("POST /auth/login: both email and password empty returns 400 with validation errors on both fields")
     void login_bothFieldsEmpty_returns400() throws Exception {
-        String body = """
-                {"email":"","password":""}
-                """;
+        String body = "{\"email\":\"\",\"password\":\"\"}";
 
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -194,17 +171,13 @@ class AuthFlowIT {
     @Test
     @DisplayName("POST /auth/login: valid credentials return 200 with a JWT token")
     void login_happyPath_returnsJwt() throws Exception {
-        // Register the user first
-        String signupBody = """
-                {"email":"loginuser@example.com","password":"loginPass1"}
-                """;
+        String signupBody = "{\"email\":\"loginuser@example.com\",\"password\":\"loginPass1\"}";
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(signupBody))
                 .andExpect(status().isCreated());
-        String loginBody = """
-                {"email":"loginuser@example.com","password":"loginPass1"}
-                """;
+
+        String loginBody = "{\"email\":\"loginuser@example.com\",\"password\":\"loginPass1\"}";
         MvcResult result = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginBody))
@@ -221,17 +194,13 @@ class AuthFlowIT {
     @Test
     @DisplayName("POST /auth/login: wrong password returns 401 Unauthorized")
     void login_wrongPassword_returns401() throws Exception {
-        String signupBody = """
-                {"email":"wrongpass@example.com","password":"correctPass1"}
-                """;
+        String signupBody = "{\"email\":\"wrongpass@example.com\",\"password\":\"correctPass1\"}";
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(signupBody))
                 .andExpect(status().isCreated());
 
-        String loginBody = """
-                {"email":"wrongpass@example.com","password":"wrongPassword"}
-                """;
+        String loginBody = "{\"email\":\"wrongpass@example.com\",\"password\":\"wrongPassword\"}";
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginBody))
@@ -242,9 +211,7 @@ class AuthFlowIT {
     @Test
     @DisplayName("POST /auth/login: unknown email returns 401 Unauthorized")
     void login_unknownEmail_returns401() throws Exception {
-        String loginBody = """
-                {"email":"ghost@example.com","password":"somePassword1"}
-                """;
+        String loginBody = "{\"email\":\"ghost@example.com\",\"password\":\"somePassword1\"}";
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginBody))
@@ -255,9 +222,7 @@ class AuthFlowIT {
     @Test
     @DisplayName("POST /auth/login: missing password field returns 400")
     void login_missingPassword_returns400() throws Exception {
-        String loginBody = """
-                {"email":"someone@example.com"}
-                """;
+        String loginBody = "{\"email\":\"someone@example.com\"}";
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginBody))
@@ -268,17 +233,13 @@ class AuthFlowIT {
     @Test
     @DisplayName("POST /auth/login: invalid email format returns 400")
     void login_invalidEmailFormat_returns400() throws Exception {
-        String loginBody = """
-                {"email":"not-valid","password":"somePassword"}
-                """;
+        String loginBody = "{\"email\":\"not-valid\",\"password\":\"somePassword\"}";
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginBody))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fields.email").exists());
     }
-
-    // jwks
 
     @Test
     @DisplayName("GET /.well-known/jwks.json: returns 200 with a JSON object containing a 'keys' array")
@@ -310,14 +271,10 @@ class AuthFlowIT {
                 .andExpect(status().isOk());
     }
 
-    // Full JWT round-trip
-
     @Test
     @DisplayName("POST /auth/login: missing email field returns 400")
     void login_missingEmail_returns400() throws Exception {
-        String loginBody = """
-                {"password":"somePassword1"}
-                """;
+        String loginBody = "{\"password\":\"somePassword1\"}";
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(loginBody))
@@ -328,9 +285,7 @@ class AuthFlowIT {
     @Test
     @DisplayName("POST /auth/signup: missing password field (key absent) returns 400")
     void signup_missingPassword_returns400() throws Exception {
-        String body = """
-                {"email":"missingpass@example.com"}
-                """;
+        String body = "{\"email\":\"missingpass@example.com\"}";
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -341,9 +296,7 @@ class AuthFlowIT {
     @Test
     @DisplayName("POST /auth/signup: null field values return 400 with validation errors on both fields")
     void signup_nullFields_returns400() throws Exception {
-        String body = """
-                {"email":null,"password":null}
-                """;
+        String body = "{\"email\":null,\"password\":null}";
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -361,8 +314,6 @@ class AuthFlowIT {
                 .andExpect(status().isUnsupportedMediaType());
     }
 
-    // JWKS private key exposure
-
     @Test
     @DisplayName("GET /.well-known/jwks.json: response must not contain any private key fields")
     void jwks_doesNotContainPrivateKeyFields() throws Exception {
@@ -375,8 +326,6 @@ class AuthFlowIT {
                 .andExpect(jsonPath("$.keys[0].dq").doesNotExist())
                 .andExpect(jsonPath("$.keys[0].qi").doesNotExist());
     }
-
-    // /internal/** access control
 
     @Test
     @DisplayName("GET /internal/**: missing X-Internal-Secret returns 401")
@@ -396,15 +345,11 @@ class AuthFlowIT {
     @Test
     @DisplayName("GET /internal/**: correct X-Internal-Secret passes the filter (not 401)")
     void internal_correctSecret_passesFilter() throws Exception {
-        // Filter lets the request through; no controller exists so Spring returns 404.
-        // The important assertion is that the filter does NOT return 401.
         mockMvc.perform(get("/internal/health")
                         .header("X-Internal-Secret", "test-internal-secret-32-chars-long!!"))
                 .andExpect(result ->
                         assertThat(result.getResponse().getStatus()).isNotEqualTo(401));
     }
-
-    // Full JWT round-trip — additional claim assertions
 
     @Test
     @DisplayName("Full round-trip: iat claim is present and within a few seconds of now")
@@ -457,7 +402,6 @@ class AuthFlowIT {
         String sub = signed.getJWTClaimsSet().getSubject();
 
         assertThat(sub).isNotBlank();
-        // Will throw IllegalArgumentException if sub is not a valid UUID
         UUID parsed = UUID.fromString(sub);
         assertThat(parsed).isNotNull();
     }
