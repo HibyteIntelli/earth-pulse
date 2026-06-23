@@ -1,8 +1,10 @@
 # Auth & Subscription Service
 
-Identity provider for the EarthPulse platform. Issues RSA-signed JWTs, publishes a JWKS endpoint for downstream services, and manages user accounts and watch subscriptions.
+Service 4 of the EarthPulse platform. Handles identity, JWT issuance, JWKS publication, user management, watch/subscription CRUD, and the internal Notifier API.
 
 Runs on **port 8083**.
+
+**Stack:** Java 25 · Spring Boot 4.x · Spring Security · Spring Data JPA · PostgreSQL · Lombok
 
 ---
 
@@ -11,7 +13,12 @@ Runs on **port 8083**.
 ### 1. Configure credentials
 
 Copy `.env.model` to `.env` and fill in your values:
+
+```bash
+cp .env.model .env
 ```
+
+```env
 POSTGRES_USER=...
 POSTGRES_PASSWORD=...
 POSTGRES_DB=...
@@ -90,16 +97,30 @@ Use `requests.http` at the project root to manually test all endpoints in Intell
 
 | Command | When to use | Example |
 |---------|-------------|---------|
-| `/git-verify` | Before every commit — checks for secrets, conflict markers, wrong branch | `/git-verify` |
 | `/explain` | Understand a file, class, method, or feature in plain English | `/explain JwtService` |
-| `/generate-migration` | Any schema change — creates a Flyway SQL file and updates the entity | `/generate-migration add refreshToken to User` |
+| `/git-verify` | Before every commit — checks for secrets, conflict markers, wrong branch | `/git-verify` |
+| `/generate-migration` | Any schema change — creates a versioned Flyway SQL file and updates the entity | `/generate-migration add refreshToken to User` |
 | `/tester` | Generate and run JUnit 5 tests for any class or feature | `/tester AuthController` |
+
 
 ### Recommended workflow
 
 ```
 1. Make your change
-2. /tester <class>       ← generate and run tests
-3. /git-verify           ← safety check before committing
-4. git commit
+2. /generate-migration <description>   ← if the schema changed
+3. /tester <class>                     ← generate and run tests
+4. /git-verify                         ← safety check before committing
+5. git commit
 ```
+
+---
+
+## Security Notes
+
+- Passwords hashed with **bcrypt** (cost ≥ 10) — never stored or logged in plaintext.
+- RSA private key kept in memory only — never written to disk or logged.
+- All non-public endpoints require a valid JWT (`Authorization: Bearer <token>`).
+- Internal Notifier endpoint protected by a shared secret header.
+- Use `@Valid` + Bean Validation on all incoming request bodies.
+- Use Spring Data JPA with parameters — never string-concatenated queries.
+- Use dedicated DTOs — never bind request bodies directly to JPA entities.

@@ -1,16 +1,11 @@
 .stage {
   height: 100dvh;
-  overflow: hidden;
 }
 
 app-globe-scene {
   --R: clamp(170px, 30vw, 380px);
   --globe-top: 50dvh;
   --globe-left: 58%;
-}
-
-.brand__tag {
-  max-width: 40ch;
 }
 
 .legend {
@@ -58,6 +53,33 @@ app-globe-scene {
 
 .submit {
   margin-top: 0.6rem;
+}
+
+@media (max-width: 860px) {
+  .stage {
+    height: auto;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .layout {
+    padding: 1.5rem clamp(1.25rem, 4vw, 3.25rem) 2rem;
+    gap: 1.5rem;
+  }
+
+  .brand__word {
+    font-size: clamp(2.75rem, 14vw, 4rem);
+  }
+
+  .brand__tag,
+  .legend {
+    display: none;
+  }
+
+  .terminal {
+    margin-top: 12vh;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

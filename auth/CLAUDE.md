@@ -25,7 +25,7 @@ Skills are defined in `.claude/skills/` and the tester subagent in `.claude/agen
 | `/explain` | `/explain src/main/.../JwtService.java:42` | Explains a file, package, class, or line in plain English — what it does, why it exists, how it fits the architecture, and whether it has test coverage. |
 | `/generate-migration` | `/generate-migration add refreshToken column to User` | Generates a Flyway SQL migration file (auto-increments version), updates the JPA entity, and configures Flyway in `application.properties` if not already set up. |
 
-**Tip:** Run `/git-verify` before every commit. Run `/generate-migration` whenever you change the schema instead of relying on `ddl-auto=update`.
+**Tip:** Run `/git-verify` before every commit. Run `/generate-migration` whenever you change the schema — `ddl-auto=validate` means Hibernate will refuse to start if the DB doesn't match the entity.
 
 ---
 
@@ -65,6 +65,33 @@ The app reads DB credentials from environment variables (see `.env.model`). `app
 
 - Always hash passwords with **bcrypt** (`BCryptPasswordEncoder`). Never store or log plaintext passwords.
 - Minimum cost factor: 10.
+
+### User Entity Fields
+
+| Field | Type | Nullable | Notes |
+|-------|------|----------|-------|
+| `id` | `UUID` | No | Auto-generated |
+| `email` | `String` | No | Unique |
+| `name` | `String` | No | Display name |
+| `passwordHash` | `String` | No | bcrypt hash |
+| `readingLevel` | `ReadingLevel` | No | Enum: `DEFAULT`, `SIMPLIFIED` |
+| `profilePictureUrl` | `String` | Yes | URL link, no format enforcement |
+| `createdAt` | `Instant` | No | Immutable, set on creation |
+
+### Account Settings API
+
+All endpoints require `Authorization: Bearer <token>`. The authenticated user ID is extracted from the JWT `sub` claim.
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/account/me` | Returns the current user's profile (`UserProfileDto`) |
+| `PATCH` | `/account` | Updates any combination of fields — all body fields are optional (null = no change) |
+| `DELETE` | `/account` | Permanently deletes the account, returns 204 |
+
+`PATCH /account` accepted fields: `email`, `name`, `currentPassword` + `newPassword`, `profilePictureUrl`, `readingLevel`.
+- Send `profilePictureUrl: ""` to clear the profile picture.
+- Password change requires `currentPassword` to match the stored hash.
+- `email` and `name` must be non-blank when provided.
 
 
 ---
@@ -131,21 +158,29 @@ The app reads DB credentials from environment variables (see `.env.model`). `app
 
 ## Database
 
-- `spring.jpa.hibernate.ddl-auto=update` is acceptable during development; switch to `validate` or use Flyway/Liquibase for production.
+- Schema is managed by **Flyway** (`src/main/resources/db/migration/`). `ddl-auto` is set to `validate` — Hibernate checks the schema on startup but never modifies it.
+- Always use `/generate-migration` when changing the schema. Never rely on `ddl-auto=update`.
+- Flyway is configured with `baseline-on-migrate=true` and `baseline-version=0` so it works against the pre-existing schema.
 - Add appropriate indexes on `users.email` (unique) and `watches.user_id` (foreign key).
 
 ---
 
 ## Adding Dependencies
 
-Before adding a new dependency, check whether the Spring Boot BOM already manages a compatible version. Add JWT library manually — the BOM does not include `nimbus-jose-jwt` or `jjwt`:
+Before adding a new dependency, check whether the Spring Boot BOM already manages a compatible version. Add JWT library manually — the BOM does not include `nimbus-jose-jwt` or `jjwt`. Flyway's PostgreSQL module (`flyway-database-postgresql`) is BOM-managed — no explicit version needed:
 
 ```xml
-<!-- nimbus-jose-jwt -->
+<!-- nimbus-jose-jwt (current: 10.9) -->
 <dependency>
     <groupId>com.nimbusds</groupId>
     <artifactId>nimbus-jose-jwt</artifactId>
-    <version>9.40</version>
+    <version>10.9</version>
+</dependency>
+
+<!-- Flyway PostgreSQL support (version managed by Spring Boot BOM) -->
+<dependency>
+    <groupId>org.flywaydb</groupId>
+    <artifactId>flyway-database-postgresql</artifactId>
 </dependency>
 ```
 

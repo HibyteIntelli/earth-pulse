@@ -56,7 +56,7 @@ function passwordsMatchValidator(group: AbstractControl): ValidationErrors | nul
     SeismoScene,
   ],
   templateUrl: './register.html',
-  styleUrls: ['../auth-scene.css', './register.css'],
+  styleUrls: ['../shared/form-kit.css', '../shared/auth-scene.css', './register.css'],
 })
 export class Register {
   private readonly fb = inject(FormBuilder);

@@ -1,0 +1,188 @@
+:host {
+  display: block;
+}
+
+.form {
+  padding: clamp(1.6rem, 3vw, 2.6rem);
+}
+
+.form__title {
+  margin: 0;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(1.5rem, 2.4vw, 1.95rem);
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.form__hint {
+  margin: 0.6rem 0 2.2rem;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--ink-dim);
+}
+
+.field {
+  display: block;
+  margin-bottom: 1.7rem;
+}
+
+.field__label {
+  display: block;
+  margin-bottom: 0.7rem;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.field__input {
+  width: 100%;
+  padding: 0.55rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  caret-color: var(--water-deep);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.field__input::placeholder {
+  color: var(--ink-faint);
+}
+
+.field__input:focus {
+  outline: none;
+  border-bottom-color: var(--water-deep);
+  box-shadow: 0 1px 0 0 var(--water-deep);
+}
+
+.field__input:-webkit-autofill,
+.field__input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--ink);
+  -webkit-box-shadow: 0 0 0 1000px var(--paper-raised) inset;
+  caret-color: var(--water-deep);
+}
+
+.submit {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  padding: 1.05rem 1.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border: 0;
+  border-radius: 4px;
+  background: var(--forest-deep);
+  color: #f6faf2;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.98rem;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: box-shadow 0.25s ease, transform 0.08s ease, filter 0.25s ease;
+}
+
+.submit::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.45) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.6s ease;
+}
+
+.submit:hover {
+  box-shadow: 0 16px 40px -14px var(--forest-soft);
+  filter: brightness(1.06);
+}
+
+.submit:hover::before {
+  transform: translateX(120%);
+}
+
+.submit:hover .submit__arrow {
+  transform: translateX(4px);
+}
+
+.submit:active {
+  transform: translateY(1px);
+}
+
+.submit:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.submit__arrow {
+  font-family: var(--mono);
+  transition: transform 0.25s ease;
+}
+
+.form__foot {
+  margin: 1.6rem 0 0;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--ink-faint);
+}
+
+.form__foot a {
+  color: var(--ink);
+  text-decoration-color: var(--water-deep);
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+
+.form__foot a:hover {
+  color: var(--water-deep);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .submit::before {
+    display: none;
+  }
+}
+
+:host ::ng-deep .p-message {
+  display: block;
+  margin-top: 0.5rem;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+}
+
+:host ::ng-deep .p-message-content,
+:host ::ng-deep .p-message-content-wrapper {
+  padding: 0;
+  gap: 0;
+}
+
+:host ::ng-deep .p-message-icon {
+  display: none;
+}
+
+:host ::ng-deep .p-message-text {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  color: var(--ev-volcano);
+}

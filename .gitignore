@@ -1,3 +1,4 @@
 .idea
 frontend/.claude/settings.json
-.serena/
+.serena
+.claude/settings.json

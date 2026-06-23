@@ -31,6 +31,18 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("Invalid email or password"));
     }
 
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleUserNotFound(UserNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of("User not found"));
+    }
+
+    @ExceptionHandler(WrongPasswordException.class)
+    public ResponseEntity<ErrorResponse> handleWrongPassword(WrongPasswordException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of("Current password is incorrect"));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         Map<String, String> fields = ex.getBindingResult().getFieldErrors().stream()

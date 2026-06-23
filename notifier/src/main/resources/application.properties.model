@@ -1,0 +1,11 @@
+spring.application.name=notifier
+
+spring.datasource.url=jdbc:postgresql://localhost:<PORT>/notifier
+spring.datasource.username=...
+spring.datasource.password=...
+spring.jpa.hibernate.ddl-auto=update
+
+spring.mail.host=localhost
+spring.mail.port=<PORT>
+spring.mail.properties.mail.smtp.auth=false
+spring.mail.properties.mail.smtp.starttls.enable=false

@@ -1,7 +1,10 @@
 ### Custom ###
 src/main/resources/application.properties
 .env
+.serena/project.local.yml
 generated-jwk.json
+requests.http
+db.migration
 
 
 HELP.md
