@@ -1,1 +1,227 @@
-<p>notifications works!</p>
+<main class="dossier-stage">
+
+  <div class="classbar classbar--top">
+    &#9650;&nbsp;TOP&nbsp;SECRET&nbsp;&#9650;&nbsp;SIGNAL&nbsp;INTERCEPT&nbsp;FEED&nbsp;&#9650;&nbsp;EARTH&nbsp;PULSE&nbsp;COMMAND&nbsp;&#9650;
+  </div>
+
+  <svg class="seal-defs" aria-hidden="true" width="0" height="0" focusable="false">
+    <defs>
+      <path id="seal-arc-top" d="M40,150 A110,110 0 0 0 260,150" />
+      <path id="seal-arc-bottom" d="M40,150 A110,110 0 0 1 260,150" />
+      <filter id="seal-ink" x="-10%" y="-10%" width="120%" height="120%">
+        <feColorMatrix
+          type="matrix"
+          values="0 0 0 0 0.635
+                  0 0 0 0 0.231
+                  0 0 0 0 0.169
+                  0 0 0 0.9 0"
+        />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="dossier-wrap">
+
+    <div class="decor" aria-hidden="true">
+      <svg class="decor__star" viewBox="0 0 100 100" fill="currentColor">
+        <polygon points="50,4 61,37 96,37 67,58 78,92 50,71 22,92 33,58 4,37 39,37" />
+      </svg>
+
+      <svg class="decor__reticle" viewBox="0 0 300 300" fill="none" stroke="currentColor">
+        <circle cx="150" cy="150" r="122" stroke-width="1.5" />
+        <circle cx="150" cy="150" r="82" stroke-width="1.5" stroke-dasharray="3 7" />
+        <path d="M150,8 L150,70 M150,230 L150,292 M8,150 L70,150 M230,150 L292,150" stroke-width="1.5" />
+        <path d="M138,150 L162,150 M150,138 L150,162" stroke-width="1.5" />
+      </svg>
+
+      <span class="decor__stencil decor__stencil--left">EARTH&nbsp;PULSE&nbsp;COMMAND&nbsp;//&nbsp;FORM&nbsp;EP&#8211;12&nbsp;//&nbsp;EYES&nbsp;ONLY</span>
+      <span class="decor__stencil decor__stencil--right">CHANNEL&nbsp;SIGINT&#8211;3&nbsp;//&nbsp;NEED&#8211;TO&#8211;KNOW</span>
+
+      <span class="decor__corner decor__corner--tl"></span>
+      <span class="decor__corner decor__corner--tr"></span>
+      <span class="decor__corner decor__corner--bl"></span>
+      <span class="decor__corner decor__corner--br"></span>
+    </div>
+
+    <div class="watermark" aria-hidden="true">INTERCEPTS</div>
+
+    <article class="dossier-card">
+
+      <div class="gov-stamp gov-stamp--head" aria-hidden="true">
+        <svg viewBox="0 0 300 300">
+          <g fill="none" stroke="currentColor">
+            <circle cx="150" cy="150" r="145" stroke-width="6" />
+            <circle cx="150" cy="150" r="131" stroke-width="2" />
+            <circle cx="150" cy="150" r="90" stroke-width="2" />
+          </g>
+          <g class="seal-text" fill="currentColor" font-weight="700" letter-spacing="2">
+            <text font-size="21">
+              <textPath href="#seal-arc-top" startOffset="50%" text-anchor="middle">
+                ★ EARTH PULSE COMMAND ★
+              </textPath>
+            </text>
+            <text font-size="15">
+              <textPath href="#seal-arc-bottom" startOffset="50%" text-anchor="middle">
+                SIGNAL INTERCEPT · EYES ONLY
+              </textPath>
+            </text>
+          </g>
+          <g fill="currentColor">
+            <polygon points="18,150 22,144 29,144 24,140 26,133 18,137 10,133 12,140 7,144 14,144" />
+            <polygon points="282,150 286,144 293,144 288,140 290,133 282,137 274,133 276,140 271,144 278,144" />
+          </g>
+          <image href="assets/images.svg" x="103" y="103" width="94" height="94" filter="url(#seal-ink)" />
+        </svg>
+      </div>
+
+      <header class="file-head">
+        <div>
+          <span class="file-tag">Signal intercept feed</span>
+          <span class="file-no">EP&#8211;INT&#8211;LOG&nbsp;//&nbsp;2026&#8211;06&#8211;23</span>
+        </div>
+        <span class="stamp stamp--restricted">{{ unread() }} New</span>
+      </header>
+
+      <div class="log-head">
+        <h2 class="form__title">Intercept log</h2>
+        <p class="form__hint">
+          Events flagged against your active watch regions. {{ total() }} on file ·
+          {{ unread() }} awaiting review.
+        </p>
+        <button
+          type="button"
+          class="bulk"
+          (click)="markAllRead()"
+          [disabled]="unread() === 0"
+        >
+          Mark all actioned
+        </button>
+      </div>
+
+      <ul class="log">
+        @for (it of intercepts(); track it.id) {
+          <li
+            class="intercept"
+            [class.is-read]="it.read"
+            [attr.data-cat]="it.category"
+            [attr.data-sev]="it.severity"
+          >
+            <span class="intercept__stripe" aria-hidden="true"></span>
+
+            <div class="intercept__seal" aria-hidden="true">
+              <svg viewBox="0 0 300 300">
+                <g fill="none" stroke="currentColor">
+                  <circle cx="150" cy="150" r="145" stroke-width="7" />
+                  <circle cx="150" cy="150" r="128" stroke-width="3" />
+                  <circle cx="150" cy="150" r="86" stroke-width="3" />
+                </g>
+                <g class="seal-text" fill="currentColor" font-weight="700" letter-spacing="2">
+                  <text font-size="23">
+                    <textPath href="#seal-arc-top" startOffset="50%" text-anchor="middle">
+                      ★ EARTH PULSE ★
+                    </textPath>
+                  </text>
+                  <text font-size="17">
+                    <textPath href="#seal-arc-bottom" startOffset="50%" text-anchor="middle">
+                      VERIFIED INTERCEPT
+                    </textPath>
+                  </text>
+                </g>
+                <polygon
+                  fill="currentColor"
+                  points="150,108 161,141 196,141 168,162 179,195 150,174 121,195 132,162 104,141 139,141"
+                />
+              </svg>
+            </div>
+
+            <div class="intercept__body">
+              <div class="intercept__top">
+                <span class="cat">{{ it.categoryCode }}</span>
+                <span class="cat__label">{{ it.categoryLabel }}</span>
+                <span class="intercept__no">{{ it.fileNo }}</span>
+                @if (!it.read) {
+                  <span class="status-stamp">New</span>
+                }
+              </div>
+
+              <h3 class="intercept__title">{{ it.title }}</h3>
+              <p class="intercept__brief">{{ it.briefing }}</p>
+
+              <dl class="meta">
+                <div class="meta__row">
+                  <dt>Severity</dt>
+                  <dd><span class="sev">{{ it.severity }}</span></dd>
+                </div>
+                <div class="meta__row">
+                  <dt>Location</dt>
+                  <dd>{{ it.location }}</dd>
+                </div>
+                <div class="meta__row">
+                  <dt>Coordinates</dt>
+                  <dd>{{ it.coords }}</dd>
+                </div>
+                <div class="meta__row">
+                  <dt>Grid ref</dt>
+                  <dd>{{ it.grid }}</dd>
+                </div>
+                <div class="meta__row">
+                  <dt>Watch</dt>
+                  <dd>{{ it.watch }}</dd>
+                </div>
+                <div class="meta__row">
+                  <dt>Delivery</dt>
+                  <dd>{{ it.digestMode }}</dd>
+                </div>
+                <div class="meta__row">
+                  <dt>Event ID</dt>
+                  <dd>{{ it.eventId }}</dd>
+                </div>
+                <div class="meta__row">
+                  <dt>Logged</dt>
+                  <dd>{{ it.receivedAt }}</dd>
+                </div>
+              </dl>
+
+              <div class="intercept__foot">
+                <span class="received">{{ it.received }}</span>
+                <div class="actions">
+                  @if (!it.read) {
+                    <button type="button" class="action" (click)="markRead(it.id)">
+                      Mark actioned
+                    </button>
+                  } @else {
+                    <button type="button" class="action action--reopen" (click)="reopen(it.id)">
+                      Reopen case
+                    </button>
+                  }
+                  <button type="button" class="action action--ghost" (click)="dismiss(it.id)">
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            @if (it.read) {
+              <span class="case-stamp" aria-hidden="true">Actioned</span>
+            }
+          </li>
+        } @empty {
+          <li class="log-empty">
+            <span class="log-empty__mark">&#9633;</span>
+            No active intercepts. All channels quiet.
+          </li>
+        }
+      </ul>
+
+      <footer class="file-foot">
+        <span class="barcode" aria-hidden="true"></span>
+        <span class="stamp stamp--granted" aria-hidden="true">Eyes only</span>
+        <a routerLink="/map">Return to map</a>
+      </footer>
+    </article>
+  </div>
+
+  <div class="classbar classbar--bottom">
+    &#9660;&nbsp;AUTHORIZED&nbsp;PERSONNEL&nbsp;ONLY&nbsp;&#9660;&nbsp;DO&nbsp;NOT&nbsp;DUPLICATE&nbsp;&#9660;
+  </div>
+</main>
