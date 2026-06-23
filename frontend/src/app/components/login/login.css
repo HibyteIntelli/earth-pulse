@@ -1,16 +1,11 @@
 .stage {
   height: 100dvh;
-  overflow: hidden;
 }
 
 app-globe-scene {
   --R: clamp(170px, 30vw, 380px);
   --globe-top: 50dvh;
   --globe-left: 58%;
-}
-
-.brand__tag {
-  max-width: 40ch;
 }
 
 .legend {

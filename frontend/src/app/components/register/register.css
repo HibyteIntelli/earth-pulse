@@ -8,10 +8,6 @@ app-globe-scene {
   color: var(--water-deep);
 }
 
-.brand__tag {
-  max-width: 42ch;
-}
-
 .perks {
   margin: 2.2rem 0 0;
   padding: 0;
