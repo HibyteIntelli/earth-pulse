@@ -2,12 +2,13 @@ package com.earthpulse.www.dto;
 
 import com.earthpulse.www.enums.ReadingLevel;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record UpdateAccountRequestDto(
 
         @Email(message = "Invalid email format")
-        @Size(min = 1, message = "Email cannot be blank")
+        @NotBlank(message = "Email cannot be blank")
         String email,
 
         String currentPassword,
@@ -19,6 +20,6 @@ public record UpdateAccountRequestDto(
 
         ReadingLevel readingLevel,
 
-        @Size(min = 1, message = "Name cannot be blank")
+        @NotBlank(message = "Name cannot be blank")
         String name
 ) {}
