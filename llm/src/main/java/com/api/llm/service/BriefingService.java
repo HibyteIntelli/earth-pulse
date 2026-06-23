@@ -10,7 +10,7 @@ import com.api.llm.repository.BriefingRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class BriefingService {
@@ -78,10 +78,19 @@ public class BriefingService {
             throw new IllegalArgumentException("Missing impact");
         }
 
-        if (response.getPrecautions() == null ||
-                response.getPrecautions().isEmpty()) {
+        if (response.getPrecautions() == null) {
             throw new IllegalArgumentException("Missing precautions");
         }
+
+        List<String> precautions = response.getPrecautions().stream()
+                .filter(p -> p != null && !p.isBlank())
+                .toList();
+
+        if (precautions.size() < 2 || precautions.size() > 4) {
+            throw new IllegalArgumentException("Precautions must contain 2–4 non-blank items");
+        }
+
+        response.setPrecautions(precautions);
     }
 
     private BriefingLLMResponseDto generateValidResponse(
@@ -119,7 +128,7 @@ public class BriefingService {
                     .summary(briefing.getSummary())
                     .impact(briefing.getImpact())
                     .severity(briefing.getSeverity())
-                    .precautions(new ArrayList<>(briefing.getPrecautions()))
+                    .precautions(briefing.getPrecautions())
                     .generatedAt(briefing.getGeneratedAt())
                     .build();
         }

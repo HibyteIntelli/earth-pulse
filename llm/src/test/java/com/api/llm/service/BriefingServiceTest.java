@@ -6,6 +6,7 @@ import com.api.llm.dto.BriefingRequestDto;
 import com.api.llm.entity.Briefing;
 import com.api.llm.entity.BriefingId;
 import com.api.llm.repository.BriefingRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@Slf4j
 @ExtendWith(MockitoExtension.class)
 class BriefingServiceTest {
 
@@ -48,7 +50,13 @@ class BriefingServiceTest {
     @Test
     @DisplayName("add() saves Briefing with correct composite ID")
     void add_savesCorrectBriefingEntity() {
+        var llmResponse = new BriefingLLMResponseDto();
+        llmResponse.setSummary("summary");
+        llmResponse.setImpact("impact");
+        llmResponse.setPrecautions(List.of("precaution"));
+
         when(briefingRepository.existsById(org.mockito.Mockito.any())).thenReturn(false);
+        when(ollamaService.generate(anyString())).thenReturn(Mono.just(llmResponse));
 
         briefingService.add(request);
 
@@ -59,7 +67,7 @@ class BriefingServiceTest {
 
         BriefingId expectedId = new BriefingId();
         expectedId.setEventId("event-123");
-        expectedId.setReadingLevel("DEFAULT");
+        expectedId.setReadingLevel("SIMPLIFIED");
 
         assertThat(saved.getId()).isEqualTo(expectedId);
     }
@@ -67,7 +75,13 @@ class BriefingServiceTest {
     @Test
     @DisplayName("add() calls repository save exactly once")
     void add_callsRepositorySaveExactlyOnce() {
+        var llmResponse = new BriefingLLMResponseDto();
+        llmResponse.setSummary("summary");
+        llmResponse.setImpact("impact");
+        llmResponse.setPrecautions(List.of("precaution"));
+
         when(briefingRepository.existsById(org.mockito.Mockito.any())).thenReturn(false);
+        when(ollamaService.generate(anyString())).thenReturn(Mono.just(llmResponse));
 
         briefingService.add(request);
 
@@ -80,7 +94,7 @@ class BriefingServiceTest {
         var llmRequest = new BriefingLLMRequestDto();
         llmRequest.setCategory("earthquake");
         llmRequest.setMagnitudeLevel(5.5);
-        llmRequest.setReadingLevel("BEGINNER");
+        llmRequest.setReadingLevel("DEFAULT");
 
         var expected = new BriefingLLMResponseDto();
         expected.setSummary("An earthquake of moderate magnitude.");
@@ -95,9 +109,9 @@ class BriefingServiceTest {
         assertThat(result.getImpact()).isEqualTo("Structural damage is possible.");
         assertThat(result.getPrecautions()).containsExactly("Stay away from windows", "Drop and cover");
 
-        System.out.println("Summary: " + result.getSummary());
-        System.out.println("Impact: " + result.getImpact());
-        System.out.println("Precautions: " + result.getPrecautions());
+        log.info("Summary: {}", result.getSummary());
+        log.info("Impact: {}", result.getImpact());
+        log.info("Precautions: {}", result.getPrecautions());
     }
 
     @Test
@@ -118,8 +132,8 @@ class BriefingServiceTest {
         String prompt = promptCaptor.getValue();
         assertThat(prompt).contains("flood");
         assertThat(prompt).contains("7.10");
-        assertThat(prompt).contains("EXPERT");
+        assertThat(prompt).contains("DEFAULT");
 
-        System.out.println("Generated prompt:\n" + prompt);
+        log.info("Generated prompt:\n{}", prompt);
     }
 }

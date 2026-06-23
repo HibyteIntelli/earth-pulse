@@ -15,9 +15,14 @@ public class Briefing {
     @EmbeddedId
     private BriefingId id;
 
+    @Column(columnDefinition = "TEXT")
     private String summary;
+
     private String severity;
+
+    @Column(columnDefinition = "TEXT")
     private String impact;
+
     private Instant generatedAt;
 
     @ElementCollection

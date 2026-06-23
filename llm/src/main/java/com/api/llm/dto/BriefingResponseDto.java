@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -16,6 +16,6 @@ public class BriefingResponseDto {
     private String summary;
     private String impact;
     private String severity;
-    private ArrayList<String> precautions;
+    private List<String> precautions;
     private Instant generatedAt;
 }
