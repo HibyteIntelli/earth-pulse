@@ -89,6 +89,7 @@
           {{ unread() }} awaiting review.
         </p>
         <button
+          pButton
           type="button"
           class="bulk"
           (click)="markAllRead()"
@@ -186,15 +187,15 @@
                 <span class="received">{{ it.received }}</span>
                 <div class="actions">
                   @if (!it.read) {
-                    <button type="button" class="action" (click)="markRead(it.id)">
+                    <button pButton type="button" class="action" (click)="markRead(it.id)">
                       Mark actioned
                     </button>
                   } @else {
-                    <button type="button" class="action action--reopen" (click)="reopen(it.id)">
+                    <button pButton type="button" class="action action--reopen" (click)="reopen(it.id)">
                       Reopen case
                     </button>
                   }
-                  <button type="button" class="action action--ghost" (click)="dismiss(it.id)">
+                  <button pButton type="button" class="action action--ghost" (click)="dismiss(it.id)">
                     Dismiss
                   </button>
                 </div>

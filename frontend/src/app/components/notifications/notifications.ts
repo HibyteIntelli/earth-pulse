@@ -1,5 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
 
 type Category = 'wildfire' | 'volcano' | 'storm';
 type Severity = 'MODERATE' | 'HIGH' | 'SEVERE';
@@ -90,7 +91,7 @@ const FEED: readonly Intercept[] = [
 
 @Component({
   selector: 'app-notifications',
-  imports: [RouterLink],
+  imports: [RouterLink, ButtonModule],
   templateUrl: './notifications.html',
   styleUrls: ['../shared/form-kit.css', '../shared/dossier-kit.css', './notifications.css'],
 })
