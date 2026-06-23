@@ -26,11 +26,17 @@ public class User {
     private String email;
 
     @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
     private String passwordHash;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ReadingLevel readingLevel = ReadingLevel.DEFAULT;
+
+    @Column
+    private String profilePictureUrl;
 
     @Setter(AccessLevel.NONE)
     @Column(nullable = false, updatable = false)
