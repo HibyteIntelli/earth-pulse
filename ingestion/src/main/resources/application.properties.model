@@ -1,0 +1,18 @@
+spring.application.name=ingestion
+server.port=8081
+
+# Database
+spring.datasource.url=jdbc:postgresql://localhost:5433/<POSTGRES_DB>
+spring.datasource.username=<POSTGRES_USER>
+spring.datasource.password=<POSTGRES_PASSWORD>
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+spring.jpa.hibernate.ddl-auto=update
+
+# EONET integration
+eonet.base-url=https://eonet.gsfc.nasa.gov
+# Poll interval
+eonet.poll-interval-ms=3600000
+# RestClient timeouts
+eonet.connect-timeout=5s
+eonet.read-timeout=10s
