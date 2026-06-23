@@ -61,19 +61,31 @@
         <h2 class="form__title">Operator sign-in</h2>
         <p class="form__hint">Authenticate to unlock AI briefings and personal watches.</p>
 
+        @if (justRegistered()) {
+          <p-message severity="success" variant="simple" text="Operator commissioned. Sign in to continue." />
+        }
+
+        @if (serverError(); as error) {
+          <p-message severity="error" variant="simple" [text]="error" />
+        }
+
         <label class="field">
-          <span class="field__label">Name</span>
+          <span class="field__label">Email</span>
           <input
             pInputText
             class="field__input"
-            formControlName="name"
-            type="text"
-            autocomplete="username"
-            placeholder="e.g. a.rivera"
+            formControlName="email"
+            type="email"
+            autocomplete="email"
+            placeholder="operator@station.earth"
             spellcheck="false"
           />
-          @if (form.controls.name.invalid && form.controls.name.touched) {
-            <p-message severity="error" variant="simple" text="Name is required." />
+          @if (form.controls.email.invalid && form.controls.email.touched) {
+            <p-message
+              severity="error"
+              variant="simple"
+              [text]="form.controls.email.errors?.['required'] ? 'Email is required.' : 'Enter a valid email address.'"
+            />
           }
         </label>
 
@@ -95,8 +107,8 @@
           }
         </label>
 
-        <button pButton class="submit" type="submit">
-          <span>Authenticate</span>
+        <button pButton class="submit" type="submit" [disabled]="loading()">
+          <span>{{ loading() ? 'Authenticating…' : 'Authenticate' }}</span>
           <span class="submit__arrow" aria-hidden="true">&#8594;</span>
         </button>
 

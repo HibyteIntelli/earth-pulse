@@ -66,6 +66,10 @@
         <h2 class="form__title">Commission operator</h2>
         <p class="form__hint">Set your access keys. You can refine delivery preferences later in Profile.</p>
 
+        @if (serverError(); as error) {
+          <p-message severity="error" variant="simple" [text]="error" />
+        }
+
         <label class="field">
           <span class="field__label">Email</span>
           <input
@@ -161,8 +165,8 @@
           <p-message severity="error" variant="simple" text="You must acknowledge this to continue." />
         }
 
-        <button pButton class="submit" type="submit">
-          <span>Commission operator</span>
+        <button pButton class="submit" type="submit" [disabled]="loading()">
+          <span>{{ loading() ? 'Commissioning…' : 'Commission operator' }}</span>
           <span class="submit__arrow" aria-hidden="true">&#8594;</span>
         </button>
 
