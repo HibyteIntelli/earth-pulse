@@ -11,7 +11,7 @@ import java.util.ArrayList;
 @Setter
 @Builder
 public class BriefingResponseDto {
-    private long eventId;
+    private String eventId;
     private String readingLevel;
     private String summary;
     private String impact;
