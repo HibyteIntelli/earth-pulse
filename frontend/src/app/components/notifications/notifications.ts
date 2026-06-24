@@ -2,8 +2,7 @@ import { Component, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { EventCategoryId, categoryShortCode, categoryTitle } from '../../models/event-category';
-
-type DigestMode = 'IMMEDIATE' | 'DAILY DIGEST';
+import { DeliveryMode, deliveryModeLabel } from '../../models/delivery-mode';
 
 interface Intercept {
   id: string;
@@ -15,7 +14,7 @@ interface Intercept {
   coords: string;
   grid: string;
   watch: string;
-  digestMode: DigestMode;
+  deliveryMode: DeliveryMode;
   receivedAt: string;
   received: string;
   briefing: string;
@@ -33,7 +32,7 @@ const FEED: readonly Intercept[] = [
     coords: '37.21°N · 119.43°W',
     grid: '11S MS 4471 6093',
     watch: 'WEST COAST · FIRE WATCH',
-    digestMode: 'IMMEDIATE',
+    deliveryMode: 'IMMEDIATE',
     receivedAt: '2026‑06‑23 04:12Z',
     received: 'Intercepted 18 min ago',
     briefing:
@@ -50,7 +49,7 @@ const FEED: readonly Intercept[] = [
     coords: '63.89°N · 22.27°W',
     grid: '27W VL 8810 3402',
     watch: 'NORTH ATLANTIC · GEOWATCH',
-    digestMode: 'DAILY DIGEST',
+    deliveryMode: 'DAILY_DIGEST',
     receivedAt: '2026‑06‑23 02:47Z',
     received: 'Intercepted 1 h 43 m ago',
     briefing:
@@ -67,7 +66,7 @@ const FEED: readonly Intercept[] = [
     coords: '25.04°N · 89.61°W',
     grid: '16R BU 1190 7705',
     watch: 'GULF BASIN · STORM WATCH',
-    digestMode: 'IMMEDIATE',
+    deliveryMode: 'IMMEDIATE',
     receivedAt: '2026‑06‑22 21:30Z',
     received: 'Intercepted 7 h ago',
     briefing:
@@ -87,6 +86,7 @@ export class Notifications {
 
   protected readonly categoryLabel = categoryTitle;
   protected readonly categoryCode = categoryShortCode;
+  protected readonly deliveryLabel = deliveryModeLabel;
 
   protected readonly unread = computed(() => this.intercepts().filter((i) => !i.read).length);
   protected readonly total = computed(() => this.intercepts().length);
