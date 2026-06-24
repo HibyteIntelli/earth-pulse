@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { EventCategoryId, categoryShortCode, categoryTitle } from '../../models/event-category';
 import { DeliveryMode, deliveryModeLabel } from '../../models/delivery-mode';
+import { EventMagnitude, formatMagnitude } from '../../models/event-magnitude';
 
 interface Intercept {
   id: string;
@@ -13,6 +14,7 @@ interface Intercept {
   location: string;
   coords: string;
   grid: string;
+  magnitude: EventMagnitude;
   watch: string;
   deliveryMode: DeliveryMode;
   receivedAt: string;
@@ -31,6 +33,7 @@ const FEED: readonly Intercept[] = [
     location: 'Sierra National Forest, California, USA',
     coords: '37.21°N · 119.43°W',
     grid: '11S MS 4471 6093',
+    magnitude: { value: 12400, unit: 'acres' },
     watch: 'WEST COAST · FIRE WATCH',
     deliveryMode: 'IMMEDIATE',
     receivedAt: '2026‑06‑23 04:12Z',
@@ -48,6 +51,7 @@ const FEED: readonly Intercept[] = [
     location: 'Reykjanes Peninsula, Iceland',
     coords: '63.89°N · 22.27°W',
     grid: '27W VL 8810 3402',
+    magnitude: { value: null, unit: null },
     watch: 'NORTH ATLANTIC · GEOWATCH',
     deliveryMode: 'DAILY_DIGEST',
     receivedAt: '2026‑06‑23 02:47Z',
@@ -65,6 +69,7 @@ const FEED: readonly Intercept[] = [
     location: 'Central Gulf of Mexico',
     coords: '25.04°N · 89.61°W',
     grid: '16R BU 1190 7705',
+    magnitude: { value: 60, unit: 'kts' },
     watch: 'GULF BASIN · STORM WATCH',
     deliveryMode: 'IMMEDIATE',
     receivedAt: '2026‑06‑22 21:30Z',
@@ -87,6 +92,7 @@ export class Notifications {
   protected readonly categoryLabel = categoryTitle;
   protected readonly categoryCode = categoryShortCode;
   protected readonly deliveryLabel = deliveryModeLabel;
+  protected readonly magnitudeLabel = formatMagnitude;
 
   protected readonly unread = computed(() => this.intercepts().filter((i) => !i.read).length);
   protected readonly total = computed(() => this.intercepts().length);
