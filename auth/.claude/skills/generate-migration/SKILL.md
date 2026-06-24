@@ -80,29 +80,30 @@ If the entity already exists, only add/modify the fields affected by this migrat
 
 ### 5. Update application.properties (if needed)
 
-If Flyway is not yet configured, add to `application.properties`:
+Flyway is already configured in this project. Check `application.properties` for these keys — if they are already present, no change is needed:
+
 ```properties
 spring.flyway.enabled=true
 spring.flyway.locations=classpath:db/migration
+spring.flyway.baseline-on-migrate=true
+spring.flyway.baseline-version=0
 spring.jpa.hibernate.ddl-auto=validate
 ```
 
-Changing `ddl-auto` from `update` to `validate` is intentional — once Flyway manages the schema, Hibernate should only validate, not modify.
+`baseline-on-migrate=true` and `baseline-version=0` are required because Flyway was introduced after the schema already existed — they tell Flyway to treat the pre-existing schema as version 0 and only run migrations numbered V1 and above.
 
-Remind the user that `application.properties` is gitignored, so they need to make this change locally and also update any deployment config.
+If any of these properties are missing, add them. Remind the user that `application.properties` is gitignored — they must apply the change locally and also update `application.properties.model` as a reference for other developers.
 
 ### 6. Add Flyway dependency (if missing)
 
-Check `pom.xml` for `flyway-core`. If it's not there, add:
+Check `pom.xml` for `flyway-database-postgresql`. It is already present in this project:
 ```xml
 <dependency>
     <groupId>org.flywaydb</groupId>
     <artifactId>flyway-database-postgresql</artifactId>
 </dependency>
 ```
-(Version is managed by the Spring Boot BOM — no explicit version needed.)
-
-Before writing the `<dependency>` block, check whether the **Context7 MCP** server is available (`mcp__context7__resolve-library-id` / `mcp__context7__query-docs`). If it is, query `flyway-database-postgresql` to confirm the correct artifact ID and whether the Spring Boot BOM still manages the version for the current Boot release. Apply whatever the docs say; skip this step only when Context7 is unavailable.
+Version is managed by the Spring Boot BOM — no explicit version needed. If it is somehow missing, add it and verify with the **Context7 MCP** (`mcp__context7__resolve-library-id` / `mcp__context7__query-docs`) that the artifact ID is still correct for the Spring Boot version in use.
 
 ### 7. Report what was done
 
