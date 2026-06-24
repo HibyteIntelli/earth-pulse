@@ -105,7 +105,6 @@
             class="intercept"
             [class.is-read]="it.read"
             [attr.data-cat]="it.category"
-            [attr.data-sev]="it.severity"
           >
             <span class="intercept__stripe" aria-hidden="true"></span>
 
@@ -150,8 +149,6 @@
 
               <dl class="meta">
                 <div class="meta__row">
-                  <dt>Severity</dt>
-                  <dd><span class="sev">{{ it.severity }}</span></dd>
                 </div>
                 <div class="meta__row">
                   <dt>Location</dt>

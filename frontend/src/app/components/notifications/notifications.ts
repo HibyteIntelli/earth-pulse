@@ -3,7 +3,6 @@ import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { EventCategoryId, categoryShortCode, categoryTitle } from '../../models/event-category';
 
-type Severity = 'MODERATE' | 'HIGH' | 'SEVERE';
 type DigestMode = 'IMMEDIATE' | 'DAILY DIGEST';
 
 interface Intercept {
@@ -15,7 +14,6 @@ interface Intercept {
   location: string;
   coords: string;
   grid: string;
-  severity: Severity;
   watch: string;
   digestMode: DigestMode;
   receivedAt: string;
@@ -34,7 +32,6 @@ const FEED: readonly Intercept[] = [
     location: 'Sierra National Forest, California, USA',
     coords: '37.21°N · 119.43°W',
     grid: '11S MS 4471 6093',
-    severity: 'HIGH',
     watch: 'WEST COAST · FIRE WATCH',
     digestMode: 'IMMEDIATE',
     receivedAt: '2026‑06‑23 04:12Z',
@@ -52,7 +49,6 @@ const FEED: readonly Intercept[] = [
     location: 'Reykjanes Peninsula, Iceland',
     coords: '63.89°N · 22.27°W',
     grid: '27W VL 8810 3402',
-    severity: 'MODERATE',
     watch: 'NORTH ATLANTIC · GEOWATCH',
     digestMode: 'DAILY DIGEST',
     receivedAt: '2026‑06‑23 02:47Z',
@@ -70,7 +66,6 @@ const FEED: readonly Intercept[] = [
     location: 'Central Gulf of Mexico',
     coords: '25.04°N · 89.61°W',
     grid: '16R BU 1190 7705',
-    severity: 'SEVERE',
     watch: 'GULF BASIN · STORM WATCH',
     digestMode: 'IMMEDIATE',
     receivedAt: '2026‑06‑22 21:30Z',
