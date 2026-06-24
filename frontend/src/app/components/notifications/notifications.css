@@ -72,15 +72,15 @@
   transition: opacity 0.3s ease, filter 0.3s ease;
 }
 
-.intercept[data-cat='wildfire'] {
+.intercept[data-cat='wildfires'] {
   --cat: var(--ev-wildfire);
 }
 
-.intercept[data-cat='volcano'] {
+.intercept[data-cat='volcanoes'] {
   --cat: var(--ev-volcano);
 }
 
-.intercept[data-cat='storm'] {
+.intercept[data-cat='severeStorms'] {
   --cat: var(--ev-storm);
 }
 

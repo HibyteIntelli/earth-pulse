@@ -137,8 +137,8 @@
 
             <div class="intercept__body">
               <div class="intercept__top">
-                <span class="cat">{{ it.categoryCode }}</span>
-                <span class="cat__label">{{ it.categoryLabel }}</span>
+                <span class="cat">{{ categoryCode(it.category) }}</span>
+                <span class="cat__label">{{ categoryLabel(it.category) }}</span>
                 <span class="intercept__no">{{ it.fileNo }}</span>
                 @if (!it.read) {
                   <span class="status-stamp">New</span>
