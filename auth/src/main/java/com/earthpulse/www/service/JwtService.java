@@ -78,7 +78,7 @@ public class JwtService {
                 // Create the file with owner-read-only permissions atomically before writing
                 // any content — this eliminates the window where the key is world-readable.
                 Files.createFile(out, PosixFilePermissions.asFileAttribute(
-                        EnumSet.of(PosixFilePermission.OWNER_READ)));
+                        EnumSet.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE)));
             } catch (UnsupportedOperationException e) {
                 // Non-POSIX (Windows): cannot set permissions at creation time.
                 Files.createFile(out);

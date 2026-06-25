@@ -15,7 +15,7 @@ const CURRENT_OPERATOR = {
   selector: 'app-profile',
   imports: [RouterLink, ReactiveFormsModule, InputTextModule, ButtonModule, MessageModule],
   templateUrl: './profile.html',
-  styleUrls: ['../shared/form-kit.css', './profile.css'],
+  styleUrls: ['../shared/form-kit.css', '../shared/dossier-kit.css', './profile.css'],
 })
 export class Profile {
   private readonly fb = inject(FormBuilder);
