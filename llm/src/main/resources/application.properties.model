@@ -1,10 +1,11 @@
 # Server
+spring.application.name=llm
 server.port=8080
 spring.main.web-application-type=servlet
 
 # Ollama
-ollama.baseUrl=http://localhost:11434
-ollama.model=llama3
+ollama.baseUrl=<OLLAMA_URL>
+ollama.model=<MODEL>
 
 # Database
 spring.datasource.url=jdbc:postgresql://localhost:5432/<POSTGRES_DB>

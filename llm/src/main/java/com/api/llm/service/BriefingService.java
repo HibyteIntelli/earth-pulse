@@ -28,7 +28,7 @@ public class BriefingService {
     }
 
     public boolean isCached(BriefingRequestDto request) {
-        var id = new BriefingId(request.getEventId(), request.getCategory());
+        var id = new BriefingId(request.getEventId(), request.getReadingLevel());
 
         return briefingRepository.existsById(id);
     }
