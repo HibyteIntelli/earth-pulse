@@ -10,8 +10,9 @@ import org.junit.platform.suite.api.Suite;
 @SelectClasses({
         JwtServiceTest.class,
         UserServiceTest.class,
-        AuthFlowIT.class,
-        RateLimitFilterTest.class
+        RateLimitFilterTest.class,
+        AuthFlowIT.class
+
 })
 class AuthAndSubscriptionApplicationTests {
 }
