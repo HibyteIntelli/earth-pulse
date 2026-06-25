@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 public class RateLimitFilter extends OncePerRequestFilter {
 
@@ -43,7 +42,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
             return;
         }
 
-        String key = resolveClientIp(request) + ":" + path;
+        String key = request.getRemoteAddr() + ":" + path;
         Bucket bucket = buckets.computeIfAbsent(key, k -> buildBucket(capacity));
 
         ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
@@ -51,7 +50,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
             response.setHeader("X-Rate-Limit-Remaining", String.valueOf(probe.getRemainingTokens()));
             chain.doFilter(request, response);
         } else {
-            long retryAfter = TimeUnit.NANOSECONDS.toSeconds(probe.getNanosToWaitForRefill());
+            long retryAfter = Math.max(1, (probe.getNanosToWaitForRefill() + 999_999_999L) / 1_000_000_000L);
             response.setStatus(429);
             response.setContentType("application/json");
             response.setHeader("X-Rate-Limit-Retry-After-Seconds", String.valueOf(retryAfter));
@@ -65,11 +64,5 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 .build();
     }
 
-    private String resolveClientIp(HttpServletRequest request) {
-        String xff = request.getHeader("X-Forwarded-For");
-        if (xff != null && !xff.isBlank()) {
-            return xff.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
-    }
+
 }

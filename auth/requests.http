@@ -1,6 +1,8 @@
 ### Variables
 @baseUrl = http://localhost:8083
-@token = ...
+@token = eyJraWQiOiJmYzdjMWY2Ny0yM2IzLTRiNjEtYjk3Ni1mYjM2ZTZjMDc2NjUiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODMiLCJzdWIiOiJkMmRkYTc5MC05NzM0LTQxZTQtODY5Ni02YjYwZWM2ODMyY2IiLCJhdWQiOiJlYXJ0aC1wdWxzZSIsImV4cCI6MTc4MjEyMDcxOCwiaWF0IjoxNzgyMTE3MTE4fQ.Fu9XAnSv7XuJ0rc3phmiQZ6j2NV_M36zLCRYSyWBQSJoAqNZ-ReKpU3rNFBJjsGpKx17M182XV2FHMh5m2arKzSS70-26-jyEGaSjrYvTQM9LM0D5ZEm-AD5nm2z9OUaDcpJ9sAkt-u52x54NFJBuMewYAxLpSLNJAOQEJDYRZG3UdjPct4-060Va7BzT9HK5wyC0_6I3WhhbvEFtRTwBx-8hyx_2yiTISXuL8qx2u6Sh2GnoQkM3Suxd9phurVpOaeU4Sx4oRHh5qyWLNiaxHe6L1lk3bUMZbIQnbgEucq2pFp6XtAj3mDYCdqvsbjtWC2c17iPS9yQIoKfpz-RfA
+
+
 ### ── SIGNUP ──────────────────────────────────────────────────────────────────
 
 ### 1. Signup — success (201)
@@ -8,8 +10,9 @@ POST {{baseUrl}}/auth/signup
 Content-Type: application/json
 
 {
-  "email": "12345@12345.12345",
-  "password": "secret123"
+  "email": "11111@11111.11111",
+  "password": "secret123",
+  "name": "1"
 }
 
 ###
@@ -62,7 +65,7 @@ POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 {
-  "email": "12345@12345.12345",
+  "email": "11111@11111.11111",
   "password": "secret123"
 }
 
@@ -109,3 +112,23 @@ GET {{baseUrl}}/protected-smoke-test
 Authorization: Bearer {{token}}
 
 ###
+
+PATCH {{baseUrl}}/account
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "email": "12345@12345.12345",
+  "currentPassword": "newpass123",
+  "newPassword": "newpass123",
+  "profilePictureUrl": "https://cdn.example.com/pic.jpg",
+  "readingLevel": "SIMPLIFIED"
+}
+
+###
+GET	{{baseUrl}}/account/me
+Authorization: Bearer {{token}}
+
+###
+DELETE {{baseUrl}}/account
+Authorization: Bearer {{token}}
