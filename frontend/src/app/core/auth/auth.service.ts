@@ -33,7 +33,10 @@ export class AuthService {
 
   private readonly _token = signal<string | null>(null);
   readonly token = this._token.asReadonly();
-  readonly isAuthenticated = computed(() => this._token() !== null);
+  readonly isAuthenticated = computed(() => {
+    const token = this._token();
+    return token !== null && !this.isExpired(token);
+  });
 
   private logoutTimer: ReturnType<typeof setTimeout> | null = null;
 
