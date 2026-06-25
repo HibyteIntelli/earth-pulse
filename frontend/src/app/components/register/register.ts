@@ -106,7 +106,9 @@ export class Register {
     const { email, name, password } = this.form.getRawValue();
     this.auth.signup({ email, name, password }).subscribe({
       next: () => {
-        void this.router.navigate(['/login'], { queryParams: { registered: '1' } });
+        void this.router
+          .navigate(['/login'], { queryParams: { registered: '1' } })
+          .finally(() => this.loading.set(false));
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
