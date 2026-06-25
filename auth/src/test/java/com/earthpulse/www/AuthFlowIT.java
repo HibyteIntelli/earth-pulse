@@ -2,14 +2,17 @@ package com.earthpulse.www;
 
 import com.earthpulse.www.dto.JwkKeyDto;
 import com.earthpulse.www.dto.JwksDto;
+import com.earthpulse.www.service.BannedPasswordService;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import tools.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;
@@ -56,6 +59,9 @@ class AuthFlowIT {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @MockitoSpyBean
+    private BannedPasswordService bannedPasswordService;
 
     @Test
     @DisplayName("POST /auth/signup: valid payload returns 201 Created with empty body")
@@ -153,6 +159,20 @@ class AuthFlowIT {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fields.email").exists())
                 .andExpect(jsonPath("$.fields.password").exists());
+    }
+
+    @Test
+    @DisplayName("POST /auth/signup: password present in banned list returns 400")
+    void signup_bannedPassword_returns400() throws Exception {
+        Mockito.doReturn(true).when(bannedPasswordService).isBanned("Banned1pass");
+
+        mockMvc.perform(post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"banned@example.com\",\"password\":\"Banned1pass\",\"name\":\"Banned User\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Password is too common. Please choose a more unique password."));
+
+        Mockito.reset(bannedPasswordService);
     }
 
     @Test

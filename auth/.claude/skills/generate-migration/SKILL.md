@@ -66,7 +66,11 @@ CREATE INDEX IF NOT EXISTS idx_watches_user_id ON watches(user_id);
 
 ### 4. Update the JPA entity
 
-After writing the SQL, update (or create) the corresponding JPA entity class in `src/main/java/`:
+Use the **Serena MCP** to locate the entity before editing:
+- `mcp__serena__find_symbol` with the entity class name to get its file path.
+- `mcp__serena__get_symbols_overview` on the entity file to see existing fields and annotations at a glance without reading the whole file.
+
+After locating it, update (or create) the corresponding JPA entity class in `src/main/java/`:
 
 - Match field names exactly to SQL columns, using `@Column(name = "...")` when the Java name differs from the snake_case column name.
 - Use `UUID` for all ID fields with `@GeneratedValue(strategy = GenerationType.UUID)` (or `@UuidGenerator` if available in the project's Hibernate version).
