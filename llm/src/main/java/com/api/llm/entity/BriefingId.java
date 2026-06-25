@@ -1,9 +1,7 @@
 package com.api.llm.entity;
 
 import jakarta.persistence.Embeddable;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.io.Serializable;
 
@@ -11,8 +9,13 @@ import java.io.Serializable;
 @Getter
 @Setter
 @EqualsAndHashCode
+@AllArgsConstructor
 public class BriefingId implements Serializable {
     private String eventId;
 
     private String readingLevel;
+
+    public BriefingId() {
+
+    }
 }

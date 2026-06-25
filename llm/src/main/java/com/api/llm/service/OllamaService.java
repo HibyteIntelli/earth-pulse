@@ -1,13 +1,11 @@
 package com.api.llm.service;
 
 import com.api.llm.dto.BriefingLLMResponseDto;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-
+import tools.jackson.databind.ObjectMapper;
 import java.time.Duration;
 
 @Service
@@ -39,7 +37,7 @@ public class OllamaService {
                                 res.response(),
                                 BriefingLLMResponseDto.class
                         );
-                    } catch (JsonProcessingException e) {
+                    } catch (Exception e) {
                         throw new RuntimeException("Failed to parse LLM response", e);
                     }
                 });

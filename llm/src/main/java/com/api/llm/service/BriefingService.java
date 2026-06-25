@@ -6,65 +6,29 @@ import com.api.llm.dto.BriefingRequestDto;
 import com.api.llm.dto.BriefingResponseDto;
 import com.api.llm.entity.Briefing;
 import com.api.llm.entity.BriefingId;
+import com.api.llm.prompt.BriefingPrompt;
 import com.api.llm.repository.BriefingRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class BriefingService {
     private final BriefingRepository briefingRepository;
     private final OllamaService ollamaService;
 
-    public BriefingService(BriefingRepository briefingRepository, OllamaService ollamaService) {
-        this.briefingRepository = briefingRepository;
-        this.ollamaService = ollamaService;
-    }
-
     public BriefingLLMResponseDto getLLMSection(BriefingLLMRequestDto briefingRequest) {
-        String prompt = """
-                You are an environmental event analyst.
 
-                Your task is to generate a structured briefing based only on the input data.
-
-                Event data:
-                - Category: %s
-                - Magnitude level: %.2f
-                - Reading level: %s
-                
-                If Reading level = SIMPLIFIED, it means use few and simple words.
-                If Reading level = DEFAULT, it means use a regular complexity and amount of words.
-                
-                Output rules:
-                - Return ONLY valid JSON.
-                - Do NOT include markdown, explanations, or extra text.
-                - Do NOT assume location, population, or real-world context.
-                - Use only the provided data.
-
-                JSON format:
-
-                {
-                  "summary": "2-3 sentences explaining what this type of event typically means",
-                  "impact": "1-2 sentences describing general impact of this category of event",
-                  "precautions": [
-                    "2-4 general safety recommendations for this category of event"
-                  ]
-                }
-
-                Precautions rules:
-                - MUST be general (category-level only)
-                - NEVER site-specific
-                - NEVER assume real-time conditions
-                """.formatted(briefingRequest.getCategory(), briefingRequest.getMagnitudeLevel(), briefingRequest.getReadingLevel());
+        String prompt = BriefingPrompt.PROMPT.formatted(briefingRequest.getCategory(), briefingRequest.getMagnitudeLevel(), briefingRequest.getReadingLevel());
 
         return ollamaService.generate(prompt).block();
     }
 
-    public boolean checkIfExists(BriefingRequestDto request) {
-        var id = new BriefingId();
-        id.setEventId(request.getEventId());
-        id.setReadingLevel(request.getReadingLevel());
+    public boolean isCached(BriefingRequestDto request) {
+        var id = new BriefingId(request.getEventId(), request.getCategory());
 
         return briefingRepository.existsById(id);
     }
@@ -106,8 +70,7 @@ public class BriefingService {
 
                 return response;
             } catch (Exception e) {
-                System.out.println(
-                        "Invalid LLM response. Attempt " + attempt + "/" + maxAttempts);
+                System.out.println("Invalid LLM response. Attempt " + attempt + "/" + maxAttempts);
             }
         }
 
@@ -115,62 +78,34 @@ public class BriefingService {
                 "Could not generate a valid response after " + maxAttempts + " attempts");
     }
 
-    public BriefingResponseDto add(BriefingRequestDto request) {
-        var id = new BriefingId();
-        id.setEventId(request.getEventId());
-        id.setReadingLevel(request.getReadingLevel());
+    public BriefingResponseDto getBriefing(BriefingRequestDto request) {
+        var id = new BriefingId(request.getEventId(), request.getReadingLevel());
 
-        if (checkIfExists(request)) {
+        if (isCached(request)) {
             var briefing = briefingRepository.findById(id).orElseThrow();
-            return BriefingResponseDto.builder()
-                    .eventId(briefing.getId().getEventId())
-                    .readingLevel(briefing.getId().getReadingLevel())
-                    .summary(briefing.getSummary())
-                    .impact(briefing.getImpact())
-                    .severity(briefing.getSeverity())
-                    .precautions(briefing.getPrecautions())
-                    .generatedAt(briefing.getGeneratedAt())
-                    .build();
+            return new BriefingResponseDto(briefing);
         }
 
-        var llmRequest = new BriefingLLMRequestDto();
-        llmRequest.setCategory(request.getCategory());
-        llmRequest.setMagnitudeLevel(request.getMagnitudeLevel());
-        llmRequest.setReadingLevel(request.getReadingLevel());
+        var llmRequest = new BriefingLLMRequestDto(request.getCategory(), request.getMagnitudeLevel(), request.getReadingLevel());
 
         var llmResponse = generateValidResponse(llmRequest);
 
-        var briefing = new Briefing();
-        briefing.setId(id);
-        briefing.setSummary(llmResponse.getSummary());
-        briefing.setImpact(llmResponse.getImpact());
-        briefing.setPrecautions(llmResponse.getPrecautions());
-        briefing.setGeneratedAt(Instant.now());
-
+        String severity;
         if (request.getMagnitudeLevel() == 0) {
-            briefing.setSeverity("unknown");
+            severity = "unknown";
+        } else if (request.getMagnitudeLevel() < 25) {
+            severity = "low";
+        } else if (request.getMagnitudeLevel() < 50) {
+            severity = "moderate";
+        } else {
+            severity = "high";
         }
-        else if (request.getMagnitudeLevel() < 25){
-            briefing.setSeverity("low");
-        }
-        else if (request.getMagnitudeLevel() < 50){
-            briefing.setSeverity("moderate");
-        }
-        else {
-            briefing.setSeverity("high");
-        }
+
+        var briefing = new Briefing(id, llmResponse.getSummary(), severity, llmResponse.getImpact(), Instant.now(), llmResponse.getPrecautions());
 
         briefingRepository.save(briefing);
 
-        return BriefingResponseDto.builder()
-                .eventId(request.getEventId())
-                .readingLevel(request.getReadingLevel())
-                .summary(llmResponse.getSummary())
-                .impact(llmResponse.getImpact())
-                .precautions(llmResponse.getPrecautions())
-                .generatedAt(briefing.getGeneratedAt())
-                .severity(briefing.getSeverity())
-                .build();
+        return new BriefingResponseDto(briefing);
     }
 
 }
