@@ -14,5 +14,6 @@ export const routes: Routes = [
   { path: 'watches', component: Watches, canActivate: [authGuard] },
   { path: 'profile', component: Profile, canActivate: [authGuard] },
   { path: 'login', component: Login },
-  { path: 'notifications', component: Notifications, canActivate: [authGuard] }
+  { path: 'notifications', component: Notifications, canActivate: [authGuard] },
+  { path: '**', redirectTo: '' },
 ];

@@ -86,8 +86,6 @@ export class AuthService {
 
   private isExpired(token: string): boolean {
     const expMs = getExpiryMs(token);
-    // Treat a token we can't read an expiry from as expired — safer than
-    // letting an unparseable token grant access.
     return expMs === null || expMs <= Date.now();
   }
 
