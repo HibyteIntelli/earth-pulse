@@ -193,11 +193,12 @@ components:
         bbox:
           type: string
           description: |
-            Bounding box as `west,south,east,north` in WGS84 decimal degrees,
-            matching NASA EONET's bbox format. Used by the frontend to fetch
-            only events visible in the current viewport.
+            Bounding box in NASA EONET's format: the upper-left corner
+            (lon,lat) followed by the lower-right corner (lon,lat) — i.e.
+            `west,north,east,south` in WGS84 decimal degrees. Used by the
+            frontend to fetch only events visible in the current viewport.
           pattern: '^-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?$'
-          example: "-10.5,35.0,40.0,60.0"
+          example: "-10.5,60.0,40.0,35.0"
         category:
           type: array
           description: |
@@ -349,6 +350,7 @@ components:
             - invalid_category
             - invalid_sort
             - limit_out_of_range
+            - offset_out_of_range
             - event_not_found
             - unauthorized
           example: "invalid_bbox"
