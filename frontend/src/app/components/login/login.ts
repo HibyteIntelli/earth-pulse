@@ -55,7 +55,7 @@ export class Login {
     this.auth.login(this.form.getRawValue()).subscribe({
       next: () => {
         const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '/map';
-        void this.router.navigateByUrl(returnUrl);
+        void this.router.navigateByUrl(returnUrl).finally(() => this.loading.set(false));
       },
       error: (err: HttpErrorResponse) => {
         this.loading.set(false);
