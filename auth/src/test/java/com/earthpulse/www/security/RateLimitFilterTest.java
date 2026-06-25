@@ -146,25 +146,28 @@ public class RateLimitFilterTest {
     }
 
     @Test
-    @DisplayName("X-Forwarded-For header is used as the rate-limit key")
-    void login_xForwardedForIsUsedAsKey() throws Exception {
-        for (int i = 0; i < 10; i++) {
-            doRequestXff(LOGIN_PATH, "203.0.113.5, 10.0.0.1");
-        }
+    @DisplayName("X-Forwarded-For header is ignored — remoteAddr is used as key")
+    void login_xForwardedForIsIgnored() throws Exception {
+        exhaustBucket(LOGIN_PATH, CLIENT_IP, 10);
 
-        MockHttpServletResponse response = doRequestXff(LOGIN_PATH, "203.0.113.5, 10.0.0.1");
+        MockHttpServletRequest  request  = new MockHttpServletRequest("POST", LOGIN_PATH);
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        request.setRemoteAddr(CLIENT_IP);
+        request.addHeader("X-Forwarded-For", "9.9.9.9");
+        filter.doFilter(request, response, chain);
+
         assertThat(response.getStatus()).isEqualTo(429);
     }
 
     @Test
-    @DisplayName("Different XFF IPs are treated as independent clients")
-    void login_differentXffIpsAreIndependent() throws Exception {
-        for (int i = 0; i < 10; i++) {
-            doRequestXff(LOGIN_PATH, "203.0.113.1");
-        }
+    @DisplayName("Retry-After is at least 1 second when rate limited")
+    void login_retryAfterIsAtLeastOne() throws Exception {
+        exhaustBucket(LOGIN_PATH, CLIENT_IP, 10);
 
-        MockHttpServletResponse response = doRequestXff(LOGIN_PATH, "203.0.113.2");
-        assertThat(response.getStatus()).isEqualTo(200);
+        MockHttpServletResponse response = doRequest(LOGIN_PATH, CLIENT_IP);
+
+        long retryAfter = Long.parseLong(response.getHeader("X-Rate-Limit-Retry-After-Seconds"));
+        assertThat(retryAfter).isGreaterThanOrEqualTo(1);
     }
 
     // helpers
@@ -174,16 +177,6 @@ public class RateLimitFilterTest {
         MockHttpServletRequest  request  = new MockHttpServletRequest("POST", path);
         MockHttpServletResponse response = new MockHttpServletResponse();
         request.setRemoteAddr(remoteAddr);
-        filter.doFilter(request, response, chain);
-        return response;
-    }
-
-    private MockHttpServletResponse doRequestXff(String path, String xffValue)
-            throws ServletException, IOException {
-        MockHttpServletRequest  request  = new MockHttpServletRequest("POST", path);
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        request.setRemoteAddr("10.0.0.99");
-        request.addHeader("X-Forwarded-For", xffValue);
         filter.doFilter(request, response, chain);
         return response;
     }
