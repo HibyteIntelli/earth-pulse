@@ -60,7 +60,7 @@ class AuthFlowIT {
     @Test
     @DisplayName("POST /auth/signup: valid payload returns 201 Created with empty body")
     void signup_happyPath_returns201() throws Exception {
-        String body = "{\"email\":\"newuser@example.com\",\"password\":\"securePass1\"}";
+        String body = "{\"email\":\"newuser@example.com\",\"password\":\"securePass1\",\"name\":\"New User\"}";
 
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -71,7 +71,7 @@ class AuthFlowIT {
     @Test
     @DisplayName("POST /auth/signup: duplicate email returns 409 Conflict")
     void signup_duplicateEmail_returns409() throws Exception {
-        String body = "{\"email\":\"duplicate@example.com\",\"password\":\"securePass1\"}";
+        String body = "{\"email\":\"duplicate@example.com\",\"password\":\"securePass1\",\"name\":\"Duplicate User\"}";
 
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -171,7 +171,7 @@ class AuthFlowIT {
     @Test
     @DisplayName("POST /auth/login: valid credentials return 200 with a JWT token")
     void login_happyPath_returnsJwt() throws Exception {
-        String signupBody = "{\"email\":\"loginuser@example.com\",\"password\":\"loginPass1\"}";
+        String signupBody = "{\"email\":\"loginuser@example.com\",\"password\":\"loginPass1\",\"name\":\"Login User\"}";
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(signupBody))
@@ -194,7 +194,7 @@ class AuthFlowIT {
     @Test
     @DisplayName("POST /auth/login: wrong password returns 401 Unauthorized")
     void login_wrongPassword_returns401() throws Exception {
-        String signupBody = "{\"email\":\"wrongpass@example.com\",\"password\":\"correctPass1\"}";
+        String signupBody = "{\"email\":\"wrongpass@example.com\",\"password\":\"correctPass1\",\"name\":\"Wrong Pass User\"}";
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(signupBody))
@@ -358,7 +358,7 @@ class AuthFlowIT {
         String password = "iatCheckPass1";
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\"}"))
+                        .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\",\"name\":\"Iat Check\"}"))
                 .andExpect(status().isCreated());
 
         Instant before = Instant.now().truncatedTo(ChronoUnit.SECONDS);
@@ -387,7 +387,7 @@ class AuthFlowIT {
         String password = "uuidCheckPass1";
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\"}"))
+                        .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\",\"name\":\"UUID Check\"}"))
                 .andExpect(status().isCreated());
 
         MvcResult loginResult = mockMvc.perform(post("/auth/login")
@@ -413,7 +413,7 @@ class AuthFlowIT {
         String password = "roundTripPass1";
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\"}"))
+                        .content("{\"email\":\"" + email + "\",\"password\":\"" + password + "\",\"name\":\"Round Trip\"}"))
                 .andExpect(status().isCreated());
 
         MvcResult loginResult = mockMvc.perform(post("/auth/login")
