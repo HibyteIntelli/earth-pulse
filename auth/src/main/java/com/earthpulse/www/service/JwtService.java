@@ -75,12 +75,9 @@ public class JwtService {
         try {
             Files.deleteIfExists(out);
             try {
-                // Create the file with owner-read-only permissions atomically before writing
-                // any content — this eliminates the window where the key is world-readable.
                 Files.createFile(out, PosixFilePermissions.asFileAttribute(
                         EnumSet.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE)));
             } catch (UnsupportedOperationException e) {
-                // Non-POSIX (Windows): cannot set permissions at creation time.
                 Files.createFile(out);
                 log.warn("Non-POSIX filesystem: generated-jwk.json has default permissions. " +
                          "Set APP_JWT_PRIVATE_KEY in your .env to avoid writing the key to disk.");

@@ -20,3 +20,7 @@ app.base-url=http://localhost:8083
 
 # Shared secret for internal endpoints called by the Notifier Service (X-Internal-Secret header)
 app.internal-secret=<RANDOM_SECRET_MIN_32_CHARS>
+
+# Rate limiting — max requests per IP per minute for auth endpoints
+app.rate-limit.login=10
+app.rate-limit.signup=5
