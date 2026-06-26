@@ -31,12 +31,13 @@
 
 @if (confirmingLogout()) {
   <div
+    #disconRoot
     class="discon"
     role="dialog"
     aria-modal="true"
     aria-labelledby="discon-title"
     (click)="cancelLogout()"
-    (keydown.escape)="cancelLogout()"
+    (keydown)="onDialogKeydown($event)"
     tabindex="-1"
   >
     <div class="discon__card" (click)="$event.stopPropagation()">
@@ -48,7 +49,12 @@
         Re&#8211;authentication will be required to return to station.
       </p>
       <div class="discon__actions">
-        <button type="button" class="discon__btn discon__btn--stay" (click)="cancelLogout()">
+        <button
+          #cancelBtn
+          type="button"
+          class="discon__btn discon__btn--stay"
+          (click)="cancelLogout()"
+        >
           Stay on station
         </button>
         <button type="button" class="discon__btn discon__btn--go" (click)="confirmLogout()">
