@@ -110,6 +110,8 @@ export class Profile implements OnInit {
   }
 
   onSubmit(): void {
+    this.errorMessage.set(null);
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -124,7 +126,6 @@ export class Profile implements OnInit {
     }
 
     this.status.set('saving');
-    this.errorMessage.set(null);
     this.auth.updateAccount(body).subscribe({
       next: (profile) => {
         this.committedEmail.set(profile.email);
