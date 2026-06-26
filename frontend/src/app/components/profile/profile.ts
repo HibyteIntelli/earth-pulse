@@ -1,5 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
@@ -49,6 +49,12 @@ export class Profile implements OnInit {
     return letters.toUpperCase();
   });
 
+  constructor() {
+    this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      if (this.status() === 'saved') this.status.set('idle');
+    });
+  }
+
   ngOnInit(): void {
     this.status.set('loading');
     this.auth.me().subscribe({
@@ -87,6 +93,7 @@ export class Profile implements OnInit {
       return;
     }
     this.errorMessage.set(null);
+    if (this.status() === 'saved') this.status.set('idle');
     const reader = new FileReader();
     reader.onload = () => {
       this.avatarUrl.set(reader.result as string);
@@ -98,6 +105,8 @@ export class Profile implements OnInit {
   protected removePhoto(): void {
     this.avatarUrl.set(null);
     this.avatarDirty = true;
+    this.errorMessage.set(null);
+    if (this.status() === 'saved') this.status.set('idle');
   }
 
   onSubmit(): void {
