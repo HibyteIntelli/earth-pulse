@@ -5,6 +5,7 @@ import com.earthpulse.www.dto.LoginRequestDto;
 import com.earthpulse.www.dto.SignupRequestDto;
 import com.earthpulse.www.dto.UpdateAccountRequestDto;
 import com.earthpulse.www.dto.UserProfileDto;
+import com.earthpulse.www.exception.BannedPasswordException;
 import com.earthpulse.www.exception.DuplicateEmailException;
 import com.earthpulse.www.exception.InvalidCredentialsException;
 import com.earthpulse.www.exception.UserNotFoundException;
@@ -27,9 +28,13 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final UserMapper userMapper;
+    private final BannedPasswordService bannedPasswordService;
 
     @Transactional
     public void signup(SignupRequestDto dto) {
+        if (bannedPasswordService.isBanned(dto.password())) {
+            throw new BannedPasswordException();
+        }
         if (userRepository.existsByEmail(dto.email())) {
             throw new DuplicateEmailException(dto.email());
         }
@@ -70,6 +75,9 @@ public class UserService {
         }
 
         if (dto.newPassword() != null && !dto.newPassword().isBlank()) {
+            if (bannedPasswordService.isBanned(dto.newPassword())) {
+                throw new BannedPasswordException();
+            }
             if (dto.currentPassword() == null || !passwordEncoder.matches(dto.currentPassword(), user.getPasswordHash())) {
                 throw new WrongPasswordException();
             }

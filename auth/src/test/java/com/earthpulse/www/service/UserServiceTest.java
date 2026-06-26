@@ -4,6 +4,7 @@ import com.earthpulse.www.dto.AuthResponseDto;
 import com.earthpulse.www.dto.LoginRequestDto;
 import com.earthpulse.www.dto.SignupRequestDto;
 import com.earthpulse.www.entity.User;
+import com.earthpulse.www.exception.BannedPasswordException;
 import com.earthpulse.www.exception.DuplicateEmailException;
 import com.earthpulse.www.exception.InvalidCredentialsException;
 import com.earthpulse.www.mapper.UserMapper;
@@ -44,13 +45,16 @@ public class UserServiceTest {
     @Mock
     private UserMapper userMapper;
 
+    @Mock
+    private BannedPasswordService bannedPasswordService;
+
     @InjectMocks
     private UserService userService;
 
     @Test
     @DisplayName("signup: new email saves the user and returns without error")
     void signup_happyPath() {
-        SignupRequestDto dto = new SignupRequestDto("alice@example.com", "password123");
+        SignupRequestDto dto = new SignupRequestDto("alice@example.com", "password123", "Alice");
         User mappedUser = new User("alice@example.com", "hashed");
 
         when(userRepository.existsByEmail(dto.email())).thenReturn(false);
@@ -65,7 +69,7 @@ public class UserServiceTest {
     @Test
     @DisplayName("signup: duplicate email detected via existsByEmail throws DuplicateEmailException")
     void signup_duplicateEmail_existsCheck() {
-        SignupRequestDto dto = new SignupRequestDto("bob@example.com", "password123");
+        SignupRequestDto dto = new SignupRequestDto("bob@example.com", "password123", "Bob");
 
         when(userRepository.existsByEmail(dto.email())).thenReturn(true);
 
@@ -78,7 +82,7 @@ public class UserServiceTest {
     @Test
     @DisplayName("signup: passwordEncoder.encode is called with the raw (unhashed) password")
     void signup_passwordEncoder_calledWithRawPassword() {
-        SignupRequestDto dto = new SignupRequestDto("alice@example.com", "rawPassword1");
+        SignupRequestDto dto = new SignupRequestDto("alice@example.com", "rawPassword1", "Alice");
         User mappedUser = new User("alice@example.com", "hashed");
 
         when(userRepository.existsByEmail(dto.email())).thenReturn(false);
@@ -94,7 +98,7 @@ public class UserServiceTest {
     @Test
     @DisplayName("signup: userMapper.toEntity receives the hashed password, not the raw password")
     void signup_hashedPassword_passedToMapper() {
-        SignupRequestDto dto = new SignupRequestDto("alice@example.com", "rawPassword1");
+        SignupRequestDto dto = new SignupRequestDto("alice@example.com", "rawPassword1", "Alice");
         User mappedUser = new User("alice@example.com", "hashed");
 
         when(userRepository.existsByEmail(dto.email())).thenReturn(false);
@@ -111,9 +115,23 @@ public class UserServiceTest {
     }
 
     @Test
+    @DisplayName("signup: banned password throws BannedPasswordException and never touches the repository")
+    void signup_bannedPassword_throwsBannedPasswordException() {
+        SignupRequestDto dto = new SignupRequestDto("alice@example.com", "password123", "Alice");
+
+        when(bannedPasswordService.isBanned(dto.password())).thenReturn(true);
+
+        assertThatThrownBy(() -> userService.signup(dto))
+                .isInstanceOf(BannedPasswordException.class);
+
+        verify(userRepository, never()).existsByEmail(any());
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
     @DisplayName("signup: DataIntegrityViolationException from repository is re-wrapped as DuplicateEmailException")
     void signup_duplicateEmail_raceCondition() {
-        SignupRequestDto dto = new SignupRequestDto("carol@example.com", "password123");
+        SignupRequestDto dto = new SignupRequestDto("carol@example.com", "password123", "Carol");
         User mappedUser = new User("carol@example.com", "hashed");
 
         when(userRepository.existsByEmail(dto.email())).thenReturn(false);

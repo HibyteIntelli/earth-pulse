@@ -2,6 +2,7 @@ package com.earthpulse.www.config;
 
 import com.earthpulse.www.security.InternalSecretFilter;
 import com.earthpulse.www.security.JwtAuthenticationFilter;
+import com.earthpulse.www.security.RateLimitFilter;
 import com.earthpulse.www.service.JwtService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -23,6 +24,12 @@ public class SecurityConfig {
     @Value("${app.internal-secret}")
     private String internalSecret;
 
+    @Value("${app.rate-limit.login}")
+    private int loginCapacity;
+
+    @Value("${app.rate-limit.signup}")
+    private int signupCapacity;
+
     @Bean
     @Order(1)
     public SecurityFilterChain internalFilterChain(HttpSecurity http){
@@ -42,7 +49,8 @@ public class SecurityConfig {
                 .securityMatcher("/auth/**", "/.well-known/jwks.json")
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .addFilterBefore(new RateLimitFilter(loginCapacity, signupCapacity), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

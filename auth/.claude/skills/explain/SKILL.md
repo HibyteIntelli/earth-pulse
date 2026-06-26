@@ -14,11 +14,13 @@ Accepted input forms:
 ## What to do
 
 ### 1. Find the target
-- If a path was given, read that file.
+
+Use the **Serena MCP** for all symbol-based lookups — it understands the Java symbol tree and is faster and more precise than grep/glob for named targets:
+- If a path was given, read that file directly.
 - If a line number was given, focus on that method/block but also read enough surrounding context (±30 lines) to understand it.
-- If a class or method name was given, locate it first with grep/glob.
-- If a package was given, list all files in it, then read each one.
-- If a feature keyword was given, find all relevant files before explaining.
+- If a class or method name was given, use `mcp__serena__find_symbol` or `mcp__serena__find_declaration` to locate it.
+- If a package was given, use `mcp__serena__get_symbols_overview` to list its contents, then read the relevant files.
+- If a feature keyword was given, use `mcp__serena__find_symbol` and `mcp__serena__find_referencing_symbols` to find all relevant files before explaining.
 
 ### 2. Write the explanation
 
