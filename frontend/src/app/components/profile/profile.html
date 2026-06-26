@@ -164,16 +164,17 @@
         </label>
 
         <div class="field">
-          <span class="field__label">
+          <label class="field__label" for="profile-email">
             Email
             @if (!editingEmail()) {
               <span class="lock">Locked</span>
             }
-          </span>
+          </label>
 
           @if (editingEmail()) {
             <input
               pInputText
+              id="profile-email"
               class="field__input"
               formControlName="email"
               type="email"
@@ -188,7 +189,13 @@
               Cancel
             </button>
           } @else {
-            <input class="field__input" type="email" [value]="committedEmail()" readonly />
+            <input
+              id="profile-email"
+              class="field__input"
+              type="email"
+              [value]="committedEmail()"
+              readonly
+            />
             <button type="button" class="avatar-edit__btn email-toggle" (click)="startEmailChange()">
               Change commissioner email
             </button>
