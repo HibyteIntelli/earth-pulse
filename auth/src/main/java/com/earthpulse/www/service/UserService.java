@@ -63,6 +63,7 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
         if (dto.email() != null) {
+            if (dto.email().isBlank()) throw new IllegalArgumentException("Email cannot be blank");
             if (!dto.email().equals(user.getEmail()) && userRepository.existsByEmail(dto.email())) {
                 throw new DuplicateEmailException(dto.email());
             }
@@ -85,6 +86,7 @@ public class UserService {
         }
 
         if (dto.name() != null) {
+            if (dto.name().isBlank()) throw new IllegalArgumentException("Name cannot be blank");
             user.setName(dto.name());
         }
 
