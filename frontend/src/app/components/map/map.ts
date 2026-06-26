@@ -16,7 +16,10 @@ export class Map implements AfterViewInit, OnDestroy {
       center: [20, 0],
       zoom: 2,
       worldCopyJump: true,
+      zoomControl: false,
     });
+
+    L.control.zoom({ position: 'bottomleft' }).addTo(this.leafletMap);
 
     const greenIcon = L.icon({
       iconUrl: 'assets/leaves.png',
