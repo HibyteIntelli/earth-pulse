@@ -124,7 +124,7 @@
         <p class="subject"><span>Subject</span>{{ displayName() }}</p>
         <h2 class="form__title">Operator credentials</h2>
         <p class="form__hint">
-          Confirm the record on file. Your email is bound to your clearance and cannot be altered here.
+          Confirm the record on file and update your operator credentials.
         </p>
 
         <div class="id-photo">
@@ -158,19 +158,46 @@
           }
         </label>
 
-        <label class="field">
-          <span class="field__label">Email <span class="lock">&#128274; Locked</span></span>
-          <input
-            pInputText
-            class="field__input"
-            formControlName="email"
-            type="email"
-            autocomplete="email"
-            readonly
-          />
-        </label>
+        <div class="field">
+          <span class="field__label">
+            Email
+            @if (!editingEmail()) {
+              <span class="lock">&#128274; Locked</span>
+            }
+          </span>
 
-        <button pButton class="submit" type="submit">
+          @if (editingEmail()) {
+            <input
+              pInputText
+              class="field__input"
+              formControlName="email"
+              type="email"
+              autocomplete="email"
+              spellcheck="false"
+              placeholder="new.commissioner@station.earth"
+            />
+            @if (form.controls.email.invalid && form.controls.email.touched) {
+              <p-message severity="error" variant="simple" text="A valid email is required." />
+            }
+            <button type="button" class="avatar-edit__btn email-toggle" (click)="cancelEmailChange()">
+              Cancel
+            </button>
+          } @else {
+            <input class="field__input" type="email" [value]="committedEmail()" readonly />
+            <button type="button" class="avatar-edit__btn email-toggle" (click)="startEmailChange()">
+              Change commissioner email
+            </button>
+          }
+        </div>
+
+        @if (errorMessage()) {
+          <p-message severity="error" variant="simple" [text]="errorMessage()!" />
+        }
+        @if (status() === 'saved') {
+          <p-message severity="success" variant="simple" text="Changes committed to file." />
+        }
+
+        <button pButton class="submit" type="submit" [disabled]="status() === 'saving'">
           <span>Commit to file</span>
           <span class="submit__arrow" aria-hidden="true">&#8594;</span>
         </button>

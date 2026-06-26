@@ -1,15 +1,13 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
-
-const CURRENT_OPERATOR = {
-  name: 'Danut Spafiu',
-  email: 'operator@station.earth',
-} as const;
+import { AuthService } from '../../core/auth/auth.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ApiError, UpdateAccountRequest } from '../../core/auth/auth.models';
 
 @Component({
   selector: 'app-profile',
@@ -17,18 +15,22 @@ const CURRENT_OPERATOR = {
   templateUrl: './profile.html',
   styleUrls: ['../shared/form-kit.css', '../shared/dossier-kit.css', './profile.css'],
 })
-export class Profile {
+export class Profile implements OnInit {
   private readonly fb = inject(FormBuilder);
+  private readonly auth = inject(AuthService);
 
   protected readonly form = this.fb.nonNullable.group({
-    name: [CURRENT_OPERATOR.name, [Validators.required, Validators.pattern(/\S+/)]],
-    email: [
-      { value: CURRENT_OPERATOR.email, disabled: true },
-      [Validators.required, Validators.email],
-    ],
+    name: ['', [Validators.required, Validators.pattern(/\S+/)]],
+    email: ['', [Validators.required, Validators.email]],
   });
 
   protected readonly avatarUrl = signal<string | null>(null);
+
+  protected readonly status = signal<'idle' | 'loading' | 'saving' | 'saved'>('idle');
+  protected readonly errorMessage = signal<string | null>(null);
+
+  protected readonly editingEmail = signal(false);
+  protected readonly committedEmail = signal('');
 
   private readonly value = toSignal(this.form.valueChanges, {
     initialValue: this.form.getRawValue(),
@@ -43,6 +45,34 @@ export class Profile {
     const letters = parts.length > 1 ? parts[0][0] + parts[1][0] : name.slice(0, 2);
     return letters.toUpperCase();
   });
+
+  ngOnInit(): void {
+    this.status.set('loading');
+    this.auth.me().subscribe({
+      next: (profile) => {
+        this.committedEmail.set(profile.email);
+        this.form.patchValue({ name: profile.name, email: profile.email });
+        this.form.controls.email.disable();
+        this.avatarUrl.set(profile.profilePictureUrl);
+        this.status.set('idle');
+      },
+      error: () => {
+        this.errorMessage.set('Could not load your profile.');
+        this.status.set('idle');
+      },
+    });
+  }
+
+  protected startEmailChange(): void {
+    this.editingEmail.set(true);
+    this.form.controls.email.enable();
+  }
+
+  protected cancelEmailChange(): void {
+    this.editingEmail.set(false);
+    this.form.controls.email.setValue(this.committedEmail());
+    this.form.controls.email.disable();
+  }
 
   protected onAvatarSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -59,6 +89,30 @@ export class Profile {
       return;
     }
     const { name, email } = this.form.getRawValue();
-    // TODO: persist via User Service once auth is wired up
+    const body: UpdateAccountRequest = { name };
+    if (this.editingEmail() && email !== this.committedEmail()) {
+      body.email = email;
+    }
+
+    this.status.set('saving');
+    this.errorMessage.set(null);
+    this.auth.updateAccount(body).subscribe({
+      next: (profile) => {
+        this.committedEmail.set(profile.email);
+        this.form.patchValue({ name: profile.name, email: profile.email });
+        this.editingEmail.set(false);
+        this.form.controls.email.disable();
+        this.status.set('saved');
+      },
+      error: (err: HttpErrorResponse) => {
+        const apiError = err.error as ApiError | undefined;
+        this.errorMessage.set(
+          err.status === 409
+            ? 'That email is already in use.'
+            : apiError?.message ?? 'Update failed. Try again.',
+        );
+        this.status.set('idle');
+      },
+    });
   }
 }
