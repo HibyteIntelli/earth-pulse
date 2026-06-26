@@ -9,6 +9,8 @@ import { AuthService } from '../../core/auth/auth.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ApiError, UpdateAccountRequest } from '../../core/auth/auth.models';
 
+const MAX_AVATAR_BYTES = 1_000_000;
+
 @Component({
   selector: 'app-profile',
   imports: [RouterLink, ReactiveFormsModule, InputTextModule, ButtonModule, MessageModule],
@@ -31,6 +33,7 @@ export class Profile implements OnInit {
 
   protected readonly editingEmail = signal(false);
   protected readonly committedEmail = signal('');
+  private avatarDirty = false;
 
   private readonly value = toSignal(this.form.valueChanges, {
     initialValue: this.form.getRawValue(),
@@ -78,9 +81,23 @@ export class Profile implements OnInit {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
+    if (file.size > MAX_AVATAR_BYTES) {
+      this.errorMessage.set('Image is too large (max 1 MB).');
+      input.value = '';
+      return;
+    }
+    this.errorMessage.set(null);
     const reader = new FileReader();
-    reader.onload = () => this.avatarUrl.set(reader.result as string);
+    reader.onload = () => {
+      this.avatarUrl.set(reader.result as string);
+      this.avatarDirty = true;
+    };
     reader.readAsDataURL(file);
+  }
+
+  protected removePhoto(): void {
+    this.avatarUrl.set(null);
+    this.avatarDirty = true;
   }
 
   onSubmit(): void {
@@ -93,6 +110,9 @@ export class Profile implements OnInit {
     if (this.editingEmail() && email !== this.committedEmail()) {
       body.email = email;
     }
+    if (this.avatarDirty) {
+      body.profilePictureUrl = this.avatarUrl() ?? '';
+    }
 
     this.status.set('saving');
     this.errorMessage.set(null);
@@ -102,6 +122,8 @@ export class Profile implements OnInit {
         this.form.patchValue({ name: profile.name, email: profile.email });
         this.editingEmail.set(false);
         this.form.controls.email.disable();
+        this.avatarUrl.set(profile.profilePictureUrl);
+        this.avatarDirty = false;
         this.status.set('saved');
       },
       error: (err: HttpErrorResponse) => {
@@ -109,7 +131,7 @@ export class Profile implements OnInit {
         this.errorMessage.set(
           err.status === 409
             ? 'That email is already in use.'
-            : apiError?.message ?? 'Update failed. Try again.',
+            : (apiError?.message ?? 'Update failed. Try again.'),
         );
         this.status.set('idle');
       },

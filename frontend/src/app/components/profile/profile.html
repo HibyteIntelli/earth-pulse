@@ -139,6 +139,11 @@
             <input type="file" accept="image/*" (change)="onAvatarSelected($event)" hidden />
             <span>Upload ID photo</span>
           </label>
+          @if (avatarUrl()) {
+            <button type="button" class="avatar-edit__btn" (click)="removePhoto()">
+              Remove photo
+            </button>
+          }
           <span class="id-photo__cap">Clearance photo</span>
         </div>
 
@@ -162,7 +167,7 @@
           <span class="field__label">
             Email
             @if (!editingEmail()) {
-              <span class="lock">&#128274; Locked</span>
+              <span class="lock">Locked</span>
             }
           </span>
 
