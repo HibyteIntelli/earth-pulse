@@ -9,6 +9,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.io.IOException;
+import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -24,7 +25,7 @@ public class RateLimitFilterTest {
 
     @BeforeEach
     void setUp() {
-        filter = new RateLimitFilter(10, 5);
+        filter = new RateLimitFilter(10, 5, Duration.ofMinutes(1));
         chain  = mock(FilterChain.class);
     }
 
@@ -169,8 +170,6 @@ public class RateLimitFilterTest {
         long retryAfter = Long.parseLong(response.getHeader("X-Rate-Limit-Retry-After-Seconds"));
         assertThat(retryAfter).isGreaterThanOrEqualTo(1);
     }
-
-    // helpers
 
     private MockHttpServletResponse doRequest(String path, String remoteAddr)
             throws ServletException, IOException {

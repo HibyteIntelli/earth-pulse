@@ -15,13 +15,22 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class RateLimitFilter extends OncePerRequestFilter {
 
+    private static final String LOGIN_PATH                   = "/auth/login";
+    private static final String SIGNUP_PATH                  = "/auth/signup";
+    private static final String HEADER_REMAINING             = "X-Rate-Limit-Remaining";
+    private static final String HEADER_RETRY_AFTER           = "X-Rate-Limit-Retry-After-Seconds";
+    private static final String CONTENT_TYPE_JSON            = "application/json";
+    private static final String BODY_TOO_MANY_REQUESTS       = "{\"error\":\"Too many requests\"}";
+
     private final int loginCapacity;
     private final int signupCapacity;
+    private final Duration refillDuration;
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
 
-    public RateLimitFilter(int loginCapacity, int signupCapacity) {
+    public RateLimitFilter(int loginCapacity, int signupCapacity, Duration refillDuration) {
         this.loginCapacity = loginCapacity;
         this.signupCapacity = signupCapacity;
+        this.refillDuration = refillDuration;
     }
 
     @Override
@@ -33,9 +42,9 @@ public class RateLimitFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         int capacity;
-        if ("/auth/login".equals(path)) {
+        if (LOGIN_PATH.equals(path)) {
             capacity = loginCapacity;
-        } else if ("/auth/signup".equals(path)) {
+        } else if (SIGNUP_PATH.equals(path)) {
             capacity = signupCapacity;
         } else {
             chain.doFilter(request, response);
@@ -43,26 +52,24 @@ public class RateLimitFilter extends OncePerRequestFilter {
         }
 
         String key = request.getRemoteAddr() + ":" + path;
-        Bucket bucket = buckets.computeIfAbsent(key, k -> buildBucket(capacity));
+        Bucket bucket = buckets.computeIfAbsent(key, _ -> buildBucket(capacity));
 
         ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
         if (probe.isConsumed()) {
-            response.setHeader("X-Rate-Limit-Remaining", String.valueOf(probe.getRemainingTokens()));
+            response.setHeader(HEADER_REMAINING, String.valueOf(probe.getRemainingTokens()));
             chain.doFilter(request, response);
         } else {
             long retryAfter = Math.max(1, (probe.getNanosToWaitForRefill() + 999_999_999L) / 1_000_000_000L);
             response.setStatus(429);
-            response.setContentType("application/json");
-            response.setHeader("X-Rate-Limit-Retry-After-Seconds", String.valueOf(retryAfter));
-            response.getWriter().write("{\"error\":\"Too many requests\"}");
+            response.setContentType(CONTENT_TYPE_JSON);
+            response.setHeader(HEADER_RETRY_AFTER, String.valueOf(retryAfter));
+            response.getWriter().write(BODY_TOO_MANY_REQUESTS);
         }
     }
 
     private Bucket buildBucket(int capacity) {
         return Bucket.builder()
-                .addLimit(limit -> limit.capacity(capacity).refillIntervally(capacity, Duration.ofMinutes(1)))
+                .addLimit(limit -> limit.capacity(capacity).refillIntervally(capacity, refillDuration))
                 .build();
     }
-
-
 }
