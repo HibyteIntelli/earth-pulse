@@ -47,7 +47,7 @@ class BriefingServiceIntegrationTest extends BaseIntegrationTest {
     void isCached_returnsTrue_whenMatchingBriefingExists() {
         // isCached looks up by BriefingId(eventId, category)
         briefingRepository.save(new Briefing(
-                new BriefingId("event-1", "EARTHQUAKE"),
+                new BriefingId("event-1", "DEFAULT"),
                 "summary", "low", "impact",
                 Instant.now(), List.of("precaution 1", "precaution 2")
         ));
@@ -78,13 +78,13 @@ class BriefingServiceIntegrationTest extends BaseIntegrationTest {
         // For the cache-hit path to work end-to-end:
         // isCached uses BriefingId(eventId, category) and getBriefing loads by BriefingId(eventId, readingLevel).
         // Using the same value for both category and readingLevel ensures the same DB row is found.
-        var id = new BriefingId("event-3", "WILDFIRE");
+        var id = new BriefingId("event-3", "DEFAULT");
         briefingRepository.save(new Briefing(
                 id, "cached summary", "high", "cached impact",
                 Instant.now(), List.of("evacuate immediately", "stay low")
         ));
 
-        var request = new BriefingRequestDto("event-3", "WILDFIRE", 60.0, "WILDFIRE");
+        var request = new BriefingRequestDto("event-3", "DEFAULT", 60.0, "WILDFIRE");
         var result = briefingService.getBriefing(request);
 
         assertThat(result.getSummary()).isEqualTo("cached summary");
