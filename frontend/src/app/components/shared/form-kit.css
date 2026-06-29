@@ -186,3 +186,7 @@
   letter-spacing: 0.06em;
   color: var(--ev-volcano);
 }
+
+:host ::ng-deep .p-message-success .p-message-text {
+  color: var(--forest-deep);
+}

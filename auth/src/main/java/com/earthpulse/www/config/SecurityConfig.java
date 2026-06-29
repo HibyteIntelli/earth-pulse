@@ -5,6 +5,7 @@ import com.earthpulse.www.security.JwtAuthenticationFilter;
 import com.earthpulse.www.security.RateLimitFilter;
 import com.earthpulse.www.service.JwtService;
 import org.springframework.beans.factory.annotation.Value;
+import java.time.Duration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -30,6 +31,9 @@ public class SecurityConfig {
     @Value("${app.rate-limit.signup}")
     private int signupCapacity;
 
+    @Value("${app.rate-limit.refill-duration}")
+    private Duration refillDuration;
+
     @Bean
     @Order(1)
     public SecurityFilterChain internalFilterChain(HttpSecurity http){
@@ -50,7 +54,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-                .addFilterBefore(new RateLimitFilter(loginCapacity, signupCapacity), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new RateLimitFilter(loginCapacity, signupCapacity, refillDuration), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
