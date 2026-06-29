@@ -174,9 +174,6 @@
   height: 2px;
 }
 
-/* ----------------------------------------------------------------------------
-   Disconnect protocol — themed confirmation overlay (covers the viewport).
----------------------------------------------------------------------------- */
 .discon {
   position: fixed;
   inset: 0;
