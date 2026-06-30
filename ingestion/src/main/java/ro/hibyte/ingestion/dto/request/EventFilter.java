@@ -14,6 +14,6 @@ public class EventFilter {
     private OffsetDateTime end;
     private OffsetDateTime since;
     private SortEnum sort;
-    private Integer limit;
-    private Integer offset;
+    private Integer size;
+    private Integer page;
 }

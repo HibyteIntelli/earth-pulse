@@ -13,6 +13,6 @@ public class EventPage {
 
     private List<EventResponse> items;
     private int total;
-    private int limit;
-    private int offset;
+    private int page;
+    private int size;
 }
