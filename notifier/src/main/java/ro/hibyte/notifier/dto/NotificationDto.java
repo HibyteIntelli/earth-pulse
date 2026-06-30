@@ -1,6 +1,6 @@
 package ro.hibyte.notifier.dto;
 
-import ro.hibyte.ingestion.dto.request.CategoryEnum;
+import ro.hibyte.notifier.entity.CategoryEnum;
 import ro.hibyte.notifier.entity.DeliveryMode;
 import ro.hibyte.notifier.entity.NotificationLog;
 import ro.hibyte.notifier.entity.ReadingLevel;
@@ -48,8 +48,8 @@ public class NotificationDto {
         this.briefing = briefing;
     }
 
-    public static NotificationDto from(NotificationLog log) {
-        return new NotificationDto(
+    public NotificationDto(NotificationLog log) {
+        this(
                 log.getId(),
                 log.getWatchId(),
                 log.getEventId(),

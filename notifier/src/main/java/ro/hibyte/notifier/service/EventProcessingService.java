@@ -3,7 +3,7 @@ package ro.hibyte.notifier.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ro.hibyte.ingestion.dto.request.CategoryEnum;
+import ro.hibyte.notifier.entity.CategoryEnum;
 import ro.hibyte.notifier.dto.BriefingSnapshotDto;
 import ro.hibyte.notifier.dto.NewEventPayloadDto;
 import ro.hibyte.notifier.entity.DeliveryMode;

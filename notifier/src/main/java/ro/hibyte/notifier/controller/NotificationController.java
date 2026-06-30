@@ -16,7 +16,7 @@ import ro.hibyte.notifier.entity.DeliveryMode;
 import ro.hibyte.notifier.service.NotificationService;
 import java.time.OffsetDateTime;
 import java.util.UUID;
-import ro.hibyte.ingestion.dto.request.CategoryEnum;
+import ro.hibyte.notifier.entity.CategoryEnum;
 
 @RestController
 @RequiredArgsConstructor

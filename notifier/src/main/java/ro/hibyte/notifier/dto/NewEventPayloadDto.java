@@ -8,7 +8,7 @@ import lombok.Data;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import ro.hibyte.ingestion.dto.request.CategoryEnum;
+import ro.hibyte.notifier.entity.CategoryEnum;
 @Data
 public class NewEventPayloadDto {
 

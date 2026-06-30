@@ -7,7 +7,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import ro.hibyte.ingestion.dto.request.CategoryEnum;
+import ro.hibyte.notifier.entity.CategoryEnum;
 import ro.hibyte.notifier.dto.NotificationDto;
 import ro.hibyte.notifier.dto.NotificationPageDto;
 import ro.hibyte.notifier.entity.DeliveryMode;
@@ -47,7 +47,7 @@ public class NotificationService {
                 );
 
         return new NotificationPageDto(
-                page.getContent().stream().map(NotificationDto::from).toList(),
+                page.getContent().stream().map(NotificationDto::new).toList(),
                 page.getTotalElements(),
                 limit,
                 offset
@@ -62,6 +62,6 @@ public class NotificationService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        return NotificationDto.from(log);
+        return new NotificationDto(log);
     }
 }
