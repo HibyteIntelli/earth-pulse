@@ -1,7 +1,6 @@
 package ro.hibyte.ingestion.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ro.hibyte.ingestion.dto.request.EventFilter;
@@ -25,7 +24,6 @@ public class EventController {
 
     @PostMapping("/search")
     public ResponseEntity<EventPage> searchEvents(@RequestBody(required = false) EventFilter filter) {
-        //TO DO
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build();
+        return ResponseEntity.ok(eventService.searchEvents(filter));
     }
 }
