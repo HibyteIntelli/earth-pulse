@@ -14,9 +14,9 @@ import ro.hibyte.notifier.dto.NotificationDto;
 import ro.hibyte.notifier.dto.NotificationPageDto;
 import ro.hibyte.notifier.entity.DeliveryMode;
 import ro.hibyte.notifier.service.NotificationService;
-
 import java.time.OffsetDateTime;
 import java.util.UUID;
+import ro.hibyte.ingestion.dto.request.CategoryEnum;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,27 +27,36 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping
-    public ResponseEntity<NotificationPageDto> listNotifications(
+    public NotificationPageDto listNotifications(
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam(required = false) String eventId,
-            @RequestParam(required = false) String category,
+            @RequestParam(required = false) CategoryEnum category,
             @RequestParam(required = false) DeliveryMode deliveryMode,
             @RequestParam(required = false) OffsetDateTime since,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit,
             @RequestParam(defaultValue = "0") @Min(0) int offset) {
 
         UUID userId = subjectAsUuid(jwt);
-        return ResponseEntity.ok(
-                notificationService.listNotifications(userId, eventId, category, deliveryMode, since, limit, offset));
+
+        return notificationService.listNotifications(
+                userId,
+                eventId,
+                category,
+                deliveryMode,
+                since,
+                limit,
+                offset
+        );
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<NotificationDto> getNotification(
+    public NotificationDto getNotification(
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable UUID id) {
 
         UUID userId = subjectAsUuid(jwt);
-        return ResponseEntity.ok(notificationService.getNotification(id, userId));
+
+        return notificationService.getNotification(id, userId);
     }
 
     private UUID subjectAsUuid(Jwt jwt) {

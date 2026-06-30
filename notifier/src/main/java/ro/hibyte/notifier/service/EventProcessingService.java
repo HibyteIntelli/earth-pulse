@@ -3,6 +3,7 @@ package ro.hibyte.notifier.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ro.hibyte.ingestion.dto.request.CategoryEnum;
 import ro.hibyte.notifier.dto.BriefingSnapshotDto;
 import ro.hibyte.notifier.dto.NewEventPayloadDto;
 import ro.hibyte.notifier.entity.DeliveryMode;
@@ -42,7 +43,12 @@ public class EventProcessingService {
                     .userId(watch.userId())
                     .eventId(payload.getEventId())
                     .eventTitle(payload.getTitle())
-                    .eventCategories(payload.getCategories())
+                    .eventCategories(
+                            payload.getCategories()
+                                    .stream()
+                                    .map(CategoryEnum::getValue)
+                                    .toList()
+                    )
                     .eventUrl(buildEventUrl(payload.getEventId()))
                     .eventDate(payload.getEventDate())
                     .deliveryMode(watch.deliveryMode())

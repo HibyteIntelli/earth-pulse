@@ -8,7 +8,7 @@ import lombok.Data;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-
+import ro.hibyte.ingestion.dto.request.CategoryEnum;
 @Data
 public class NewEventPayloadDto {
 
@@ -19,7 +19,8 @@ public class NewEventPayloadDto {
     private String title;
 
     @NotEmpty
-    private List<String> categories;
+    @NotEmpty
+    private List<CategoryEnum> categories;
 
     @NotNull
     @Valid

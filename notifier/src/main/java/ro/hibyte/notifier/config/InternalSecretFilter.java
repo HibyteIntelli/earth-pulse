@@ -23,13 +23,16 @@ public class InternalSecretFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-        String value = request.getHeader(HEADER);
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            FilterChain filterChain
+    ) throws ServletException, IOException {
+        var value = request.getHeader(HEADER);
         if (secret.equals(value)) {
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                    "internal-service", null,
+            var auth = new UsernamePasswordAuthenticationToken(
+                    "internal-service",
+                    null,
                     List.of(new SimpleGrantedAuthority("ROLE_INTERNAL")));
             SecurityContextHolder.getContext().setAuthentication(auth);
         }

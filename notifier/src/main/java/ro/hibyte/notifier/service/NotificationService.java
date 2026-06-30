@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import ro.hibyte.ingestion.dto.request.CategoryEnum;
 import ro.hibyte.notifier.dto.NotificationDto;
 import ro.hibyte.notifier.dto.NotificationPageDto;
 import ro.hibyte.notifier.entity.DeliveryMode;
@@ -25,29 +26,32 @@ public class NotificationService {
     public NotificationPageDto listNotifications(
             UUID userId,
             String eventId,
-            String category,
+            CategoryEnum category,
             DeliveryMode deliveryMode,
             OffsetDateTime since,
             int limit,
             int offset) {
-
-        if (limit <= 0) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "limit must be > 0");
-        }
 
         PageRequest pageRequest = PageRequest.of(
                 offset / limit, limit,
                 Sort.by(Sort.Direction.DESC, "deliveredAt"));
 
         Page<NotificationLog> page = notificationLogRepository
-                .findByFilters(userId, eventId, category, deliveryMode, since, pageRequest);
+                .findByFilters(
+                        userId,
+                        eventId,
+                        category != null ? category.getValue() : null,
+                        deliveryMode,
+                        since,
+                        pageRequest
+                );
 
-        return NotificationPageDto.builder()
-                .items(page.getContent().stream().map(NotificationDto::from).toList())
-                .total(page.getTotalElements())
-                .limit(limit)
-                .offset(offset)
-                .build();
+        return new NotificationPageDto(
+                page.getContent().stream().map(NotificationDto::from).toList(),
+                page.getTotalElements(),
+                limit,
+                offset
+        );
     }
 
     public NotificationDto getNotification(UUID id, UUID userId) {
