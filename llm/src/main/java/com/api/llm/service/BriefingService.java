@@ -6,22 +6,28 @@ import com.api.llm.dto.BriefingRequestDto;
 import com.api.llm.dto.BriefingResponseDto;
 import com.api.llm.entity.Briefing;
 import com.api.llm.entity.BriefingId;
-import com.api.llm.exception.InvalidEventIdEception;
+import com.api.llm.exception.InvalidEventIdException;
 import com.api.llm.exception.LlmUnavailableException;
 import com.api.llm.prompt.BriefingPrompt;
 import com.api.llm.repository.BriefingRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BriefingService {
     private final BriefingRepository briefingRepository;
     private final OllamaService ollamaService;
+
+    private static final Pattern EONET_ID_PATTERN = Pattern.compile("^EONET_\\d+$");
 
     public BriefingLLMResponseDto getLLMSection(BriefingLLMRequestDto briefingRequest) {
 
@@ -69,31 +75,34 @@ public class BriefingService {
                 var response = getLLMSection(request);
                 validateResponse(response);
                 return response;
-            } catch (WebClientRequestException e) {
+            } catch (WebClientRequestException | WebClientResponseException e) {
                 throw new LlmUnavailableException("Ollama is unreachable", e);
             } catch (Exception e) {
-                System.out.println("Invalid LLM response. Attempt " + attempt + "/" + maxAttempts);
+                log.warn("Invalid LLM response. Attempt {}/{}", attempt, maxAttempts, e);
             }
         }
 
         throw new RuntimeException("Could not generate a valid response after " + maxAttempts + " attempts");
     }
 
+    public boolean validateEventId(String eventId){
+        return eventId != null && EONET_ID_PATTERN.matcher(eventId).matches();
+    }
+
     public BriefingResponseDto getBriefing(BriefingRequestDto request) {
 
-        if (!ollamaService.checkStatus()) {
-            throw new LlmUnavailableException("Ollama is unreachable", null);
+        if (!validateEventId(request.getEventId())) {
+            throw new InvalidEventIdException("Invalid event id");
         }
-
-        if (!request.getEventId().startsWith("EONET_")){
-            throw new InvalidEventIdEception("Invalid event id");
-        }
-
         var id = new BriefingId(request.getEventId(), request.getReadingLevel());
 
         if (isCached(request)) {
             var briefing = briefingRepository.findById(id).orElseThrow();
             return new BriefingResponseDto(briefing);
+        }
+
+        if (!ollamaService.checkStatus()) {
+            throw new LlmUnavailableException("Ollama is unreachable", null);
         }
 
         var llmRequest = new BriefingLLMRequestDto(request.getCategory(), request.getMagnitudeLevel(), request.getReadingLevel());

@@ -23,7 +23,7 @@ public class BriefingsController {
             @RequestBody BriefingRequestDto request) {
 
         BriefingResponseDto response = briefingService.getBriefing(
-                new BriefingRequestDto(request.getEventId(), request.getReadingLevel(), request.getMagnitudeLevel(), request.getCategory()));
+                new BriefingRequestDto(id, request.getReadingLevel(), request.getMagnitudeLevel(), request.getCategory()));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
