@@ -1,10 +1,13 @@
 package ro.hibyte.notifier.client;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import ro.hibyte.notifier.dto.IngestionEventPageDto;
 
+import java.net.http.HttpClient;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 
 @Component
@@ -14,8 +17,15 @@ public class IngestionServiceClient {
 
     public IngestionServiceClient(
             @Value("${app.ingestion-service.url}") String ingestionServiceUrl) {
+        var httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(3))
+                .build();
+        var factory = new JdkClientHttpRequestFactory(httpClient);
+        factory.setReadTimeout(Duration.ofSeconds(5));
+
         this.restClient = RestClient.builder()
                 .baseUrl(ingestionServiceUrl)
+                .requestFactory(factory)
                 .build();
     }
 

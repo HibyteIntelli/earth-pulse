@@ -35,9 +35,9 @@ public class EventPollingService {
     @Scheduled(fixedDelayString = "${notifier.polling.interval-ms:60000}")
     public void pollNewEvents() {
         log.debug("Polling ingestion for events since {}", lastPolledAt);
-        OffsetDateTime pollStart = OffsetDateTime.now();
         int page = 0;
         int processed = 0;
+        OffsetDateTime maxIngestedAt = null;
 
         try {
             IngestionEventPageDto result;
@@ -48,11 +48,17 @@ public class EventPollingService {
                 for (IngestionEventResponseDto event : result.getItems()) {
                     eventProcessingService.processNewEvent(toPayload(event));
                     processed++;
+                    if (event.getIngestedAt() != null &&
+                            (maxIngestedAt == null || event.getIngestedAt().isAfter(maxIngestedAt))) {
+                        maxIngestedAt = event.getIngestedAt();
+                    }
                 }
                 page++;
             } while (result.getItems().size() == pageSize);
 
-            lastPolledAt = pollStart;
+            if (maxIngestedAt != null) {
+                lastPolledAt = maxIngestedAt;
+            }
             log.info("Poll complete: {} new event(s) processed", processed);
         } catch (Exception e) {
             // lastPolledAt is not advanced — next poll retries from the same window
