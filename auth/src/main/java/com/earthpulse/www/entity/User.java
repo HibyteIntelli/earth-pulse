@@ -35,7 +35,7 @@ public class User {
     @Column(nullable = false)
     private ReadingLevel readingLevel = ReadingLevel.DEFAULT;
 
-    @Column
+    @Column(length = 2048)
     private String profilePictureUrl;
 
     @Setter(AccessLevel.NONE)

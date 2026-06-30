@@ -9,6 +9,7 @@ import com.earthpulse.www.exception.BannedPasswordException;
 import com.earthpulse.www.exception.DuplicateEmailException;
 import com.earthpulse.www.exception.InvalidCredentialsException;
 import com.earthpulse.www.exception.UserNotFoundException;
+import com.earthpulse.www.exception.ValidationException;
 import com.earthpulse.www.exception.WrongPasswordException;
 import com.earthpulse.www.mapper.UserMapper;
 import com.earthpulse.www.repository.UserRepository;
@@ -68,14 +69,15 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException(userId));
 
         if (dto.email() != null) {
-            if (dto.email().isBlank()) throw new IllegalArgumentException("Email cannot be blank");
+            if (dto.email().isBlank()) throw new ValidationException("email", "Email cannot be blank");
             if (!dto.email().equals(user.getEmail()) && userRepository.existsByEmail(dto.email())) {
                 throw new DuplicateEmailException(dto.email());
             }
             user.setEmail(dto.email());
         }
 
-        if (dto.newPassword() != null && !dto.newPassword().isBlank()) {
+        if (dto.newPassword() != null) {
+            if (dto.newPassword().isBlank()) throw new ValidationException("newPassword", "New password cannot be blank");
             if (bannedPasswordService.isBanned(dto.newPassword())) {
                 throw new BannedPasswordException();
             }
@@ -94,14 +96,14 @@ public class UserService {
         }
 
         if (dto.name() != null) {
-            if (dto.name().isBlank()) throw new IllegalArgumentException("Name cannot be blank");
+            if (dto.name().isBlank()) throw new ValidationException("name", "Name cannot be blank");
             user.setName(dto.name());
         }
 
         try {
             return userMapper.toProfileDto(userRepository.save(user));
         } catch (DataIntegrityViolationException e) {
-            throw new DuplicateEmailException(dto.email());
+            throw new DuplicateEmailException(dto.email() != null ? dto.email() : user.getEmail());
         }
     }
 

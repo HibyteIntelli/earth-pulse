@@ -2,6 +2,7 @@ package com.earthpulse.www.controller;
 
 import com.earthpulse.www.dto.UpdateAccountRequestDto;
 import com.earthpulse.www.dto.UserProfileDto;
+import com.earthpulse.www.exception.InvalidCredentialsException;
 import com.earthpulse.www.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class AccountController {
 
     @GetMapping("/me")
     public ResponseEntity<UserProfileDto> getProfile(@AuthenticationPrincipal String userId) {
-        return ResponseEntity.ok(userService.getProfile(UUID.fromString(userId)));
+        return ResponseEntity.ok(userService.getProfile(parseUserId(userId)));
     }
 
     @PatchMapping
@@ -33,12 +34,20 @@ public class AccountController {
             @AuthenticationPrincipal String userId,
             @Valid @RequestBody UpdateAccountRequestDto dto
     ) {
-        return ResponseEntity.ok(userService.updateAccount(UUID.fromString(userId), dto));
+        return ResponseEntity.ok(userService.updateAccount(parseUserId(userId), dto));
     }
 
     @DeleteMapping
     public ResponseEntity<Void> deleteAccount(@AuthenticationPrincipal String userId) {
-        userService.deleteAccount(UUID.fromString(userId));
+        userService.deleteAccount(parseUserId(userId));
         return ResponseEntity.noContent().build();
+    }
+
+    private UUID parseUserId(String userId) {
+        try {
+            return UUID.fromString(userId);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidCredentialsException();
+        }
     }
 }
