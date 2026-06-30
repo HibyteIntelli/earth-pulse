@@ -1,0 +1,1 @@
+ALTER TABLE users ALTER COLUMN profile_picture_url TYPE VARCHAR(2048);
