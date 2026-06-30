@@ -4,6 +4,7 @@ import com.earthpulse.www.dto.AuthResponseDto;
 import com.earthpulse.www.dto.LoginRequestDto;
 import com.earthpulse.www.dto.SignupRequestDto;
 import com.earthpulse.www.entity.User;
+import com.earthpulse.www.exception.BannedPasswordException;
 import com.earthpulse.www.exception.DuplicateEmailException;
 import com.earthpulse.www.exception.InvalidCredentialsException;
 import com.earthpulse.www.mapper.UserMapper;
@@ -43,6 +44,9 @@ public class UserServiceTest {
 
     @Mock
     private UserMapper userMapper;
+
+    @Mock
+    private BannedPasswordService bannedPasswordService;
 
     @InjectMocks
     private UserService userService;
@@ -108,6 +112,20 @@ public class UserServiceTest {
         verify(userMapper).toEntity(any(SignupRequestDto.class), passwordCaptor.capture());
         assertThat(passwordCaptor.getValue()).isEqualTo("hashed");
         assertThat(passwordCaptor.getValue()).isNotEqualTo("rawPassword1");
+    }
+
+    @Test
+    @DisplayName("signup: banned password throws BannedPasswordException and never touches the repository")
+    void signup_bannedPassword_throwsBannedPasswordException() {
+        SignupRequestDto dto = new SignupRequestDto("alice@example.com", "password123", "Alice");
+
+        when(bannedPasswordService.isBanned(dto.password())).thenReturn(true);
+
+        assertThatThrownBy(() -> userService.signup(dto))
+                .isInstanceOf(BannedPasswordException.class);
+
+        verify(userRepository, never()).existsByEmail(any());
+        verify(userRepository, never()).save(any());
     }
 
     @Test
