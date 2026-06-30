@@ -31,7 +31,7 @@ paths:
       description: |
         Read endpoint backing the map view. All filters are optional and
         composable (AND). When no filters are supplied, returns the most
-        recent active events up to `limit`, sorted by `eventDate` desc.
+        recent active events up to `size`, sorted by `eventDate` desc.
 
         Filters are passed as a JSON body rather than query parameters:
         there are many of them, some are arrays (e.g. `category`), and
