@@ -238,12 +238,12 @@ components:
             - ingestedAt:desc
             - ingestedAt:asc
           default: eventDate:desc
-        limit:
+        size:
           type: integer
           minimum: 1
           maximum: 500
           default: 100
-        offset:
+        page:
           type: integer
           minimum: 0
           default: 0
@@ -328,14 +328,14 @@ components:
 
     EventPage:
       type: object
-      required: [items, total, limit, offset]
+      required: [items, total, page, size]
       properties:
         items:
           type: array
           items: { $ref: '#/components/schemas/Event' }
         total: { type: integer, example: 142 }
-        limit: { type: integer, example: 100 }
-        offset: { type: integer, example: 0 }
+        page: { type: integer, example: 0 }
+        size: { type: integer, example: 100 }
 
     Error:
       type: object
@@ -349,8 +349,8 @@ components:
             - invalid_date_range
             - invalid_category
             - invalid_sort
-            - limit_out_of_range
-            - offset_out_of_range
+            - size_out_of_range
+            - page_out_of_range
             - event_not_found
             - unauthorized
           example: "invalid_bbox"
