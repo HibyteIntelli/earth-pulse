@@ -18,7 +18,7 @@ import java.util.List;
 @RequestMapping("/api/briefings")
 public class BriefingsController {
     @GetMapping("/{id}")
-    public ResponseEntity<BriefingResponseDto> getById(@PathVariable long id) {
+    public ResponseEntity<BriefingResponseDto> getById(@PathVariable String id) {
 
         var dummy = BriefingResponseDto.builder()
                 .eventId(id)
