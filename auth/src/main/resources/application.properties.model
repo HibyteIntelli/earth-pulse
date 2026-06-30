@@ -7,10 +7,20 @@ spring.datasource.username=<POSTGRES_USER>
 spring.datasource.password=<POSTGRES_PASSWORD>
 spring.datasource.driver-class-name=org.postgresql.Driver
 
-spring.jpa.hibernate.ddl-auto=update
+spring.jpa.hibernate.ddl-auto=validate
+
+# Flyway — manages schema migrations
+spring.flyway.enabled=true
+spring.flyway.locations=classpath:db/migration
+spring.flyway.baseline-on-migrate=true
+spring.flyway.baseline-version=0
 
 # Service identity — used as the JWT issuer claim (iss)
 app.base-url=http://localhost:8083
 
 # Shared secret for internal endpoints called by the Notifier Service (X-Internal-Secret header)
 app.internal-secret=<RANDOM_SECRET_MIN_32_CHARS>
+
+# Rate limiting — max requests per IP per minute for auth endpoints
+app.rate-limit.login=10
+app.rate-limit.signup=5

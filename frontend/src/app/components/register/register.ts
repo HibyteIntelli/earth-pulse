@@ -1,6 +1,7 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Router, RouterLink } from '@angular/router';
 import {
   AbstractControl,
   FormBuilder,
@@ -15,6 +16,8 @@ import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
 import { GlobeScene } from '../shared/globe-scene';
 import { SeismoScene } from '../shared/seismo-scene';
+import { AuthService } from '../../core/auth/auth.service';
+import { ApiError } from '../../core/auth/auth.models';
 
 const STRENGTH_LABELS = ['Awaiting key', 'Weak', 'Fair', 'Strong', 'Fortified'] as const;
 
@@ -56,10 +59,15 @@ function passwordsMatchValidator(group: AbstractControl): ValidationErrors | nul
     SeismoScene,
   ],
   templateUrl: './register.html',
-  styleUrls: ['../auth-scene.css', './register.css'],
+  styleUrls: ['../shared/form-kit.css', '../shared/auth-scene.css', './register.css'],
 })
 export class Register {
   private readonly fb = inject(FormBuilder);
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+
+  protected readonly loading = signal(false);
+  protected readonly serverError = signal<string | null>(null);
 
   protected readonly form = this.fb.nonNullable.group(
     {
@@ -91,5 +99,23 @@ export class Register {
       this.form.markAllAsTouched();
       return;
     }
+
+    this.loading.set(true);
+    this.serverError.set(null);
+
+    const { email, name, password } = this.form.getRawValue();
+    this.auth.signup({ email, name, password }).subscribe({
+      next: () => {
+        void this.router
+          .navigate(['/login'], { queryParams: { registered: '1' } })
+          .finally(() => this.loading.set(false));
+      },
+      error: (err: HttpErrorResponse) => {
+        this.loading.set(false);
+        this.serverError.set(
+          (err.error as ApiError)?.message ?? 'Registration failed. Please try again.',
+        );
+      },
+    });
   }
 }

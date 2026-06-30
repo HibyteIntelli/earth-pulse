@@ -1,0 +1,132 @@
+.gov-stamp {
+  top: clamp(-52px, -7vw, -42px);
+  left: 50%;
+  width: clamp(104px, 22vw, 134px);
+  transform: translateX(-50%) rotate(-8deg);
+}
+
+.form {
+  text-align: center;
+}
+
+.subject {
+  margin: 0 0 1.1rem;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.subject span {
+  margin-right: 0.55rem;
+  color: var(--ink-faint);
+}
+
+.field {
+  text-align: left;
+}
+
+.lock {
+  float: right;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  color: var(--ink-faint);
+}
+
+.field__input[readonly] {
+  color: var(--ink-faint);
+  cursor: not-allowed;
+  border-bottom-color: var(--line);
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent 0 6px,
+    rgba(33, 58, 51, 0.05) 6px 7px
+  );
+}
+
+.field__input[readonly]:focus {
+  outline: none;
+  border-bottom-color: var(--line);
+  box-shadow: none;
+}
+
+.id-photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  margin: 0.4rem 0 2.2rem;
+}
+
+.avatar {
+  --w: clamp(168px, 26vw, 208px);
+  position: relative;
+  width: var(--w);
+  aspect-ratio: 4 / 5;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--paper);
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 20px 44px -26px rgba(33, 58, 51, 0.55);
+}
+
+.avatar::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid var(--line);
+  pointer-events: none;
+}
+
+.avatar__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar__mono {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: calc(var(--w) * 0.3);
+  letter-spacing: -0.02em;
+  color: var(--forest-deep);
+}
+
+.id-photo__cap {
+  font-family: var(--mono);
+  font-size: 0.56rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.avatar-edit__btn {
+  cursor: pointer;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  background: transparent;
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  transition: border-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.avatar-edit__btn:hover {
+  color: var(--water-deep);
+  border-color: var(--water-deep);
+  box-shadow: 0 1px 0 0 var(--water-soft);
+}
+
+.avatar-edit__btn:focus-within {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}

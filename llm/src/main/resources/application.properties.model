@@ -1,0 +1,17 @@
+# Server
+spring.application.name=llm
+server.port=8080
+spring.main.web-application-type=servlet
+
+# Ollama
+ollama.baseUrl=<OLLAMA_URL>
+ollama.model=<MODEL>
+
+# Database
+spring.datasource.url=jdbc:postgresql://localhost:5432/<POSTGRES_DB>
+spring.datasource.username=<POSTGRES_USER>
+spring.datasource.password=<POSTGRES_PASSWORD>
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true

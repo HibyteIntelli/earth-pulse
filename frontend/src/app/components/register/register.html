@@ -23,7 +23,7 @@
     <div class="hud__id">
       <span class="dot"></span>
       EARTH&nbsp;PULSE
-      <span class="hud__sub">// global event monitor</span>
+      <span class="hud__sub">| global event monitor</span>
     </div>
     <div class="hud__step">Operator enrolment</div>
   </header>
@@ -66,6 +66,10 @@
         <h2 class="form__title">Commission operator</h2>
         <p class="form__hint">Set your access keys. You can refine delivery preferences later in Profile.</p>
 
+        @if (serverError(); as error) {
+          <p-message severity="error" variant="simple" [text]="error" />
+        }
+
         <label class="field">
           <span class="field__label">Email</span>
           <input
@@ -74,7 +78,7 @@
             id="register-email"
             formControlName="email"
             type="email"
-            autocomplete="email"
+            autocomplete="username"
             placeholder="operator@station.earth"
             spellcheck="false"
           />
@@ -95,7 +99,7 @@
             id="register-name"
             formControlName="name"
             type="text"
-            autocomplete="username"
+            autocomplete="name"
             placeholder="e.g. a.rivera"
             spellcheck="false"
           />
@@ -161,13 +165,13 @@
           <p-message severity="error" variant="simple" text="You must acknowledge this to continue." />
         }
 
-        <button pButton class="submit" type="submit">
-          <span>Commission operator</span>
+        <button pButton class="submit" type="submit" [disabled]="loading()">
+          <span>{{ loading() ? 'Commissioning…' : 'Commission operator' }}</span>
           <span class="submit__arrow" aria-hidden="true">&#8594;</span>
         </button>
 
         <p class="form__foot">
-          Already commissioned? <a routerLink="/">Return to sign-in</a>
+          Already commissioned? <a routerLink="/login">Return to sign-in</a>
         </p>
       </form>
     </section>
