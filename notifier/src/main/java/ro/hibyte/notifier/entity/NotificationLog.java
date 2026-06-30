@@ -36,8 +36,14 @@ public class NotificationLog {
     @Column(name = "event_title", nullable = false, length = 255)
     private String eventTitle;
 
-    @Column(name = "event_category", nullable = false, length = 100)
-    private String eventCategory;
+    @ElementCollection
+    @CollectionTable(
+            name = "notification_log_categories",
+            joinColumns = @JoinColumn(name = "notification_id"),
+            indexes = @Index(name = "idx_notification_log_categories_category", columnList = "category")
+    )
+    @Column(name = "category", nullable = false, length = 100)
+    private List<String> eventCategories;
 
     @Column(name = "event_url", nullable = false, length = 500)
     private String eventUrl;
@@ -53,7 +59,7 @@ public class NotificationLog {
     @Column(name = "reading_level", nullable = false)
     private ReadingLevel readingLevel;
 
-    @Column(name = "delivered_at", nullable = false)
+    @Column(name = "delivered_at")
     private OffsetDateTime deliveredAt;
 
     @Column(name = "briefing_summary", nullable = false, columnDefinition = "TEXT")
