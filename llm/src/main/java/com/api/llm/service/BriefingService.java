@@ -6,10 +6,13 @@ import com.api.llm.dto.BriefingRequestDto;
 import com.api.llm.dto.BriefingResponseDto;
 import com.api.llm.entity.Briefing;
 import com.api.llm.entity.BriefingId;
+import com.api.llm.exception.InvalidEventIdEception;
+import com.api.llm.exception.LlmUnavailableException;
 import com.api.llm.prompt.BriefingPrompt;
 import com.api.llm.repository.BriefingRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 
 import java.time.Instant;
 import java.util.List;
@@ -57,28 +60,35 @@ public class BriefingService {
         response.setPrecautions(precautions);
     }
 
-    private BriefingLLMResponseDto generateValidResponse(
-            BriefingLLMRequestDto request) {
+    private BriefingLLMResponseDto generateValidResponse(BriefingLLMRequestDto request) {
 
         final int maxAttempts = 3;
 
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
                 var response = getLLMSection(request);
-
                 validateResponse(response);
-
                 return response;
+            } catch (WebClientRequestException e) {
+                throw new LlmUnavailableException("Ollama is unreachable", e);
             } catch (Exception e) {
                 System.out.println("Invalid LLM response. Attempt " + attempt + "/" + maxAttempts);
             }
         }
 
-        throw new RuntimeException(
-                "Could not generate a valid response after " + maxAttempts + " attempts");
+        throw new RuntimeException("Could not generate a valid response after " + maxAttempts + " attempts");
     }
 
     public BriefingResponseDto getBriefing(BriefingRequestDto request) {
+
+        if (!ollamaService.checkStatus()) {
+            throw new LlmUnavailableException("Ollama is unreachable", null);
+        }
+
+        if (!request.getEventId().startsWith("EONET_")){
+            throw new InvalidEventIdEception("Invalid event id");
+        }
+
         var id = new BriefingId(request.getEventId(), request.getReadingLevel());
 
         if (isCached(request)) {

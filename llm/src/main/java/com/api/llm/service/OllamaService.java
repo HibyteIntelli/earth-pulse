@@ -21,6 +21,20 @@ public class OllamaService {
         this.webClient = webClient;
     }
 
+    public boolean checkStatus() {
+        try {
+            webClient.get()
+                    .uri("/api/version")
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block(Duration.ofSeconds(3));
+            return true;
+        }
+        catch (Exception e) {
+            return false;
+        }
+    }
+
     public Mono<BriefingLLMResponseDto> generate(String prompt) {
 
         var request = new OllamaRequest(model, prompt, false, "json");

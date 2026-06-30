@@ -18,7 +18,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class BriefingServiceIntegrationTest extends BaseIntegrationTest {
 
@@ -34,11 +37,12 @@ class BriefingServiceIntegrationTest extends BaseIntegrationTest {
     @BeforeEach
     void setUp() {
         briefingRepository.deleteAll();
+        when(ollamaService.checkStatus()).thenReturn(true);
     }
 
     @Test
     void isCached_returnsFalse_whenBriefingNotInDatabase() {
-        var request = new BriefingRequestDto("event-1", "DEFAULT", 5.0, "EARTHQUAKE");
+        var request = new BriefingRequestDto("EONET_1", "DEFAULT", 5.0, "EARTHQUAKE");
 
         assertThat(briefingService.isCached(request)).isFalse();
     }
@@ -47,12 +51,12 @@ class BriefingServiceIntegrationTest extends BaseIntegrationTest {
     void isCached_returnsTrue_whenMatchingBriefingExists() {
         // isCached looks up by BriefingId(eventId, category)
         briefingRepository.save(new Briefing(
-                new BriefingId("event-1", "DEFAULT"),
+                new BriefingId("EONET_1", "DEFAULT"),
                 "summary", "low", "impact",
                 Instant.now(), List.of("precaution 1", "precaution 2")
         ));
 
-        var request = new BriefingRequestDto("event-1", "DEFAULT", 5.0, "EARTHQUAKE");
+        var request = new BriefingRequestDto("EONET_1", "DEFAULT", 5.0, "EARTHQUAKE");
 
         assertThat(briefingService.isCached(request)).isTrue();
     }
@@ -62,10 +66,10 @@ class BriefingServiceIntegrationTest extends BaseIntegrationTest {
         var llmResponse = buildValidLLMResponse();
         when(ollamaService.generate(anyString())).thenReturn(Mono.just(llmResponse));
 
-        var request = new BriefingRequestDto("event-2", "DEFAULT", 30.0, "FLOOD");
+        var request = new BriefingRequestDto("EONET_2", "DEFAULT", 30.0, "FLOOD");
         var result = briefingService.getBriefing(request);
 
-        assertThat(result.getEventId()).isEqualTo("event-2");
+        assertThat(result.getEventId()).isEqualTo("EONET_2");
         assertThat(result.getSummary()).isEqualTo(llmResponse.getSummary());
         assertThat(result.getImpact()).isEqualTo(llmResponse.getImpact());
         assertThat(result.getPrecautions()).containsExactlyElementsOf(llmResponse.getPrecautions());
@@ -78,26 +82,26 @@ class BriefingServiceIntegrationTest extends BaseIntegrationTest {
         // For the cache-hit path to work end-to-end:
         // isCached uses BriefingId(eventId, category) and getBriefing loads by BriefingId(eventId, readingLevel).
         // Using the same value for both category and readingLevel ensures the same DB row is found.
-        var id = new BriefingId("event-3", "DEFAULT");
+        var id = new BriefingId("EONET_3", "DEFAULT");
         briefingRepository.save(new Briefing(
                 id, "cached summary", "high", "cached impact",
                 Instant.now(), List.of("evacuate immediately", "stay low")
         ));
 
-        var request = new BriefingRequestDto("event-3", "DEFAULT", 60.0, "WILDFIRE");
+        var request = new BriefingRequestDto("EONET_3", "DEFAULT", 60.0, "WILDFIRE");
         var result = briefingService.getBriefing(request);
 
         assertThat(result.getSummary()).isEqualTo("cached summary");
         assertThat(result.getImpact()).isEqualTo("cached impact");
         assertThat(result.getSeverity()).isEqualTo("high");
-        verifyNoInteractions(ollamaService);
+        verify(ollamaService, never()).generate(anyString());
     }
 
     @Test
     void getBriefing_setSeverityUnknown_whenMagnitudeIsZero() {
         when(ollamaService.generate(anyString())).thenReturn(Mono.just(buildValidLLMResponse()));
 
-        var result = briefingService.getBriefing(new BriefingRequestDto("event-4", "DEFAULT", 0.0, "EARTHQUAKE"));
+        var result = briefingService.getBriefing(new BriefingRequestDto("EONET_4", "DEFAULT", 0.0, "EARTHQUAKE"));
 
         assertThat(result.getSeverity()).isEqualTo("unknown");
     }
@@ -106,7 +110,7 @@ class BriefingServiceIntegrationTest extends BaseIntegrationTest {
     void getBriefing_setSeverityLow_whenMagnitudeIsBelow25() {
         when(ollamaService.generate(anyString())).thenReturn(Mono.just(buildValidLLMResponse()));
 
-        var result = briefingService.getBriefing(new BriefingRequestDto("event-5", "DEFAULT", 10.0, "EARTHQUAKE"));
+        var result = briefingService.getBriefing(new BriefingRequestDto("EONET_5", "DEFAULT", 10.0, "EARTHQUAKE"));
 
         assertThat(result.getSeverity()).isEqualTo("low");
     }
@@ -115,7 +119,7 @@ class BriefingServiceIntegrationTest extends BaseIntegrationTest {
     void getBriefing_setSeverityModerate_whenMagnitudeIsBetween25And50() {
         when(ollamaService.generate(anyString())).thenReturn(Mono.just(buildValidLLMResponse()));
 
-        var result = briefingService.getBriefing(new BriefingRequestDto("event-6", "DEFAULT", 25.0, "FLOOD"));
+        var result = briefingService.getBriefing(new BriefingRequestDto("EONET_6", "DEFAULT", 25.0, "FLOOD"));
 
         assertThat(result.getSeverity()).isEqualTo("moderate");
     }
@@ -124,7 +128,7 @@ class BriefingServiceIntegrationTest extends BaseIntegrationTest {
     void getBriefing_setSeverityHigh_whenMagnitudeIsAtLeast50() {
         when(ollamaService.generate(anyString())).thenReturn(Mono.just(buildValidLLMResponse()));
 
-        var result = briefingService.getBriefing(new BriefingRequestDto("event-7", "DEFAULT", 50.0, "WILDFIRE"));
+        var result = briefingService.getBriefing(new BriefingRequestDto("EONET_7", "DEFAULT", 50.0, "WILDFIRE"));
 
         assertThat(result.getSeverity()).isEqualTo("high");
     }
@@ -134,7 +138,7 @@ class BriefingServiceIntegrationTest extends BaseIntegrationTest {
         var invalidResponse = new BriefingLLMResponseDto();
         when(ollamaService.generate(anyString())).thenReturn(Mono.just(invalidResponse));
 
-        var request = new BriefingRequestDto("event-8", "DEFAULT", 20.0, "FLOOD");
+        var request = new BriefingRequestDto("EONET_8", "DEFAULT", 20.0, "FLOOD");
 
         assertThatThrownBy(() -> briefingService.getBriefing(request))
                 .isInstanceOf(RuntimeException.class)
@@ -151,7 +155,7 @@ class BriefingServiceIntegrationTest extends BaseIntegrationTest {
                 .thenReturn(Mono.just(invalidResponse))
                 .thenReturn(Mono.just(validResponse));
 
-        var result = briefingService.getBriefing(new BriefingRequestDto("event-9", "DEFAULT", 10.0, "EARTHQUAKE"));
+        var result = briefingService.getBriefing(new BriefingRequestDto("EONET_9", "DEFAULT", 10.0, "EARTHQUAKE"));
 
         assertThat(result.getSummary()).isEqualTo(validResponse.getSummary());
         verify(ollamaService, times(2)).generate(anyString());

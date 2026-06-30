@@ -1,36 +1,30 @@
 package com.api.llm.controller;
 
+import com.api.llm.dto.BriefingRequestDto;
 import com.api.llm.dto.BriefingResponseDto;
+import com.api.llm.service.BriefingService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-
-// TO DO
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/briefings")
 public class BriefingsController {
+
+    private final BriefingService briefingService;
+
+    public BriefingsController(BriefingService briefingService) {
+        this.briefingService = briefingService;
+    }
+
     @GetMapping("/{id}")
-    public ResponseEntity<BriefingResponseDto> getById(@PathVariable String id) {
+    public ResponseEntity<BriefingResponseDto> getById(
+            @PathVariable String id,
+            @RequestBody BriefingRequestDto request) {
 
-        var dummy = BriefingResponseDto.builder()
-                .eventId(id)
-                .readingLevel("NOT IMPLEMENTED")
-                .summary("NOT IMPLEMENTED")
-                .impact("NOT IMPLEMENTED")
-                .severity("NOT IMPLEMENTED")
-                .precautions(new ArrayList<>(List.of("NOT IMPLEMENTED", "NOT IMPLEMENTED")))
-                .generatedAt(Instant.now())
-                .build();
-
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(dummy);
+        BriefingResponseDto response = briefingService.getBriefing(
+                new BriefingRequestDto(request.getEventId(), request.getReadingLevel(), request.getMagnitudeLevel(), request.getCategory()));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
 
