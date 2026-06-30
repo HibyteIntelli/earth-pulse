@@ -42,9 +42,9 @@ DTOs: `dto/eonet/` (NASA input) · `dto/request/` (`EventFilter`, `*Enum`) · `d
 Prereqs: Java 25, Docker (Postgres), and `application.properties`
 (copy from `application.properties.model` — gitignored, fill manually).
 
-    docker compose up -d            # Postgres on localhost:5433 (db: ingestion_db)
-    .\mvnw spring-boot:run          # service on http://localhost:8081
-    .\mvnw test                     # run tests
+    docker compose up -d            # Postgres on localhost:5433 (db: see .env POSTGRES_DB)
+    ./mvnw spring-boot:run          # service on http://localhost:8081
+    ./mvnw test                     # run tests
 
 EONET config keys: `eonet.base-url`, `eonet.poll-interval-ms`, `eonet.connect-timeout`, `eonet.read-timeout`.
 EONET API reference: `docs/EONET_API_Reference.md`.
