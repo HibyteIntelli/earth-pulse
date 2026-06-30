@@ -49,13 +49,7 @@ export class Profile implements OnInit {
     return letters.toUpperCase();
   });
 
-  constructor() {
-    this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
-      if (this.status() === 'saved') this.status.set('idle');
-    });
-  }
-
-  ngOnInit(): void {
+  protected init(): void {
     this.status.set('loading');
     this.auth.me().subscribe({
       next: (profile) => {
@@ -70,6 +64,16 @@ export class Profile implements OnInit {
         this.status.set('idle');
       },
     });
+  }
+
+  constructor() {
+    this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      if (this.status() === 'saved') this.status.set('idle');
+    });
+  }
+
+  ngOnInit(): void {
+    this.init();
   }
 
   protected startEmailChange(): void {

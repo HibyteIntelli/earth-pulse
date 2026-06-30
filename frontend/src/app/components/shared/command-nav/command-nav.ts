@@ -44,12 +44,14 @@ export class CommandNav {
   }
 
   protected onDialogKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Escape') {
-      this.cancelLogout();
-      return;
-    }
-    if (event.key !== 'Tab') {
-      return;
+    switch (event.key) {
+      case 'Escape':
+        this.cancelLogout();
+        return;
+      case 'Tab':
+        break;
+      default:
+        return;
     }
 
     const root = this.disconRoot()?.nativeElement;
