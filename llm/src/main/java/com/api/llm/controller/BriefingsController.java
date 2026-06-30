@@ -20,10 +20,12 @@ public class BriefingsController {
     @GetMapping("/{id}")
     public ResponseEntity<BriefingResponseDto> getById(
             @PathVariable String id,
-            @RequestBody BriefingRequestDto request) {
+            @RequestParam String readingLevel,
+            @RequestParam double magnitudeLevel,
+            @RequestParam String category) {
 
         BriefingResponseDto response = briefingService.getBriefing(
-                new BriefingRequestDto(id, request.getReadingLevel(), request.getMagnitudeLevel(), request.getCategory()));
+                new BriefingRequestDto(id, readingLevel, magnitudeLevel, category));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

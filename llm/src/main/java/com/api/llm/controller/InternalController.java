@@ -18,14 +18,19 @@ public class InternalController {
     }
 
     @GetMapping("/briefings/{id}")
-    public ResponseEntity<BriefingResponseDto> getById(@RequestHeader("X-Internal-Secret") String secret, @PathVariable String id, @RequestBody BriefingRequestDto request) {
+    public ResponseEntity<BriefingResponseDto> getById(
+            @RequestHeader("X-Internal-Secret") String secret,
+            @PathVariable String id,
+            @RequestParam String readingLevel,
+            @RequestParam double magnitudeLevel,
+            @RequestParam String category) {
 
         if (!"my-secret".equals(secret)) {
             return ResponseEntity.status(403).build();
         }
 
         BriefingResponseDto response = briefingService.getBriefing(
-                new BriefingRequestDto(id, request.getReadingLevel(), request.getMagnitudeLevel(), request.getCategory()));
+                new BriefingRequestDto(id, readingLevel, magnitudeLevel, category));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

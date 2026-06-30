@@ -6,11 +6,9 @@ import com.api.llm.entity.Briefing;
 import com.api.llm.entity.BriefingId;
 import com.api.llm.repository.BriefingRepository;
 import com.api.llm.service.OllamaService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -19,7 +17,6 @@ import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
@@ -35,8 +32,6 @@ class BriefingsControllerIntegrationTest extends BaseIntegrationTest {
     private WebApplicationContext webApplicationContext;
 
     private MockMvc mockMvc;
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     private BriefingRepository briefingRepository;
@@ -60,8 +55,9 @@ class BriefingsControllerIntegrationTest extends BaseIntegrationTest {
         ));
 
         mockMvc.perform(get("/api/briefings/EONET_123")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody("EONET_123", "DEFAULT", 30.0, "EARTHQUAKE")))
+                        .param("readingLevel", "DEFAULT")
+                        .param("magnitudeLevel", "30.0")
+                        .param("category", "EARTHQUAKE"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.eventId").value("EONET_123"))
                 .andExpect(jsonPath("$.summary").value("summary text"))
@@ -76,21 +72,13 @@ class BriefingsControllerIntegrationTest extends BaseIntegrationTest {
         when(ollamaService.generate(anyString())).thenReturn(Mono.just(llmResponse));
 
         mockMvc.perform(get("/api/briefings/EONET_456")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody("EONET_456", "DEFAULT", 30.0, "EARTHQUAKE")))
+                        .param("readingLevel", "DEFAULT")
+                        .param("magnitudeLevel", "30.0")
+                        .param("category", "EARTHQUAKE"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.eventId").value("EONET_456"))
                 .andExpect(jsonPath("$.summary").value(llmResponse.getSummary()))
                 .andExpect(jsonPath("$.impact").value(llmResponse.getImpact()));
-    }
-
-    private String requestBody(String eventId, String readingLevel, double magnitudeLevel, String category) throws Exception {
-        return objectMapper.writeValueAsString(Map.of(
-                "eventId", eventId,
-                "readingLevel", readingLevel,
-                "magnitudeLevel", magnitudeLevel,
-                "category", category
-        ));
     }
 
     private BriefingLLMResponseDto buildValidLLMResponse() {
