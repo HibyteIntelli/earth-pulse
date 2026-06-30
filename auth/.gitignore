@@ -1,5 +1,6 @@
 ### Custom ###
 src/main/resources/application.properties
+src/main/resources/banned_passwords/
 .env
 .serena/project.local.yml
 generated-jwk.json

@@ -16,7 +16,7 @@ import java.util.List;
 public class InternalController {
 
     @GetMapping("/briefings/{id}")
-    public ResponseEntity<BriefingResponseDto> getById(@RequestHeader("X-Internal-Secret") String secret, @PathVariable long id) {
+    public ResponseEntity<BriefingResponseDto> getById(@RequestHeader("X-Internal-Secret") String secret, @PathVariable String id) {
 
         if (!"my-secret".equals(secret)) {
             return ResponseEntity.status(403).build();

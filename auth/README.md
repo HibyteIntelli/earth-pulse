@@ -40,7 +40,25 @@ app.internal-secret=<RANDOM_SECRET_MIN_32_CHARS>
 
 `application.properties` is gitignored — never commit it.
 
-### 3. Start the database
+### 3. Download the banned passwords wordlist
+
+The app checks passwords against the [RockYou wordlist](https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt) at startup. Download it and place it anywhere on disk (it is never committed):
+
+```bash
+# Example — download to a local data directory
+curl -L -o /path/to/rockyou.txt https://github.com/brannondorsey/naive-hashcat/releases/download/data/rockyou.txt
+```
+
+Then set the two paths in `application.properties`:
+
+```properties
+app.banned-passwords.txt-path=/path/to/rockyou.txt
+app.banned-passwords.bloom-path=/path/to/banned_passwords.bloom
+```
+
+`bloom-path` does not need to exist — it will be created automatically on first startup (~15 s) and reused on subsequent ones (~0.5 s).
+
+### 4. Start the database
 
 ```bash
 docker compose up -d
@@ -48,7 +66,7 @@ docker compose up -d
 
 Docker Compose reads credentials from `.env` automatically.
 
-### 4. Run the app
+### 5. Run the app
 
 ```bash
 ./mvnw spring-boot:run

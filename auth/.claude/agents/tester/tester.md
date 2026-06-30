@@ -12,9 +12,12 @@ The user wants tests for: **$ARGUMENTS**
 ## What to do
 
 ### 1. Understand the target
+
+Use the **Serena MCP** for all symbol-based lookups:
 - If `$ARGUMENTS` is a file path, read that file fully before writing any tests.
-- If it's a class or method name, find it with grep/glob first.
-- If it's a feature description (e.g. "login flow", "JWKS endpoint"), locate all relevant files before proceeding.
+- If it's a class or method name, use `mcp__serena__find_symbol` or `mcp__serena__find_declaration` to locate it, then read the file.
+- If it's a feature description (e.g. "login flow", "JWKS endpoint"), use `mcp__serena__find_symbol` and `mcp__serena__find_referencing_symbols` to discover all relevant classes before proceeding.
+- Use `mcp__serena__get_symbols_overview` on any class to quickly see its methods and fields without reading the whole file.
 
 ### 2. Choose the right test type
 

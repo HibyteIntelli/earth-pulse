@@ -29,6 +29,15 @@ Skills are defined in `.claude/skills/` and the tester subagent in `.claude/agen
 
 ---
 
+## MCP Servers
+
+| Server | When to use |
+|--------|-------------|
+| **context7** | Before modifying `pom.xml` — resolve the library ID and query for the latest version and correct Maven coordinates. Never guess version numbers. |
+| **serena** | For all code navigation and editing tasks — finding symbol declarations, renaming symbols, finding references, getting a symbols overview of a file or package. Prefer serena over plain grep/read when working with Java symbols. |
+
+---
+
 ## Running Locally
 
 ```bash
@@ -44,6 +53,8 @@ docker compose up -d
 
 The app reads DB credentials from environment variables (see `.env.model`). `application.properties` is gitignored — never commit it with real values.
 
+On startup, **dotenv-java** loads `.env` into Java system properties (missing file is silently ignored). The app listens on **port 8083**.
+
 ---
 
 ## Architecture & Key Design Decisions
@@ -51,20 +62,60 @@ The app reads DB credentials from environment variables (see `.env.model`). `app
 ### JWT Flow (implement by hand)
 
 - On startup: generate (or load from secret) an **RSA-2048+ keypair**.
-  - Private key: keep in memory only (or a Kubernetes Secret in production). Never write it to disk or log it.
+  - If `APP_JWT_PRIVATE_KEY` env var is set: loads the RSA key from that JWK JSON string.
+  - If not set: generates an ephemeral 2048-bit RSA key and writes it to `generated-jwk.json` in the working directory (owner-only permissions on POSIX; warning logged on Windows). Copy it into `.env` as `APP_JWT_PRIVATE_KEY` and delete the file — otherwise the key changes on every restart.
+  - Private key: keep in memory only. Never log it.
   - Public key: expose via `GET /.well-known/jwks.json` as a JWKS document.
 - `POST /auth/login` issues a signed JWT with claims:
   - `sub` — user UUID
-  - `iss` — this service's base URL
+  - `iss` — this service's base URL (`app.base-url`)
   - `iat` / `exp` — issued-at and expiry (~1 hour default)
   - `aud` — `earth-pulse`
+- Incoming tokens are validated for `iss`, `aud`, `exp`, and RSA signature — all mandatory. `alg: none` is rejected.
 - Other services fetch JWKS at startup and validate tokens locally — no introspection call needed.
-- Recommended library: **`nimbus-jose-jwt`** or **`jjwt`**. Do not use Spring Authorization Server.
+- Recommended library: **`nimbus-jose-jwt`**. Do not use Spring Authorization Server.
 
 ### Password Storage
 
 - Always hash passwords with **bcrypt** (`BCryptPasswordEncoder`). Never store or log plaintext passwords.
 - Minimum cost factor: 10.
+
+### Security Filter Chain (3-Chain Strategy)
+
+`SecurityConfig` registers three ordered `SecurityFilterChain` beans:
+
+| Order | Matcher | Auth mechanism | Notes |
+|-------|---------|----------------|-------|
+| 1 | `/internal/**` | `InternalSecretFilter` — `X-Internal-Secret` header | 401 on missing/wrong secret |
+| 2 | `/auth/**`, `/.well-known/jwks.json` | `RateLimitFilter` only | Public, no JWT required |
+| 3 | Everything else | `JwtAuthenticationFilter` — `Authorization: Bearer <token>` | 401 on invalid/expired token |
+
+All chains are stateless (no sessions) with CSRF disabled.
+
+### Rate Limiting
+
+- **Class**: `RateLimitFilter` (Bucket4j token-bucket, `OncePerRequestFilter`)
+- **Scope**: Applies to `/auth/**` (public chain only)
+- **Key**: per IP + per endpoint (`remoteAddr:path`)
+- **Defaults** (configurable via `app.rate-limit.login` / `app.rate-limit.signup`): 10 req/min for login, 5 req/min for signup
+- **429 response**: includes `X-Rate-Limit-Retry-After-Seconds` header
+- **200 response**: includes `X-Rate-Limit-Remaining` header
+- Buckets are held in an in-memory `ConcurrentHashMap` — they are never evicted (restart clears them)
+
+### Internal API Authentication
+
+- **Class**: `InternalSecretFilter`
+- **Header**: `X-Internal-Secret` — must match `app.internal-secret` property
+- On success: sets a `"internal"` principal in the `SecurityContext`
+- On failure: returns HTTP 401 — `{"error":"Missing or invalid internal secret"}`
+- Used by the Notifier API (`/internal/**`) — never leave this endpoint open
+
+### Banned Password Check
+
+- `BannedPasswordService` loads `src/main/resources/banned_passwords/rockyou.txt` into a **Guava `BloomFilter<CharSequence>`** at startup (15M expected insertions, 0.1% FPP).
+- The check runs on **both** `signup` and `updateAccount` (new password) — before any DB work — and throws `BannedPasswordException` → HTTP 400.
+- `rockyou.txt` is **gitignored** (`src/main/resources/banned_passwords/`). It must be present locally for the app to start. Never commit it.
+- False-positive rate is ~0.1%: roughly 1 in 1000 non-banned passwords may be rejected — acceptable for a security gate.
 
 ### User Entity Fields
 
@@ -153,6 +204,7 @@ All endpoints require `Authorization: Bearer <token>`. The authenticated user ID
 - Integration-test controllers with `@SpringBootTest` + `MockMvc`.
 - Test the full JWT flow end-to-end: signup → login → use token → verify JWKS round-trip.
 - Do not use H2 for integration tests if the query uses PostgreSQL-specific features — use Testcontainers instead.
+- **Spring Boot 4 test annotations**: `@MockBean` / `@SpyBean` no longer exist. Use `@MockitoBean` / `@MockitoSpyBean` from `org.springframework.test.context.bean.override.mockito` instead.
 
 ---
 
@@ -182,6 +234,13 @@ Before adding a new dependency, check whether the Spring Boot BOM already manage
     <groupId>org.flywaydb</groupId>
     <artifactId>flyway-database-postgresql</artifactId>
 </dependency>
+
+<!-- Guava — BloomFilter for banned password check (current: 33.6.0-jre) -->
+<dependency>
+    <groupId>com.google.guava</groupId>
+    <artifactId>guava</artifactId>
+    <version>33.6.0-jre</version>
+</dependency>
 ```
 
 ---
@@ -195,5 +254,7 @@ See `.env.model` for required variables. Current set:
 | `POSTGRES_USER` | PostgreSQL username |
 | `POSTGRES_PASSWORD` | PostgreSQL password |
 | `POSTGRES_DB` | PostgreSQL database name |
+| `APP_JWT_PRIVATE_KEY` | RSA JWK JSON for JWT signing. If absent, an ephemeral key is generated and written to `generated-jwk.json` — copy it here and delete the file. |
+| `APP_INTERNAL_SECRET` | Shared secret for `X-Internal-Secret` header on `/internal/**` endpoints. |
 
 Add new variables to `.env.model` (with a placeholder, never the real value) whenever you introduce a new secret or configuration point.

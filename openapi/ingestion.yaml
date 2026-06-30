@@ -31,7 +31,7 @@ paths:
       description: |
         Read endpoint backing the map view. All filters are optional and
         composable (AND). When no filters are supplied, returns the most
-        recent active events up to `limit`, sorted by `eventDate` desc.
+        recent active events up to `size`, sorted by `eventDate` desc.
 
         Filters are passed as a JSON body rather than query parameters:
         there are many of them, some are arrays (e.g. `category`), and
@@ -193,11 +193,12 @@ components:
         bbox:
           type: string
           description: |
-            Bounding box as `west,south,east,north` in WGS84 decimal degrees,
-            matching NASA EONET's bbox format. Used by the frontend to fetch
-            only events visible in the current viewport.
+            Bounding box in NASA EONET's format: the upper-left corner
+            (lon,lat) followed by the lower-right corner (lon,lat) — i.e.
+            `west,north,east,south` in WGS84 decimal degrees. Used by the
+            frontend to fetch only events visible in the current viewport.
           pattern: '^-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?,-?\d+(\.\d+)?$'
-          example: "-10.5,35.0,40.0,60.0"
+          example: "-10.5,60.0,40.0,35.0"
         category:
           type: array
           description: |
@@ -237,12 +238,12 @@ components:
             - ingestedAt:desc
             - ingestedAt:asc
           default: eventDate:desc
-        limit:
+        size:
           type: integer
           minimum: 1
           maximum: 500
           default: 100
-        offset:
+        page:
           type: integer
           minimum: 0
           default: 0
@@ -327,14 +328,14 @@ components:
 
     EventPage:
       type: object
-      required: [items, total, limit, offset]
+      required: [items, total, page, size]
       properties:
         items:
           type: array
           items: { $ref: '#/components/schemas/Event' }
         total: { type: integer, example: 142 }
-        limit: { type: integer, example: 100 }
-        offset: { type: integer, example: 0 }
+        page: { type: integer, example: 0 }
+        size: { type: integer, example: 100 }
 
     Error:
       type: object
@@ -348,7 +349,8 @@ components:
             - invalid_date_range
             - invalid_category
             - invalid_sort
-            - limit_out_of_range
+            - size_out_of_range
+            - page_out_of_range
             - event_not_found
             - unauthorized
           example: "invalid_bbox"
