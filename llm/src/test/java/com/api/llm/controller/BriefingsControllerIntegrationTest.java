@@ -81,6 +81,17 @@ class BriefingsControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.impact").value(llmResponse.getImpact()));
     }
 
+    @Test
+    void getById_returns400_whenEventIdIsNotEonetFormat() throws Exception {
+        mockMvc.perform(get("/api/briefings/INVALID")
+                        .param("readingLevel", "DEFAULT")
+                        .param("magnitudeLevel", "30.0")
+                        .param("category", "EARTHQUAKE"))
+                .andExpect(status().isBadRequest());
+
+        verify(ollamaService, never()).generate(anyString());
+    }
+
     private BriefingLLMResponseDto buildValidLLMResponse() {
         var response = new BriefingLLMResponseDto();
         response.setSummary("A significant seismic event has been detected.");
