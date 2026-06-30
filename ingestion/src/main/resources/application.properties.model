@@ -11,8 +11,17 @@ spring.jpa.hibernate.ddl-auto=update
 
 # EONET integration
 eonet.base-url=https://eonet.gsfc.nasa.gov
+
 # Poll interval
 eonet.poll-interval-ms=3600000
+
 # RestClient timeouts
 eonet.connect-timeout=5s
 eonet.read-timeout=10s
+
+# Backfill window (first boot) + poll window
+eonet.backfill-days=30
+eonet.poll-days=30
+
+# Initial delay before the first scheduled poll (backfill itself has no delay)
+eonet.poll-initial-delay-ms=60000
