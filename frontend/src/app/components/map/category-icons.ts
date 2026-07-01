@@ -27,6 +27,7 @@ const CATEGORY_ICONS: Record<EventCategoryId, L.Icon> = {
 
 const DEFAULT_ICON = make('default.png');
 
-export function iconFor(categories: EventCategoryId[]): L.Icon {
-  return CATEGORY_ICONS[categories[0]] ?? DEFAULT_ICON;
+export function iconFor(categories: readonly EventCategoryId[]): L.Icon {
+  const first = categories[0];
+  return first ? (CATEGORY_ICONS[first] ?? DEFAULT_ICON) : DEFAULT_ICON;
 }
