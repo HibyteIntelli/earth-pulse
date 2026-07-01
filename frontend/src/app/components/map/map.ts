@@ -2,6 +2,7 @@ import { AfterViewInit, Component, ElementRef, inject, OnDestroy, viewChild } fr
 import * as L from 'leaflet';
 import { IngestionService } from '../../core/ingestion/ingestion.service';
 import { Event, EventFilter } from '../../core/ingestion/ingestion.models';
+import { iconFor } from './category-icons';
 
 @Component({
   selector: 'app-map',
@@ -15,13 +16,6 @@ export class Map implements AfterViewInit, OnDestroy {
   private readonly ingestion = inject(IngestionService);
   private readonly markers = L.layerGroup();
 
-  private readonly icon = L.icon({
-    iconUrl: 'assets/leaves.png',
-    iconSize: [38, 95],
-    iconAnchor: [22, 94],
-    popupAnchor: [-3, -76],
-  });
-
   private loadEvents(filter: EventFilter = {}): void {
     this.ingestion.search(filter).subscribe((page) => {
       this.renderMarkers(page.items);
@@ -34,7 +28,9 @@ export class Map implements AfterViewInit, OnDestroy {
       const g = event.geometry;
       if (!g) continue;
       const [lon, lat] = g.coordinates;
-      L.marker([lat, lon], { icon: this.icon }).bindPopup(event.title).addTo(this.markers);
+      const popup = document.createElement('span');
+      popup.textContent = event.title;
+      L.marker([lat, lon], { icon: iconFor(event.category) }).bindPopup(popup).addTo(this.markers);
     }
   }
 
