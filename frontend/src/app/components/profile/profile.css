@@ -52,6 +52,10 @@
   box-shadow: none;
 }
 
+.email-toggle {
+  margin-top: 0.7rem;
+}
+
 .id-photo {
   display: flex;
   flex-direction: column;

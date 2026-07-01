@@ -1,15 +1,15 @@
-import { Component, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
+import { AuthService } from '../../core/auth/auth.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ApiError, UpdateAccountRequest } from '../../core/auth/auth.models';
 
-const CURRENT_OPERATOR = {
-  name: 'Danut Spafiu',
-  email: 'operator@station.earth',
-} as const;
+const MAX_AVATAR_BYTES = 1_000_000;
 
 @Component({
   selector: 'app-profile',
@@ -17,18 +17,23 @@ const CURRENT_OPERATOR = {
   templateUrl: './profile.html',
   styleUrls: ['../shared/form-kit.css', '../shared/dossier-kit.css', './profile.css'],
 })
-export class Profile {
+export class Profile implements OnInit {
   private readonly fb = inject(FormBuilder);
+  private readonly auth = inject(AuthService);
 
   protected readonly form = this.fb.nonNullable.group({
-    name: [CURRENT_OPERATOR.name, [Validators.required, Validators.pattern(/\S+/)]],
-    email: [
-      { value: CURRENT_OPERATOR.email, disabled: true },
-      [Validators.required, Validators.email],
-    ],
+    name: ['', [Validators.required, Validators.pattern(/\S+/)]],
+    email: ['', [Validators.required, Validators.email]],
   });
 
   protected readonly avatarUrl = signal<string | null>(null);
+
+  protected readonly status = signal<'idle' | 'loading' | 'saving' | 'saved'>('idle');
+  protected readonly errorMessage = signal<string | null>(null);
+
+  protected readonly editingEmail = signal(false);
+  protected readonly committedEmail = signal('');
+  private avatarDirty = false;
 
   private readonly value = toSignal(this.form.valueChanges, {
     initialValue: this.form.getRawValue(),
@@ -38,27 +43,116 @@ export class Profile {
 
   protected readonly initials = computed(() => {
     const name = this.value().name?.trim() ?? '';
-    if (!name) return '··';
+    if (!name) {
+      return '··';
+    }
     const parts = name.split(/[\s._-]+/).filter(Boolean);
     const letters = parts.length > 1 ? parts[0][0] + parts[1][0] : name.slice(0, 2);
     return letters.toUpperCase();
   });
 
+  protected init(): void {
+    this.status.set('loading');
+    this.auth.me().subscribe({
+      next: (profile) => {
+        this.committedEmail.set(profile.email);
+        this.form.patchValue({ name: profile.name, email: profile.email });
+        this.form.controls.email.disable();
+        this.avatarUrl.set(profile.profilePictureUrl);
+        this.status.set('idle');
+      },
+      error: () => {
+        this.errorMessage.set('Could not load your profile.');
+        this.status.set('idle');
+      },
+    });
+  }
+
+  constructor() {
+    this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      if (this.status() === 'saved') this.status.set('idle');
+    });
+  }
+
+  ngOnInit(): void {
+    this.init();
+  }
+
+  protected startEmailChange(): void {
+    this.editingEmail.set(true);
+    this.form.controls.email.enable();
+  }
+
+  protected cancelEmailChange(): void {
+    this.editingEmail.set(false);
+    this.form.controls.email.setValue(this.committedEmail());
+    this.form.controls.email.disable();
+  }
+
   protected onAvatarSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
+    if (file.size > MAX_AVATAR_BYTES) {
+      this.errorMessage.set('Image is too large (max 1 MB).');
+      input.value = '';
+      return;
+    }
+    this.errorMessage.set(null);
+    if (this.status() === 'saved') this.status.set('idle');
     const reader = new FileReader();
-    reader.onload = () => this.avatarUrl.set(reader.result as string);
+    reader.onload = () => {
+      this.avatarUrl.set(reader.result as string);
+      this.avatarDirty = true;
+    };
     reader.readAsDataURL(file);
   }
 
+  protected removePhoto(): void {
+    this.avatarUrl.set(null);
+    this.avatarDirty = true;
+    this.errorMessage.set(null);
+    if (this.status() === 'saved') {
+      this.status.set('idle');
+    }
+  }
+
   onSubmit(): void {
+    this.errorMessage.set(null);
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
     const { name, email } = this.form.getRawValue();
-    // TODO: persist via User Service once auth is wired up
+    const body: UpdateAccountRequest = { name };
+    if (this.editingEmail() && email !== this.committedEmail()) {
+      body.email = email;
+    }
+    if (this.avatarDirty) {
+      body.profilePictureUrl = this.avatarUrl() ?? '';
+    }
+
+    this.status.set('saving');
+    this.auth.updateAccount(body).subscribe({
+      next: (profile) => {
+        this.committedEmail.set(profile.email);
+        this.form.patchValue({ name: profile.name, email: profile.email });
+        this.editingEmail.set(false);
+        this.form.controls.email.disable();
+        this.avatarUrl.set(profile.profilePictureUrl);
+        this.avatarDirty = false;
+        this.status.set('saved');
+      },
+      error: (err: HttpErrorResponse) => {
+        const apiError = err.error as ApiError | undefined;
+        this.errorMessage.set(
+          err.status === 409
+            ? 'That email is already in use.'
+            : (apiError?.message ?? 'Update failed. Try again.'),
+        );
+        this.status.set('idle');
+      },
+    });
   }
 }
