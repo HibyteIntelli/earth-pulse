@@ -10,8 +10,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const token = auth.token();
 
+  const isInternalApi = [environment.apiBaseUrl, environment.ingestionBaseUrl].some((base) =>
+    req.url.startsWith(base),
+  );
+
   const authed =
-    token && req.url.startsWith(environment.apiBaseUrl)
+    token && isInternalApi
       ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
       : req;
 
