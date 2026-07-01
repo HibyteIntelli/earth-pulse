@@ -29,7 +29,7 @@ export class Map implements AfterViewInit, OnDestroy {
     this.ingestion.search(filter).subscribe({
       next: (page) => this.renderMarkers(page?.items ?? []),
       error: (err) => {
-        console.error('Failed to load events from the ingestion service', err);
+        console.error('Failed to load events', err);
         this.renderMarkers([]);
       },
     });
