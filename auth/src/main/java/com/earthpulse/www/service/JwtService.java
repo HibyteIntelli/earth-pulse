@@ -40,6 +40,9 @@ public class JwtService {
     @Value("${app.base-url}")
     private String baseUrl;
 
+    @Value("${app.generated-key-path}")
+    private String generatedKeyPath;
+
     @Value("${APP_JWT_PRIVATE_KEY:}")
     private String privateKeyJwk;
 
@@ -71,7 +74,7 @@ public class JwtService {
     }
 
     private void writeGeneratedKeyToFile(String jwk) {
-        Path out = Path.of("generated-jwk.json");
+        Path out = Path.of(generatedKeyPath);
         try {
             Files.deleteIfExists(out);
             try {

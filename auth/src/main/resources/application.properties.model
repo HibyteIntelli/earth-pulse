@@ -30,3 +30,15 @@ app.rate-limit.signup=5
 # Subsequent startups load the pre-built filter (~0.5s). See README for setup instructions.
 app.banned-passwords.txt-path=<ABSOLUTE_PATH_TO_ROCKYOU_TXT>
 app.banned-passwords.bloom-path=<ABSOLUTE_PATH_TO_BANNED_PASSWORDS_BLOOM>
+
+# Generated JWK path (written only when APP_JWT_PRIVATE_KEY is not set)
+app.generated-key-path=${user.dir}/src/main/resources/generated-jwk.json
+
+# Avatar storage — local filesystem
+app.avatar.storage-dir=${user.dir}/src/main/resources/avatar-store
+app.avatar.public-base-url=http://localhost:8083/avatars
+
+# Multipart upload limits — keep max-file-size in sync with app.avatar.max-file-size-bytes
+spring.servlet.multipart.max-file-size=1MB
+spring.servlet.multipart.max-request-size=1MB
+app.avatar.max-file-size-bytes=1048576

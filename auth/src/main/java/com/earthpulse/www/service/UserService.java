@@ -6,6 +6,7 @@ import com.earthpulse.www.dto.SignupRequestDto;
 import com.earthpulse.www.dto.UpdateAccountRequestDto;
 import com.earthpulse.www.dto.UserProfileDto;
 import com.earthpulse.www.exception.BannedPasswordException;
+import com.earthpulse.www.storage.AvatarStorage;
 import com.earthpulse.www.exception.DuplicateEmailException;
 import com.earthpulse.www.exception.InvalidCredentialsException;
 import com.earthpulse.www.exception.UserNotFoundException;
@@ -29,6 +30,7 @@ public class UserService {
     private final JwtService jwtService;
     private final UserMapper userMapper;
     private final BannedPasswordService bannedPasswordService;
+    private final AvatarStorage avatarStorage;
 
     @Transactional
     public void signup(SignupRequestDto dto) {
@@ -86,7 +88,12 @@ public class UserService {
         }
 
         if (dto.profilePictureUrl() != null) {
-            user.setProfilePictureUrl(dto.profilePictureUrl().isBlank() ? null : dto.profilePictureUrl());
+            if (dto.profilePictureUrl().isBlank()) {
+                avatarStorage.delete(userId);
+                user.setProfilePictureUrl(null);
+            } else {
+                user.setProfilePictureUrl(dto.profilePictureUrl());
+            }
         }
 
         if (dto.readingLevel() != null) {
@@ -110,5 +117,6 @@ public class UserService {
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(userId));
         userRepository.delete(user);
+        avatarStorage.delete(userId);
     }
 }
