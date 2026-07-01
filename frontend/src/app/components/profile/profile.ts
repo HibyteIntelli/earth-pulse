@@ -43,7 +43,9 @@ export class Profile implements OnInit {
 
   protected readonly initials = computed(() => {
     const name = this.value().name?.trim() ?? '';
-    if (!name) return '··';
+    if (!name) {
+      return '··';
+    }
     const parts = name.split(/[\s._-]+/).filter(Boolean);
     const letters = parts.length > 1 ? parts[0][0] + parts[1][0] : name.slice(0, 2);
     return letters.toUpperCase();
@@ -110,7 +112,9 @@ export class Profile implements OnInit {
     this.avatarUrl.set(null);
     this.avatarDirty = true;
     this.errorMessage.set(null);
-    if (this.status() === 'saved') this.status.set('idle');
+    if (this.status() === 'saved') {
+      this.status.set('idle');
+    }
   }
 
   onSubmit(): void {
