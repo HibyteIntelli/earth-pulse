@@ -43,6 +43,12 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("User not found"));
     }
 
+    @ExceptionHandler(WatchNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleWatchNotFound(WatchNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of("Watch not found"));
+    }
+
     @ExceptionHandler(WrongPasswordException.class)
     public ResponseEntity<ErrorResponse> handleWrongPassword(WrongPasswordException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
