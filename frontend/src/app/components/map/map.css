@@ -4,7 +4,21 @@
   width: 100%;
 }
 
+.map-shell {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
 .map {
   height: 100%;
   width: 100%;
+}
+
+app-side-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1100;
 }
