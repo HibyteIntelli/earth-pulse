@@ -1,4 +1,5 @@
 export const environment = {
-    production: false,
-    apiBaseUrl: '/api',
+  production: false,
+  apiBaseUrl: '/api',
+  ingestionBaseUrl: '/ingestion',
 };

@@ -1,5 +1,8 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, viewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, inject, OnDestroy, viewChild } from '@angular/core';
 import * as L from 'leaflet';
+import { IngestionService } from '../../core/ingestion/ingestion.service';
+import { Event, EventFilter } from '../../core/ingestion/ingestion.models';
+import { iconFor } from './category-icons';
 
 @Component({
   selector: 'app-map',
@@ -10,35 +13,56 @@ import * as L from 'leaflet';
 export class Map implements AfterViewInit, OnDestroy {
   private readonly mapContainer = viewChild.required<ElementRef<HTMLDivElement>>('mapContainer');
   private leafletMap?: L.Map;
+  private readonly ingestion = inject(IngestionService);
+  private readonly markers = L.layerGroup();
 
   ngAfterViewInit(): void {
+    this.initMap();
+    this.loadEvents();
+  }
+
+  ngOnDestroy(): void {
+    this.leafletMap?.remove();
+  }
+
+  private loadEvents(filter: EventFilter = {}): void {
+    this.ingestion.search(filter).subscribe({
+      next: (page) => this.renderMarkers(page?.items ?? []),
+      error: (err) => {
+        console.error('Failed to load events', err);
+        this.renderMarkers([]);
+      },
+    });
+  }
+
+  private renderMarkers(events: Event[] = []): void {
+    this.markers.clearLayers();
+    for (const event of events) {
+      const g = event.geometry;
+      if (!g) continue;
+      const [lon, lat] = g.coordinates;
+      const popup = document.createElement('span');
+      popup.textContent = event.title;
+      L.marker([lat, lon], { icon: iconFor(event.category) })
+        .bindPopup(popup)
+        .addTo(this.markers);
+    }
+  }
+
+  private initMap(): void {
     this.leafletMap = L.map(this.mapContainer().nativeElement, {
       center: [20, 0],
       zoom: 2,
       worldCopyJump: true,
       zoomControl: false,
     });
-
-    L.control.zoom({ position: 'bottomleft' }).addTo(this.leafletMap);
-
-    const greenIcon = L.icon({
-      iconUrl: 'assets/leaves.png',
-      iconSize: [38, 95],
-      iconAnchor: [22, 94],
-      popupAnchor: [-3, -76],
-    });
-
-    L.marker([46.7712, 23.6236], { icon: greenIcon }).addTo(this.leafletMap);
-    L.marker([23.1432, 13.535], { icon: greenIcon }).addTo(this.leafletMap);
-    L.marker([40.3223, 19.5354], { icon: greenIcon }).addTo(this.leafletMap);
+    this.markers.addTo(this.leafletMap);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap contributors',
     }).addTo(this.leafletMap);
-  }
 
-  ngOnDestroy(): void {
-    this.leafletMap?.remove();
+    L.control.zoom({ position: 'bottomleft' }).addTo(this.leafletMap);
   }
 }

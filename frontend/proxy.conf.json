@@ -4,5 +4,11 @@
     "secure": false,
     "changeOrigin": true,
     "pathRewrite": { "^/api": "" }
+  },
+  "/ingestion": {
+    "target": "http://localhost:8081",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": { "^/ingestion": "" }
   }
 }
