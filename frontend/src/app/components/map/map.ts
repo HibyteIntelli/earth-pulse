@@ -16,6 +16,15 @@ export class Map implements AfterViewInit, OnDestroy {
   private readonly ingestion = inject(IngestionService);
   private readonly markers = L.layerGroup();
 
+  ngAfterViewInit(): void {
+    this.initMap();
+    this.loadEvents();
+  }
+
+  ngOnDestroy(): void {
+    this.leafletMap?.remove();
+  }
+
   private loadEvents(filter: EventFilter = {}): void {
     this.ingestion.search(filter).subscribe({
       next: (page) => this.renderMarkers(page?.items ?? []),
@@ -55,14 +64,5 @@ export class Map implements AfterViewInit, OnDestroy {
     }).addTo(this.leafletMap);
 
     L.control.zoom({ position: 'bottomleft' }).addTo(this.leafletMap);
-  }
-
-  ngAfterViewInit(): void {
-    this.initMap();
-    this.loadEvents();
-  }
-
-  ngOnDestroy(): void {
-    this.leafletMap?.remove();
   }
 }
