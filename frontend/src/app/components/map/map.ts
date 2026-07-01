@@ -17,12 +17,16 @@ export class Map implements AfterViewInit, OnDestroy {
   private readonly markers = L.layerGroup();
 
   private loadEvents(filter: EventFilter = {}): void {
-    this.ingestion.search(filter).subscribe((page) => {
-      this.renderMarkers(page.items);
+    this.ingestion.search(filter).subscribe({
+      next: (page) => this.renderMarkers(page?.items ?? []),
+      error: (err) => {
+        console.error('Failed to load events from the ingestion service', err);
+        this.renderMarkers([]);
+      },
     });
   }
 
-  private renderMarkers(events: Event[]): void {
+  private renderMarkers(events: Event[] = []): void {
     this.markers.clearLayers();
     for (const event of events) {
       const g = event.geometry;
@@ -30,7 +34,9 @@ export class Map implements AfterViewInit, OnDestroy {
       const [lon, lat] = g.coordinates;
       const popup = document.createElement('span');
       popup.textContent = event.title;
-      L.marker([lat, lon], { icon: iconFor(event.category) }).bindPopup(popup).addTo(this.markers);
+      L.marker([lat, lon], { icon: iconFor(event.category) })
+        .bindPopup(popup)
+        .addTo(this.markers);
     }
   }
 
