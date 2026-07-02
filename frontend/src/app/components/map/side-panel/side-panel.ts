@@ -12,7 +12,7 @@ import { MapStateService } from '../map-state.service';
   templateUrl: './side-panel.html',
   styleUrls: ['../../shared/panel-kit.css', './side-panel.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { '(document:keydown.escape)': 'close()' },
+  host: {},
 })
 export class SidePanel {
   private readonly ingestion = inject(IngestionService);
@@ -40,12 +40,19 @@ export class SidePanel {
     if (!e) return [];
     const out: EventCard[] = [{ label: 'Event ID', value: e.id, wide: true }];
     if (e.geometry) {
-      out.push({ label: 'Location', value: formatCoords(e.geometry.coordinates[1], e.geometry.coordinates[0]) });
+      out.push({
+        label: 'Location',
+        value: formatCoords(e.geometry.coordinates[1], e.geometry.coordinates[0]),
+      });
     }
     if (e.eventDate) out.push({ label: 'Started', value: formatDate(e.eventDate) });
-    if (e.status === 'closed' && e.closedAt) out.push({ label: 'Ended', value: formatDate(e.closedAt) });
+    if (e.status === 'closed' && e.closedAt)
+      out.push({ label: 'Ended', value: formatDate(e.closedAt) });
     if (e.magnitudeValue != null) {
-      out.push({ label: 'Strength', value: `${e.magnitudeValue}${e.magnitudeUnit ? ' ' + e.magnitudeUnit : ''}` });
+      out.push({
+        label: 'Strength',
+        value: `${e.magnitudeValue}${e.magnitudeUnit ? ' ' + e.magnitudeUnit : ''}`,
+      });
     }
     return out;
   });
@@ -96,6 +103,7 @@ function formatDate(iso: string): string {
 }
 
 function formatCoords(lat: number, lon: number): string {
-  const fmt = (v: number, pos: string, neg: string) => `${Math.abs(v).toFixed(4)}° ${v >= 0 ? pos : neg}`;
+  const fmt = (v: number, pos: string, neg: string) =>
+    `${Math.abs(v).toFixed(4)}° ${v >= 0 ? pos : neg}`;
   return `${fmt(lat, 'N', 'S')}   ${fmt(lon, 'E', 'W')}`;
 }
