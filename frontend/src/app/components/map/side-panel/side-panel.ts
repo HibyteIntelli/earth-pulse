@@ -10,7 +10,7 @@ import { MapStateService } from '../map-state.service';
   selector: 'app-side-panel',
   imports: [],
   templateUrl: './side-panel.html',
-  styleUrl: './side-panel.css',
+  styleUrls: ['../../shared/panel-kit.css', './side-panel.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(document:keydown.escape)': 'close()' },
 })
