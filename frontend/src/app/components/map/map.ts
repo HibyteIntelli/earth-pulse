@@ -47,7 +47,7 @@ export class Map implements AfterViewInit, OnDestroy {
       const label = document.createElement('span');
       label.textContent = event.title;
       const marker = L.marker([lat, lon], { icon: iconFor(event.category) });
-      marker.bindTooltip(label, { direction: 'top', offset: [0, -28] });
+      marker.bindTooltip(label, { direction: 'top', offset: [0, -18] });
       marker.on('click', () => this.mapState.select(event.id));
       marker.addTo(this.markers);
     }
