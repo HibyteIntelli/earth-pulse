@@ -76,8 +76,8 @@ public class EventProcessingService {
             BriefingResponseDto response = llmServiceClient.fetchBriefing(eventId, watch.getReadingLevel());
             if (response == null) return emptyBriefing();
             return BriefingSnapshotDto.builder()
-                    .summary(response.getSummary())
-                    .impact(response.getImpact())
+                    .summary(response.getSummary() != null ? response.getSummary() : "")
+                    .impact(response.getImpact() != null ? response.getImpact() : "")
                     .severity(response.getSeverity() != null ? response.getSeverity() : Severity.UNKNOWN)
                     .precautions(response.getPrecautions() != null ? response.getPrecautions() : List.of())
                     .build();

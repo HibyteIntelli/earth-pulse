@@ -1,6 +1,5 @@
 package ro.hibyte.notifier.client;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
@@ -17,7 +16,6 @@ import ro.hibyte.notifier.entity.CategoryEnum;
 import java.util.List;
 
 @Component
-@Slf4j
 public class AuthServiceClient {
 
     private final RestClient restClient;
@@ -56,8 +54,8 @@ public class AuthServiceClient {
                     ? response.getMatches()
                     : List.of();
         } catch (Exception e) {
-            log.warn("Failed to fetch matching watches for event={}: {}", payload.getEventId(), e.getMessage());
-            return List.of();
+            throw new IllegalStateException(
+                    "Failed to fetch matching watches for event=" + payload.getEventId(), e);
         }
     }
 }
