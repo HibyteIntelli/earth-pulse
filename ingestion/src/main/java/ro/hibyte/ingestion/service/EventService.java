@@ -72,8 +72,8 @@ public class EventService {
         }
     }
 
-    @Scheduled(fixedRateString = "${eonet.poll-interval-ms:60000}",
-            initialDelayString = "${eonet.poll-initial-delay-ms:15000}")
+    @Scheduled(fixedRateString = "${eonet.poll-interval-ms:3600000}",
+            initialDelayString = "${eonet.poll-initial-delay-ms:60000}")
     public void fetchAndSaveEvents() {
         fetchAndSave(pollDays);
     }
