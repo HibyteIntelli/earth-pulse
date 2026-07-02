@@ -2,6 +2,10 @@ package ro.hibyte.ingestion.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -33,7 +37,26 @@ public class EventService {
     private final EonetClient eonetClient;
     private final EventSpecification eventSpecification;
 
+    @Value("${eonet.poll-days:30}")
+    private int pollDays;
+
+    @Value("${eonet.backfill-days:30}")
+    private int backfillDays;
+
     private void upsertEvent(EonetEvent eonetEvent) {
+        try {
+            saveEvent(eonetEvent);
+        } catch (DataIntegrityViolationException e) {
+            if (eventRepository.existsById(eonetEvent.getId())) {
+                log.debug("Concurrent insert for event {}, retrying as update", eonetEvent.getId());
+                saveEvent(eonetEvent);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    private void saveEvent(EonetEvent eonetEvent) {
         Event event = eventRepository.findById(eonetEvent.getId())
                 .orElseGet(Event::new);
         event.setEonetId(eonetEvent.getId());
@@ -41,10 +64,23 @@ public class EventService {
         eventRepository.save(event);
     }
 
-    @Scheduled(fixedRateString = "${eonet.poll-interval-ms}")
+    @EventListener(ApplicationReadyEvent.class)
+    public void backfillEvents() {
+        if (eventRepository.count() == 0) {
+            log.info("No events found, starting backfill process");
+            fetchAndSave(backfillDays);
+        }
+    }
+
+    @Scheduled(fixedRateString = "${eonet.poll-interval-ms:3600000}",
+            initialDelayString = "${eonet.poll-initial-delay-ms:60000}")
     public void fetchAndSaveEvents() {
+        fetchAndSave(pollDays);
+    }
+
+    private void fetchAndSave(int days) {
         try {
-            EonetResponse response = eonetClient.fetchEvents();
+            EonetResponse response = eonetClient.fetchEvents(days);
 
             if (response == null || response.getEvents() == null) return;
 

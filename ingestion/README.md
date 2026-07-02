@@ -86,6 +86,9 @@ configured interval (default: once per hour).
 |-----|---------|-------------|
 | `eonet.base-url` | `https://eonet.gsfc.nasa.gov` | NASA EONET API base URL |
 | `eonet.poll-interval-ms` | `3600000` (1 h) | How often the scheduler polls EONET |
+| `eonet.poll-initial-delay-ms` | `60000` (60 s) | Delay before the first scheduled poll (the first-boot backfill runs immediately, with no delay) |
+| `eonet.poll-days` | `30` | Look-back window (days) fetched on each scheduled poll |
+| `eonet.backfill-days` | `30` | Look-back window (days) fetched by the first-boot backfill (runs only when the events table is empty) |
 | `eonet.connect-timeout` | `5s` | `RestClient` connect timeout |
 | `eonet.read-timeout` | `10s` | `RestClient` read timeout |
 

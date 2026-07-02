@@ -13,10 +13,14 @@ public class EonetClient {
     private final RestClient eonetRestClient;
     private final ObjectMapper objectMapper;
 
-    public EonetResponse fetchEvents() {
+    public EonetResponse fetchEvents(int days) {
         String json = eonetRestClient
                 .get()
-                .uri("/api/v3/events?status=all&days=30")
+                .uri(uriBuilder -> uriBuilder
+                        .path("/api/v3/events")
+                        .queryParam("status", "all")
+                        .queryParam("days", days)
+                        .build())
                 .retrieve()
                 .body(String.class);
 

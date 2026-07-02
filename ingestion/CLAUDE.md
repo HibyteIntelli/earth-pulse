@@ -46,7 +46,7 @@ Prereqs: Java 25, Docker (Postgres), and `application.properties`
     ./mvnw spring-boot:run          # service on http://localhost:8081
     ./mvnw test                     # run tests
 
-EONET config keys: `eonet.base-url`, `eonet.poll-interval-ms`, `eonet.connect-timeout`, `eonet.read-timeout`.
+EONET config keys: `eonet.base-url`, `eonet.poll-interval-ms`, `eonet.poll-initial-delay-ms`, `eonet.poll-days`, `eonet.backfill-days`, `eonet.connect-timeout`, `eonet.read-timeout`.
 EONET API reference: `docs/EONET_API_Reference.md`.
 
 ## Conventions (full set: `mem:conventions`)
