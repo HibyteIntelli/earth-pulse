@@ -32,27 +32,21 @@ export class SidePanel {
 
   protected readonly statusLabel = computed(() => {
     const s = this.event()?.status;
-    return s === 'open' ? 'Active' : s === 'closed' ? 'Dormant' : '';
+    return s === 'open' ? 'Currently active' : s === 'closed' ? 'Ended' : '';
   });
 
-  protected readonly measurement = computed(() => {
-    const e = this.event();
-    if (!e || e.magnitudeValue == null) return null;
-    return `${e.magnitudeValue}${e.magnitudeUnit ? ' ' + e.magnitudeUnit : ''}`;
-  });
-
-  protected readonly cards = computed<{ label: string; value: string }[]>(() => {
+  protected readonly cards = computed<EventCard[]>(() => {
     const e = this.event();
     if (!e) return [];
-    const out: { label: string; value: string }[] = [];
+    const out: EventCard[] = [{ label: 'Event ID', value: e.id, wide: true }];
     if (e.geometry) {
-      const [lon, lat] = e.geometry.coordinates;
-      out.push({ label: 'Habitat', value: formatCoords(lat, lon) });
+      out.push({ label: 'Location', value: formatCoords(e.geometry.coordinates[1], e.geometry.coordinates[0]) });
     }
-    if (e.eventDate) out.push({ label: 'First sighting', value: formatDate(e.eventDate) });
-    if (e.closedAt) out.push({ label: 'Last seen', value: formatDate(e.closedAt) });
-    out.push({ label: 'Catalogued', value: formatDate(e.ingestedAt) });
-    if (e.updatedAt) out.push({ label: 'Revised', value: formatDate(e.updatedAt) });
+    if (e.eventDate) out.push({ label: 'Started', value: formatDate(e.eventDate) });
+    if (e.status === 'closed' && e.closedAt) out.push({ label: 'Ended', value: formatDate(e.closedAt) });
+    if (e.magnitudeValue != null) {
+      out.push({ label: 'Strength', value: `${e.magnitudeValue}${e.magnitudeUnit ? ' ' + e.magnitudeUnit : ''}` });
+    }
     return out;
   });
 
@@ -86,6 +80,12 @@ export class SidePanel {
   protected close(): void {
     this.mapState.clearSelection();
   }
+}
+
+interface EventCard {
+  label: string;
+  value: string;
+  wide?: boolean;
 }
 
 function formatDate(iso: string): string {

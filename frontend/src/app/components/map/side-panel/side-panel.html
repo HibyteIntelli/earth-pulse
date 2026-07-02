@@ -26,36 +26,31 @@
           <div class="vital" [class.vital--active]="e.status === 'open'">
             <span class="vital__pulse" aria-hidden="true"></span>
             <span class="vital__label eyebrow">{{ statusLabel() }}</span>
-            @if (measurement(); as m) {
-              <span class="vital__reading">{{ m }}</span>
-            }
           </div>
         </header>
 
         <div class="cards">
           @for (c of cards(); track eventId() + c.label; let i = $index) {
-            <div class="card glass" [style.--i]="i">
+            <div class="card glass" [class.card--wide]="c.wide" [style.--i]="i">
               <span class="card__label eyebrow">{{ c.label }}</span>
               <span class="card__value">{{ c.value }}</span>
             </div>
           }
 
-          @if (e.description) {
-            <div class="card card--wide glass" [style.--i]="cards().length">
-              <span class="card__label eyebrow">Field notes</span>
-              <p class="card__note">{{ e.description }}</p>
-            </div>
-          }
+          <div class="card card--wide glass" [style.--i]="cards().length">
+            <span class="card__label eyebrow">Description</span>
+            <p class="card__note">{{ e.description || 'No description was provided for this event.' }}</p>
+          </div>
 
           @if (e.sourceUrl) {
             <a
               class="habitat__source eyebrow"
-              [style.--i]="cards().length + (e.description ? 1 : 0)"
+              [style.--i]="cards().length + 1"
               [href]="e.sourceUrl"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Observe source ↗
+              View full report ↗
             </a>
           }
         </div>
