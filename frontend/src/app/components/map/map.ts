@@ -6,6 +6,8 @@ import { iconFor } from './category-icons';
 import { MapStateService } from './map-state.service';
 import { SidePanel } from './side-panel/side-panel';
 
+const WORLD_BOUNDS = L.latLngBounds([-90, -180], [90, 180]);
+
 @Component({
   selector: 'app-map',
   imports: [SidePanel],
@@ -59,14 +61,32 @@ export class Map implements AfterViewInit, OnDestroy {
       zoom: 2,
       worldCopyJump: true,
       zoomControl: false,
+      maxBounds: WORLD_BOUNDS,
+      maxBoundsViscosity: 1.0,
     });
     this.markers.addTo(this.leafletMap);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors',
-    }).addTo(this.leafletMap);
+    L.tileLayer(
+      'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}',
+      {
+        maxZoom: 20,
+        minZoom: 2,
+        attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>',
+      },
+    ).addTo(this.leafletMap);
 
     L.control.zoom({ position: 'bottomleft' }).addTo(this.leafletMap);
+
+    this.fitWorldZoom();
+    this.leafletMap.on('resize', () => this.fitWorldZoom());
+  }
+
+  private fitWorldZoom(): void {
+    const map = this.leafletMap;
+    if (!map) return;
+    const minZoom = map.getBoundsZoom(WORLD_BOUNDS, true);
+    if (!Number.isFinite(minZoom)) return;
+    map.setMinZoom(minZoom);
+    if (map.getZoom() < minZoom) map.setZoom(minZoom);
   }
 }
