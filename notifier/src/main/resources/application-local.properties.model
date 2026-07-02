@@ -1,4 +1,4 @@
-spring.datasource.url=jdbc:postgresql://localhost:5433/<POSTGRES_DB>
+spring.datasource.url=jdbc:postgresql://localhost:5433/notifier_db
 spring.datasource.username=<POSTGRES_USER>
 spring.datasource.password=<POSTGRES_PASSWORD>
 
@@ -8,3 +8,10 @@ spring.mail.host=localhost
 spring.mail.port=1025
 spring.mail.properties.mail.smtp.auth=false
 spring.mail.properties.mail.smtp.starttls.enable=false
+
+spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://localhost:8080/.well-known/jwks.json
+
+notifier.internal-secret=change-me
+
+app.auth-service.url=http://localhost:8080
+app.auth-service.internal-secret=change-me

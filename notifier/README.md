@@ -28,6 +28,15 @@ spring.mail.host=localhost
 spring.mail.port=1025
 spring.mail.properties.mail.smtp.auth=false
 spring.mail.properties.mail.smtp.starttls.enable=false
+
+spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://localhost:8080/.well-known/jwks.json
+
+notifier.internal-secret=change-me
+
+# Auth Service — called to find watches matching an incoming event.
+# app.auth-service.internal-secret must match the secret configured in the Auth Service.
+app.auth-service.url=http://localhost:8080
+app.auth-service.internal-secret=change-me
 ```
 
 `application-local.properties` is gitignored — never commit it.

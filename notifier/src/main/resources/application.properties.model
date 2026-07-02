@@ -1,11 +1,27 @@
 spring.application.name=notifier
+spring.config.import=optional:classpath:application-local.properties
 
-spring.datasource.url=jdbc:postgresql://localhost:<PORT>/notifier
-spring.datasource.username=...
-spring.datasource.password=...
-spring.jpa.hibernate.ddl-auto=update
+server.port=8084
 
-spring.mail.host=localhost
-spring.mail.port=<PORT>
+spring.datasource.url=jdbc:postgresql://localhost:<PORT>/notifier_db
+spring.datasource.username=<POSTGRES_USER>
+spring.datasource.password=<POSTGRES_PASSWORD>
+spring.jpa.hibernate.ddl-auto=validate
+
+spring.mail.host=<SMTP_HOST>
+spring.mail.port=<SMTP_PORT>
+spring.mail.from=noreply@earth-pulse.local
 spring.mail.properties.mail.smtp.auth=false
 spring.mail.properties.mail.smtp.starttls.enable=false
+
+spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://<AUTH_SERVICE_HOST>/.well-known/jwks.json
+
+spring.mvc.problemdetails.enabled=true
+
+# Secret this service checks on incoming /internal/** calls (from Ingestion)
+notifier.internal-secret=<INTERNAL_SECRET>
+
+# Auth Service — watch matching
+app.auth-service.url=http://<AUTH_SERVICE_HOST>
+app.auth-service.internal-secret=<INTERNAL_SECRET>
+
