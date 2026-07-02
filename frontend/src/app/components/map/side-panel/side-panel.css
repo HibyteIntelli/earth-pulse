@@ -93,9 +93,9 @@
   padding: 0.32rem 0.7rem;
   border-radius: 999px;
   background: rgba(173, 209, 158, 0.4);
-  --eyebrow-size: 0.6rem;
-  --eyebrow-tracking: 0.2em;
-  --eyebrow-color: var(--forest-deep);
+  --label-caps-size: 0.6rem;
+  --label-caps-tracking: 0.2em;
+  --label-caps-color: var(--forest-deep);
 }
 
 .habitat__title {
@@ -166,8 +166,8 @@
 }
 
 .card__label {
-  --eyebrow-size: 0.56rem;
-  --eyebrow-color: var(--forest-deep);
+  --label-caps-size: 0.56rem;
+  --label-caps-color: var(--forest-deep);
   opacity: 0.75;
 }
 
@@ -197,9 +197,9 @@
   border: 0;
   border-radius: 16px;
   background: var(--forest-deep);
-  --eyebrow-size: 0.7rem;
-  --eyebrow-tracking: 0.1em;
-  --eyebrow-color: var(--paper);
+  --label-caps-size: 0.7rem;
+  --label-caps-tracking: 0.1em;
+  --label-caps-color: var(--paper);
   text-decoration: none;
   cursor: pointer;
   animation: rise 0.5s ease both;
@@ -214,12 +214,12 @@
 .habitat__source--ghost {
   background: transparent;
   border: 1px solid var(--line-strong);
-  --eyebrow-color: var(--ink-dim);
+  --label-caps-color: var(--ink-dim);
 }
 
 .habitat__source--ghost:hover {
   background: var(--ink);
-  --eyebrow-color: var(--paper);
+  --label-caps-color: var(--paper);
 }
 
 .habitat__state {
@@ -244,7 +244,7 @@
 
 .habitat__muted {
   margin: 0;
-  --eyebrow-color: var(--ink-faint);
+  --label-caps-color: var(--ink-faint);
 }
 
 .habitat__error {

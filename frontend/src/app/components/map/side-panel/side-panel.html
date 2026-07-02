@@ -8,43 +8,43 @@
     @if (loading()) {
       <div class="habitat__state" aria-busy="true">
         <span class="breathe"></span>
-        <p class="habitat__muted eyebrow">Locating…</p>
+        <p class="habitat__muted label-caps">Locating…</p>
       </div>
     } @else if (error()) {
       <div class="habitat__state">
         <p class="habitat__error">This habitat could not be reached.</p>
-        <button type="button" class="habitat__source habitat__source--ghost eyebrow" (click)="close()">Dismiss</button>
+        <button type="button" class="habitat__source habitat__source--ghost label-caps" (click)="close()">Dismiss</button>
       </div>
     } @else if (event(); as e) {
       <div class="habitat__scroll">
         <header class="habitat__head">
           @if (taxon()) {
-            <span class="habitat__taxon eyebrow">{{ taxon() }}</span>
+            <span class="habitat__taxon label-caps">{{ taxon() }}</span>
           }
           <h2 class="habitat__title">{{ e.title }}</h2>
 
           <div class="vital" [class.vital--active]="e.status === 'open'">
             <span class="vital__pulse" aria-hidden="true"></span>
-            <span class="vital__label eyebrow">{{ statusLabel() }}</span>
+            <span class="vital__label label-caps">{{ statusLabel() }}</span>
           </div>
         </header>
 
         <div class="cards">
           @for (c of cards(); track eventId() + c.label; let i = $index) {
             <div class="card glass" [class.card--wide]="c.wide" [style.--i]="i">
-              <span class="card__label eyebrow">{{ c.label }}</span>
+              <span class="card__label label-caps">{{ c.label }}</span>
               <span class="card__value">{{ c.value }}</span>
             </div>
           }
 
           <div class="card card--wide glass" [style.--i]="cards().length">
-            <span class="card__label eyebrow">Description</span>
+            <span class="card__label label-caps">Description</span>
             <p class="card__note">{{ e.description || 'No description was provided for this event.' }}</p>
           </div>
 
           @if (e.sourceUrl) {
             <a
-              class="habitat__source eyebrow"
+              class="habitat__source label-caps"
               [style.--i]="cards().length + 1"
               [href]="e.sourceUrl"
               target="_blank"

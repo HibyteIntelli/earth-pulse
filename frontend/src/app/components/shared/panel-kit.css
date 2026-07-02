@@ -1,9 +1,9 @@
-.eyebrow {
+.label-caps {
   font-family: var(--mono);
-  font-size: var(--eyebrow-size, 0.66rem);
-  letter-spacing: var(--eyebrow-tracking, 0.16em);
+  font-size: var(--label-caps-size, 0.66rem);
+  letter-spacing: var(--label-caps-tracking, 0.16em);
   text-transform: uppercase;
-  color: var(--eyebrow-color, var(--ink-dim));
+  color: var(--label-caps-color, var(--ink-dim));
 }
 
 .glass {
