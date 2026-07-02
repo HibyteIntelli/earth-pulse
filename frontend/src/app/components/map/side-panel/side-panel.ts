@@ -105,5 +105,5 @@ function formatDate(iso: string): string {
 function formatCoords(lat: number, lon: number): string {
   const fmt = (v: number, pos: string, neg: string) =>
     `${Math.abs(v).toFixed(4)}° ${v >= 0 ? pos : neg}`;
-  return `${fmt(lat, 'N', 'S')}   ${fmt(lon, 'E', 'W')}`;
+  return `${fmt(lat, 'N', 'S')}\u00A0\u00A0\u00A0${fmt(lon, 'E', 'W')}`;
 }

@@ -21,6 +21,16 @@ export class Profile implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
 
+  constructor() {
+    this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
+      if (this.status() === 'saved') this.status.set('idle');
+    });
+  }
+
+  ngOnInit(): void {
+    this.init();
+  }
+
   protected readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.pattern(/\S+/)]],
     email: ['', [Validators.required, Validators.email]],
@@ -66,16 +76,6 @@ export class Profile implements OnInit {
         this.status.set('idle');
       },
     });
-  }
-
-  constructor() {
-    this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
-      if (this.status() === 'saved') this.status.set('idle');
-    });
-  }
-
-  ngOnInit(): void {
-    this.init();
   }
 
   protected startEmailChange(): void {
