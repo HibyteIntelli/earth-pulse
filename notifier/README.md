@@ -37,9 +37,6 @@ notifier.internal-secret=change-me
 # app.auth-service.internal-secret must match the secret configured in the Auth Service.
 app.auth-service.url=http://localhost:8080
 app.auth-service.internal-secret=change-me
-
-# Ingestion Service — polled as a fallback when the push from Ingestion is unavailable.
-app.ingestion-service.url=http://localhost:8081
 ```
 
 `application-local.properties` is gitignored — never commit it.

@@ -25,7 +25,3 @@ notifier.internal-secret=<INTERNAL_SECRET>
 app.auth-service.url=http://<AUTH_SERVICE_HOST>
 app.auth-service.internal-secret=<INTERNAL_SECRET>
 
-# Ingestion Service — fallback event polling
-app.ingestion-service.url=http://<INGESTION_SERVICE_HOST>
-notifier.polling.interval-ms=60000
-notifier.polling.page-size=100

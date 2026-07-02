@@ -15,5 +15,3 @@ notifier.internal-secret=change-me
 
 app.auth-service.url=http://localhost:8080
 app.auth-service.internal-secret=change-me
-
-app.ingestion-service.url=http://localhost:8081
