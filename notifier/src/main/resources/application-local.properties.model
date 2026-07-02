@@ -15,3 +15,6 @@ notifier.internal-secret=change-me
 
 app.auth-service.url=http://localhost:8080
 app.auth-service.internal-secret=change-me
+
+app.llm-service.url=http://localhost:8082
+app.llm-service.internal-secret=change-me

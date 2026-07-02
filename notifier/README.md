@@ -37,6 +37,11 @@ notifier.internal-secret=change-me
 # app.auth-service.internal-secret must match the secret configured in the Auth Service.
 app.auth-service.url=http://localhost:8080
 app.auth-service.internal-secret=change-me
+
+# LLM Service — called to generate the briefing for each matched watch.
+# app.llm-service.internal-secret must match the secret configured in the LLM Service.
+app.llm-service.url=http://localhost:8082
+app.llm-service.internal-secret=change-me
 ```
 
 `application-local.properties` is gitignored — never commit it.
