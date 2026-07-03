@@ -4,13 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ro.hibyte.notifier.client.AuthServiceClient;
+import ro.hibyte.notifier.client.LlmServiceClient;
 import ro.hibyte.notifier.entity.CategoryEnum;
+import ro.hibyte.notifier.dto.BriefingResponseDto;
 import ro.hibyte.notifier.dto.BriefingSnapshotDto;
 import ro.hibyte.notifier.dto.MatchedWatchDto;
 import ro.hibyte.notifier.dto.NewEventPayloadDto;
 import ro.hibyte.notifier.entity.DeliveryMode;
 import ro.hibyte.notifier.entity.NotificationLog;
-import ro.hibyte.notifier.entity.ReadingLevel;
 import ro.hibyte.notifier.entity.Severity;
 import ro.hibyte.notifier.repository.NotificationLogRepository;
 
@@ -23,6 +24,7 @@ public class EventProcessingService {
 
     private final NotificationLogRepository notificationLogRepository;
     private final AuthServiceClient authServiceClient;
+    private final LlmServiceClient llmServiceClient;
 
     public void processNewEvent(NewEventPayloadDto payload) {
         log.info("Received new event: {}", payload.getEventId());
@@ -35,8 +37,7 @@ public class EventProcessingService {
                 continue;
             }
 
-            // TODO: call LLM Service to fetch briefing for (eventId, watch.readingLevel())
-            BriefingSnapshotDto briefing = null; // placeholder
+            BriefingSnapshotDto briefing = fetchBriefing(payload.getEventId(), watch);
 
             NotificationLog notificationLog = NotificationLog.builder()
                     .watchId(watch.getWatchId())
@@ -53,10 +54,10 @@ public class EventProcessingService {
                     .eventDate(payload.getEventDate())
                     .deliveryMode(watch.getDigestMode())
                     .readingLevel(watch.getReadingLevel())
-                    .briefingSummary(briefing != null ? briefing.getSummary() : "")
-                    .briefingImpact(briefing != null ? briefing.getImpact() : "")
-                    .briefingSeverity(briefing != null ? briefing.getSeverity() : Severity.LOW)
-                    .briefingPrecautions(briefing != null ? briefing.getPrecautions() : List.of())
+                    .briefingSummary(briefing.getSummary())
+                    .briefingImpact(briefing.getImpact())
+                    .briefingSeverity(briefing.getSeverity())
+                    .briefingPrecautions(briefing.getPrecautions())
                     .build();
 
             notificationLogRepository.save(notificationLog);
@@ -68,6 +69,32 @@ public class EventProcessingService {
             }
             // DAILY_DIGEST: deliveredAt stays null; the digest job sets it after sending
         }
+    }
+
+    private BriefingSnapshotDto fetchBriefing(String eventId, MatchedWatchDto watch) {
+        try {
+            BriefingResponseDto response = llmServiceClient.fetchBriefing(eventId, watch.getReadingLevel());
+            if (response == null) return emptyBriefing();
+            return BriefingSnapshotDto.builder()
+                    .summary(response.getSummary() != null ? response.getSummary() : "")
+                    .impact(response.getImpact() != null ? response.getImpact() : "")
+                    .severity(response.getSeverity() != null ? response.getSeverity() : Severity.UNKNOWN)
+                    .precautions(response.getPrecautions() != null ? response.getPrecautions() : List.of())
+                    .build();
+        } catch (Exception e) {
+            log.warn("Failed to fetch briefing for event={} readingLevel={}: {}",
+                    eventId, watch.getReadingLevel(), e.getMessage());
+            return emptyBriefing();
+        }
+    }
+
+    private BriefingSnapshotDto emptyBriefing() {
+        return BriefingSnapshotDto.builder()
+                .summary("")
+                .impact("")
+                .severity(Severity.UNKNOWN)
+                .precautions(List.of())
+                .build();
     }
 
     private String buildEventUrl(String eventId) {
