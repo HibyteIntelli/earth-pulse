@@ -51,8 +51,8 @@ export class Map implements AfterViewInit, OnDestroy {
 
   private initMap(): void {
     this.leafletMap = L.map(this.mapContainer().nativeElement, {
-      center: [20, 0],
-      zoom: 2,
+      center: [30, -100],
+      zoom: 4,
       worldCopyJump: true,
       zoomControl: false,
     });
