@@ -19,7 +19,7 @@ import { EVENT_CATEGORIES, categoryTitle, EventCategoryId } from '../../models/e
   selector: 'app-map',
   imports: [],
   templateUrl: './map.html',
-  styleUrl: './map.css',
+  styleUrls: ['./panel-kit.css', './map.css'],
   host: {
     '(document:keydown.escape)': 'closeMenu()',
   },

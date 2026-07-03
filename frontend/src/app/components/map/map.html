@@ -7,7 +7,7 @@
 
   <button
     type="button"
-    class="filter__trigger"
+    class="filter__trigger panel-surface"
     [class.is-active]="selected().size > 0"
     aria-haspopup="true"
     [attr.aria-expanded]="menuOpen()"
@@ -21,7 +21,7 @@
   </button>
 
   @if (menuOpen()) {
-    <div class="filter__menu" role="menu" aria-label="Event categories">
+    <div class="filter__menu panel-card" role="menu" aria-label="Event categories">
       <span class="filter__tag">Event categories // EONET</span>
 
       <button

@@ -1,0 +1,31 @@
+.panel-surface {
+  color: #f6faf2;
+  background: linear-gradient(180deg, rgba(33, 58, 51, 0.97), rgba(33, 58, 51, 0.9));
+  box-shadow:
+    0 14px 32px -20px rgba(0, 0, 0, 0.75),
+    inset 0 1px 0 rgba(246, 250, 242, 0.08);
+  backdrop-filter: blur(6px);
+}
+
+.panel-card {
+  color: var(--ink);
+  background: var(--paper-raised);
+  border: 1px solid var(--line-strong);
+  border-top: 3px solid var(--ev-volcano);
+  border-radius: 5px;
+  box-shadow: 0 40px 80px -34px rgba(33, 58, 51, 0.6);
+  animation: panel-rise 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes panel-rise {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-card {
+    animation: none;
+  }
+}
