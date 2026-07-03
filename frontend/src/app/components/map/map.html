@@ -9,7 +9,7 @@
     type="button"
     class="filter__trigger panel-surface"
     [class.is-active]="selected().size > 0"
-    aria-haspopup="true"
+    aria-controls="filter-menu"
     [attr.aria-expanded]="menuOpen()"
     (click)="toggleMenu()"
   >
@@ -21,13 +21,13 @@
   </button>
 
   @if (menuOpen()) {
-    <div class="filter__menu panel-card" role="menu" aria-label="Event categories">
+    <div id="filter-menu" class="filter__menu panel-card" role="group" aria-label="Event categories">
       <span class="filter__tag">Event categories // EONET</span>
 
       <button
         type="button"
         class="filter__row filter__row--all"
-        role="menuitemcheckbox"
+        role="checkbox"
         [attr.aria-checked]="selected().size === 0"
         [class.is-checked]="selected().size === 0"
         (click)="selectAll()"
@@ -36,14 +36,14 @@
         <span class="filter__label">All events</span>
       </button>
 
-      <span class="filter__divider" role="separator"></span>
+      <span class="filter__divider" aria-hidden="true"></span>
 
       <div class="filter__list">
         @for (cat of categories; track cat.id) {
           <button
             type="button"
             class="filter__row"
-            role="menuitemcheckbox"
+            role="checkbox"
             [attr.aria-checked]="isSelected(cat.id)"
             [class.is-checked]="isSelected(cat.id)"
             (click)="toggleCategory(cat.id)"
