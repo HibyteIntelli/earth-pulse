@@ -8,6 +8,9 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject, of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import * as L from 'leaflet';
 import { IngestionService } from '../../core/ingestion/ingestion.service';
 import { Event, EventFilter } from '../../core/ingestion/ingestion.models';
@@ -29,6 +32,24 @@ export class Map implements AfterViewInit, OnDestroy {
   private leafletMap?: L.Map;
   private readonly ingestion = inject(IngestionService);
   private readonly markers = L.layerGroup();
+  private readonly reload$ = new Subject<EventFilter>();
+
+  constructor() {
+    this.reload$
+      .pipe(
+        switchMap((filter) =>
+          this.ingestion.search(filter).pipe(
+            map((page) => page?.items ?? []),
+            catchError((err) => {
+              console.error('Failed to load events', err);
+              return of<Event[]>([]);
+            }),
+          ),
+        ),
+        takeUntilDestroyed(),
+      )
+      .subscribe((events) => this.renderMarkers(events));
+  }
 
   protected readonly categories = EVENT_CATEGORIES;
   protected readonly menuOpen = signal(false);
@@ -90,13 +111,7 @@ export class Map implements AfterViewInit, OnDestroy {
   }
 
   private loadEvents(filter: EventFilter = {}): void {
-    this.ingestion.search(filter).subscribe({
-      next: (page) => this.renderMarkers(page?.items ?? []),
-      error: (err) => {
-        console.error('Failed to load events', err);
-        this.renderMarkers([]);
-      },
-    });
+    this.reload$.next(filter);
   }
 
   private renderMarkers(events: Event[] = []): void {
