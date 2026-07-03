@@ -160,12 +160,29 @@ paths:
       parameters:
         - name: readingLevel
           in: query
-          required: false
-          description: >
-            Controls the complexity of the generated summary.
-            Defaults to DEFAULT when omitted.
+          required: true
+          description: Controls the complexity of the generated summary.
           schema:
             $ref: '#/components/schemas/ReadingLevel'
+
+        - name: magnitudeLevel
+          in: query
+          required: true
+          description: >
+            Numeric magnitude value from EONET, used to derive severity
+            via category-specific thresholds. Pass 0 when no magnitude is available.
+          schema:
+            type: number
+            format: double
+            example: 30.0
+
+        - name: category
+          in: query
+          required: true
+          description: EONET event category (e.g. wildfires, severeStorms, volcanoes).
+          schema:
+            type: string
+            example: wildfires
 
       responses:
         "200":
@@ -175,8 +192,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/BriefingResponse'
 
-        "404":
-          description: Event not found.
+        "400":
+          description: Event ID does not match the EONET_<digits> format.
           content:
             application/json:
               schema:
@@ -223,12 +240,29 @@ paths:
       parameters:
         - name: readingLevel
           in: query
-          required: false
-          description: >
-            Controls the complexity of the generated summary.
-            Defaults to DEFAULT when omitted.
+          required: true
+          description: Controls the complexity of the generated summary.
           schema:
             $ref: '#/components/schemas/ReadingLevel'
+
+        - name: magnitudeLevel
+          in: query
+          required: true
+          description: >
+            Numeric magnitude value from EONET, used to derive severity
+            via category-specific thresholds. Pass 0 when no magnitude is available.
+          schema:
+            type: number
+            format: double
+            example: 30.0
+
+        - name: category
+          in: query
+          required: true
+          description: EONET event category (e.g. wildfires, severeStorms, volcanoes).
+          schema:
+            type: string
+            example: wildfires
 
       responses:
         "200":
@@ -238,8 +272,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/BriefingResponse'
 
-        "404":
-          description: Event not found.
+        "400":
+          description: Event ID does not match the EONET_<digits> format.
           content:
             application/json:
               schema:
