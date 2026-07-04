@@ -25,3 +25,9 @@ eonet.poll-days=30
 
 # Initial delay before the first scheduled poll (backfill itself has no delay)
 eonet.poll-initial-delay-ms=60000
+
+# Security — validate JWTs issued by the Auth Service (resource server)
+spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://localhost:8083/.well-known/jwks.json
+
+# Shared secret for internal endpoints called by the Notifier Service (X-Internal-Secret header)
+ingestion.internal-secret=<RANDOM_SECRET_MIN_32_CHARS>
