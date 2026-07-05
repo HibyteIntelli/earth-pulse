@@ -29,3 +29,6 @@ app.auth-service.internal-secret=<INTERNAL_SECRET>
 app.llm-service.url=http://<LLM_SERVICE_HOST>
 app.llm-service.internal-secret=<INTERNAL_SECRET>
 
+# Frontend — used to build event links in notification emails
+app.frontend.base-url=http://<FRONTEND_HOST>
+

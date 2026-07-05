@@ -9,6 +9,7 @@ import ro.hibyte.notifier.dto.MatchedWatchDto;
 import ro.hibyte.notifier.dto.NewEventPayloadDto;
 import ro.hibyte.notifier.entity.Severity;
 
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ public class NotificationEmailService {
     public void sendImmediateEmail(MatchedWatchDto watch, NewEventPayloadDto payload, BriefingSnapshotDto briefing, String eventUrl) {
         Context context = new Context();
         context.setVariable("eventTitle", payload.getTitle());
-        context.setVariable("eventDate", payload.getEventDate().format(EVENT_DATE_FORMAT));
+        context.setVariable("eventDate", payload.getEventDate().withOffsetSameInstant(ZoneOffset.UTC).format(EVENT_DATE_FORMAT));
         context.setVariable("severity", briefing.getSeverity().name());
         context.setVariable("severityColor", SEVERITY_COLORS.get(briefing.getSeverity()));
         context.setVariable("summary", briefing.getSummary());

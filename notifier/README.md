@@ -42,6 +42,9 @@ app.auth-service.internal-secret=change-me
 # app.llm-service.internal-secret must match the secret configured in the LLM Service.
 app.llm-service.url=http://localhost:8082
 app.llm-service.internal-secret=change-me
+
+# Frontend — used to build event links in notification emails
+app.frontend.base-url=http://localhost:4200
 ```
 
 `application-local.properties` is gitignored — never commit it.
