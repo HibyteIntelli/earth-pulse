@@ -19,8 +19,6 @@ import { EventCategoryId } from '../../models/event-category';
 
 type IconNode = Parameters<typeof createElement>[0];
 
-// Lucide has no volcano glyph, so define one in its own stroke style (24×24,
-// stroke=currentColor, round joins) to stay visually consistent with the set.
 const Volcano: IconNode = [
   ['path', { d: 'M8 8 4 20h16L16 8' }],
   ['path', { d: 'M8 8h8' }],
@@ -29,8 +27,6 @@ const Volcano: IconNode = [
   ['path', { d: 'M14.5 8 15.5 4.5' }],
 ];
 
-/** Category → (glyph, color token). Colors live in colors.css so the map,
- *  legend and filter UI stay in sync. */
 const CATEGORY_GLYPHS: Record<EventCategoryId, { icon: IconNode; color: string }> = {
   drought: { icon: SunDim, color: '--ev-drought' },
   dustHaze: { icon: Haze, color: '--ev-dust' },

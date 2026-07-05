@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -20,15 +20,17 @@ const MAX_AVATAR_BYTES = 1_000_000;
 export class Profile implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
-
-  constructor() {
-    this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
-      if (this.status() === 'saved') this.status.set('idle');
-    });
-  }
+  private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
-    this.init();
+    this.watchFormChanges();
+    this.loadProfile();
+  }
+
+  private watchFormChanges(): void {
+    this.form.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      if (this.status() === 'saved') this.status.set('idle');
+    });
   }
 
   protected readonly form = this.fb.nonNullable.group({
@@ -61,7 +63,7 @@ export class Profile implements OnInit {
     return letters.toUpperCase();
   });
 
-  protected init(): void {
+  private loadProfile(): void {
     this.status.set('loading');
     this.auth.me().subscribe({
       next: (profile) => {
