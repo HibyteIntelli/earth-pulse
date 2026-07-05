@@ -2,6 +2,8 @@ package ro.hibyte.notifier.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import ro.hibyte.notifier.client.AuthServiceClient;
 import ro.hibyte.notifier.client.LlmServiceClient;
@@ -15,6 +17,7 @@ import ro.hibyte.notifier.entity.NotificationLog;
 import ro.hibyte.notifier.entity.Severity;
 import ro.hibyte.notifier.repository.NotificationLogRepository;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @Service
@@ -25,6 +28,10 @@ public class EventProcessingService {
     private final NotificationLogRepository notificationLogRepository;
     private final AuthServiceClient authServiceClient;
     private final LlmServiceClient llmServiceClient;
+    private final NotificationEmailService notificationEmailService;
+
+    @Value("${app.frontend.base-url}")
+    private String frontendBaseUrl;
 
     public void processNewEvent(NewEventPayloadDto payload) {
         log.info("Received new event: {}", payload.getEventId());
@@ -38,6 +45,7 @@ public class EventProcessingService {
             }
 
             BriefingSnapshotDto briefing = fetchBriefing(payload.getEventId(), watch);
+            String eventUrl = buildEventUrl(payload.getEventId());
 
             NotificationLog notificationLog = NotificationLog.builder()
                     .watchId(watch.getWatchId())
@@ -50,7 +58,7 @@ public class EventProcessingService {
                                     .map(CategoryEnum::getValue)
                                     .toList()
                     )
-                    .eventUrl(buildEventUrl(payload.getEventId()))
+                    .eventUrl(eventUrl)
                     .eventDate(payload.getEventDate())
                     .deliveryMode(watch.getDigestMode())
                     .readingLevel(watch.getReadingLevel())
@@ -60,15 +68,26 @@ public class EventProcessingService {
                     .briefingPrecautions(briefing.getPrecautions())
                     .build();
 
-            notificationLogRepository.save(notificationLog);
+            try {
+                notificationLogRepository.saveAndFlush(notificationLog);
+            } catch (DataIntegrityViolationException e) {
+                log.debug("Duplicate delivery race detected for watch={} event={}, skipping",
+                        watch.getWatchId(), payload.getEventId());
+                continue;
+            }
 
             if (watch.getDigestMode() == DeliveryMode.IMMEDIATE) {
-                // TODO: send immediate email — on success, stamp delivery:
-                // notificationLog.setDeliveredAt(OffsetDateTime.now());
-                // notificationLogRepository.save(notificationLog);
+                try {
+                    notificationEmailService.sendImmediateEmail(watch, payload, briefing, eventUrl);
+                    notificationLog.setDeliveredAt(OffsetDateTime.now());
+                    notificationLogRepository.save(notificationLog);
+                } catch (Exception e) {
+                    log.error("Failed to send immediate email for watch={} event={}: {}. Releasing claim so a future retry can resend.",
+                            watch.getWatchId(), payload.getEventId(), e.getMessage());
+                    notificationLogRepository.delete(notificationLog);
+                }
             }
-            // DAILY_DIGEST: deliveredAt stays null; the digest job sets it after sending
-        }
+           }
     }
 
     private BriefingSnapshotDto fetchBriefing(String eventId, MatchedWatchDto watch) {
@@ -98,8 +117,7 @@ public class EventProcessingService {
     }
 
     private String buildEventUrl(String eventId) {
-        // TODO: replace with configured frontend base URL
-        return "/events/" + eventId;
+        return frontendBaseUrl + "/events/" + eventId;
     }
 
 }
