@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   Component,
   computed,
+  DestroyRef,
   ElementRef,
   inject,
   OnDestroy,
@@ -31,25 +32,9 @@ export class Map implements AfterViewInit, OnDestroy {
   private readonly mapContainer = viewChild.required<ElementRef<HTMLDivElement>>('mapContainer');
   private leafletMap?: L.Map;
   private readonly ingestion = inject(IngestionService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly markers = L.layerGroup();
   private readonly reload$ = new Subject<EventFilter>();
-
-  constructor() {
-    this.reload$
-      .pipe(
-        switchMap((filter) =>
-          this.ingestion.search(filter).pipe(
-            map((page) => page?.items ?? []),
-            catchError((err) => {
-              console.error('Failed to load events', err);
-              return of<Event[]>([]);
-            }),
-          ),
-        ),
-        takeUntilDestroyed(),
-      )
-      .subscribe((events) => this.renderMarkers(events));
-  }
 
   protected readonly categories = EVENT_CATEGORIES;
   protected readonly menuOpen = signal(false);
@@ -63,8 +48,26 @@ export class Map implements AfterViewInit, OnDestroy {
   });
 
   ngAfterViewInit(): void {
+    this.watchReloads();
     this.initMap();
     this.reload();
+  }
+
+  private watchReloads(): void {
+    this.reload$
+      .pipe(
+        switchMap((filter) =>
+          this.ingestion.search(filter).pipe(
+            map((page) => page?.items ?? []),
+            catchError((err) => {
+              console.error('Failed to load events', err);
+              return of<Event[]>([]);
+            }),
+          ),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((events) => this.renderMarkers(events));
   }
 
   ngOnDestroy(): void {

@@ -42,6 +42,11 @@ Each backend service owns its own Postgres database. **No cross-database joins**
 - Anonymous users see the AI briefing section blocked out with a "Log in to view AI brief" CTA. The map always renders the `default` reading-level briefing variant.
 - Deep links to a specific event view must be shareable.
 
+## Code style
+
+- **Keep the constructor for construction concerns only** (mainly DI via `inject()`). Put side effects and initialization logic — HTTP calls, subscriptions, input-dependent setup — in `ngOnInit` or dedicated methods called from it, not the constructor. Exception: APIs that *require* an injection context (`effect()`, `takeUntilDestroyed()` with no arg, `toSignal()`/`toObservable()` with no injector) legitimately belong in the constructor.
+- **Don't leave redundant, self-explanatory comments.** A comment should explain *why*, not restate *what* the code already says. Delete comments that merely paraphrase the next line.
+
 ## LLM briefing rules (high-leverage, easy to get wrong)
 
 - Briefings are generated **lazily** — nothing is precomputed.
