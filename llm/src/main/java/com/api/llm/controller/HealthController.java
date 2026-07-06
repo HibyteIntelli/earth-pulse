@@ -1,46 +1,31 @@
 package com.api.llm.controller;
 
-import lombok.extern.slf4j.Slf4j;
+import com.api.llm.service.OllamaService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.reactive.function.client.WebClient;
 
-import java.time.Duration;
 import java.util.Map;
-
-// To do
 
 @RestController
 @RequestMapping("/api")
-@Slf4j
 public class HealthController {
 
-    private final WebClient webClient;
+    private final OllamaService ollamaService;
 
-    public HealthController(WebClient ollamaWebClient) {
-        this.webClient = ollamaWebClient;
+    public HealthController(OllamaService ollamaService) {
+        this.ollamaService = ollamaService;
     }
 
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> checkHealth() {
-
-        try {
-            webClient.get()
-                    .uri("/api/version")
-                    .retrieve()
-                    .bodyToMono(String.class)
-                    .block(Duration.ofSeconds(3));
-
-            return ResponseEntity.ok(
-                    Map.of("status", "UP")
-            );
-
-        } catch (Exception e) {
-            log.warn("Ollama health check failed: {}", e.getMessage());
-            return ResponseEntity.status(503)
-                    .body(Map.of("status", "DOWN"));
+        if (ollamaService.checkStatus()) {
+            return ResponseEntity.status(HttpStatus.OK).body(Map.of("status", "UP"));
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of("status", "DOWN"));
         }
     }
 }

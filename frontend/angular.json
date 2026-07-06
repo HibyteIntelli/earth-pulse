@@ -27,6 +27,7 @@
             ],
             "styles": [
               "src/colors.css",
+              "src/animations.css",
               "src/styles.css"
             ]
           },

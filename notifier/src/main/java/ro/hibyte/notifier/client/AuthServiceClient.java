@@ -43,14 +43,19 @@ public class AuthServiceClient {
                 payload.getGeometry()
         );
 
-        EventMatchResponseDto response = restClient.post()
-                .uri("/internal/watches/match")
-                .body(request)
-                .retrieve()
-                .body(EventMatchResponseDto.class);
+        try {
+            EventMatchResponseDto response = restClient.post()
+                    .uri("/internal/watches/match")
+                    .body(request)
+                    .retrieve()
+                    .body(EventMatchResponseDto.class);
 
-        return response != null && response.getMatches() != null
-                ? response.getMatches()
-                : List.of();
+            return response != null && response.getMatches() != null
+                    ? response.getMatches()
+                    : List.of();
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "Failed to fetch matching watches for event=" + payload.getEventId(), e);
+        }
     }
 }

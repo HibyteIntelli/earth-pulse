@@ -25,3 +25,7 @@ notifier.internal-secret=<INTERNAL_SECRET>
 app.auth-service.url=http://<AUTH_SERVICE_HOST>
 app.auth-service.internal-secret=<INTERNAL_SECRET>
 
+# LLM Service — briefing generation
+app.llm-service.url=http://<LLM_SERVICE_HOST>
+app.llm-service.internal-secret=<INTERNAL_SECRET>
+

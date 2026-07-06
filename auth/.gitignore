@@ -3,9 +3,10 @@ src/main/resources/application.properties
 src/main/resources/banned_passwords/
 .env
 .serena/project.local.yml
-generated-jwk.json
 requests.http
 db.migration
+src/main/resources/generated-jwk.json
+src/main/resources/avatar-store/
 
 
 HELP.md

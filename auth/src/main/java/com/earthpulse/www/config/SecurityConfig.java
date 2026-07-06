@@ -50,7 +50,7 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain publicFilterChain(HttpSecurity http) {
         http
-                .securityMatcher("/auth/**", "/.well-known/jwks.json")
+                        .securityMatcher("/auth/**", "/.well-known/jwks.json", "/avatars/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())

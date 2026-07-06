@@ -45,6 +45,8 @@ public class JwtServiceTest {
     void setUp() throws JOSEException, ParseException {
         ReflectionTestUtils.setField(jwtService, "baseUrl", BASE_URL);
         ReflectionTestUtils.setField(jwtService, "privateKeyJwk", "");
+        ReflectionTestUtils.setField(jwtService, "generatedKeyPath",
+                System.getProperty("java.io.tmpdir") + "/test-generated-jwk.json");
         jwtService.init();
     }
 

@@ -21,6 +21,11 @@
   --ev-dust: #b08968;
   --ev-quake: #8a5a3b;
   --ev-landslide: #9c6b4a;
+  --ev-snow: #5c8aa6;
+  --ev-ice: #4f93a8;
+  --ev-temp: #c0553a;
+  --ev-water: #3f8f5f;
+  --ev-manmade: #5b5148;
 
   --display: 'Bricolage Grotesque', system-ui, sans-serif;
   --mono: 'IBM Plex Mono', ui-monospace, monospace;
