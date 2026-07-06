@@ -1,24 +1,26 @@
-package com.earthpulse.www.storage;
+package com.earthpulse.www.service;
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.stereotype.Component;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.UUID;
 
-@Component
-public class FileSystemAvatarStorage implements AvatarStorage {
+@Service
+public class AvatarStorageService {
 
     private final Path storageDir;
     private final String publicBaseUrl;
 
-    public FileSystemAvatarStorage(
+    public AvatarStorageService(
             @Value("${app.avatar.storage-dir}") String storageDir,
             @Value("${app.avatar.public-base-url}") String publicBaseUrl) {
         this.storageDir = Path.of(storageDir).toAbsolutePath().normalize();
@@ -30,27 +32,29 @@ public class FileSystemAvatarStorage implements AvatarStorage {
         Files.createDirectories(storageDir);
     }
 
-    @Override
+    /** Stores the avatar and returns the public URL to reach it. */
     public String store(UUID userId, byte[] bytes, String ext) {
-        delete(userId);
         String filename = userId + "." + ext;
         Path target = resolve(filename);
+        Path tmp = storageDir.resolve(userId + "_upload.tmp");
         try {
-            Files.write(target, bytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.write(tmp, bytes, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            delete(userId);
+            Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
+            try { Files.deleteIfExists(tmp); } catch (IOException ignored) {}
             throw new RuntimeException("Failed to store avatar", e);
         }
         return publicBaseUrl + "/" + filename;
     }
 
-    @Override
+    @Nullable
     public Resource load(String filename) {
         Path file = resolve(filename);
         FileSystemResource resource = new FileSystemResource(file);
         return resource.exists() ? resource : null;
     }
 
-    @Override
     public void delete(UUID userId) {
         String prefix = userId + ".";
         try (var stream = Files.list(storageDir)) {
@@ -60,8 +64,6 @@ public class FileSystemAvatarStorage implements AvatarStorage {
                   });
         } catch (IOException ignored) {}
     }
-
-
 
     private Path resolve(String filename) {
         Path resolved = storageDir.resolve(filename).normalize();

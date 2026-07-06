@@ -6,7 +6,7 @@ import com.earthpulse.www.dto.SignupRequestDto;
 import com.earthpulse.www.dto.UpdateAccountRequestDto;
 import com.earthpulse.www.dto.UserProfileDto;
 import com.earthpulse.www.exception.BannedPasswordException;
-import com.earthpulse.www.storage.AvatarStorage;
+
 import com.earthpulse.www.exception.DuplicateEmailException;
 import com.earthpulse.www.exception.InvalidCredentialsException;
 import com.earthpulse.www.exception.UserNotFoundException;
@@ -30,7 +30,7 @@ public class UserService {
     private final JwtService jwtService;
     private final UserMapper userMapper;
     private final BannedPasswordService bannedPasswordService;
-    private final AvatarStorage avatarStorage;
+    private final AvatarStorageService avatarStorage;
 
     @Transactional
     public void signup(SignupRequestDto dto) {
@@ -87,10 +87,11 @@ public class UserService {
             user.setPasswordHash(passwordEncoder.encode(dto.newPassword()));
         }
 
+        boolean deleteAvatar = false;
         if (dto.profilePictureUrl() != null) {
             if (dto.profilePictureUrl().isBlank()) {
-                avatarStorage.delete(userId);
                 user.setProfilePictureUrl(null);
+                deleteAvatar = true;
             } else {
                 user.setProfilePictureUrl(dto.profilePictureUrl());
             }
@@ -105,11 +106,18 @@ public class UserService {
             user.setName(dto.name());
         }
 
+        UserProfileDto result;
         try {
-            return userMapper.toProfileDto(userRepository.save(user));
+            result = userMapper.toProfileDto(userRepository.save(user));
         } catch (DataIntegrityViolationException e) {
             throw new DuplicateEmailException(dto.email());
         }
+
+        if (deleteAvatar) {
+            avatarStorage.delete(userId);
+        }
+
+        return result;
     }
 
     @Transactional

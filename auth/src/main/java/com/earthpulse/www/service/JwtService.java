@@ -40,7 +40,7 @@ public class JwtService {
     @Value("${app.base-url}")
     private String baseUrl;
 
-    @Value("${app.generated-key-path}")
+    @Value("${app.generated-key-path:generated-jwk.json}")
     private String generatedKeyPath;
 
     @Value("${APP_JWT_PRIVATE_KEY:}")

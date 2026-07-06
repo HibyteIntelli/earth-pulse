@@ -6,7 +6,7 @@ import com.earthpulse.www.exception.UnsupportedImageTypeException;
 import com.earthpulse.www.exception.UserNotFoundException;
 import com.earthpulse.www.mapper.UserMapper;
 import com.earthpulse.www.repository.UserRepository;
-import com.earthpulse.www.storage.AvatarStorage;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -26,34 +26,39 @@ public class AvatarService {
     @Value("${app.avatar.max-file-size-bytes}")
     private long maxFileSizeBytes;
 
-    private final AvatarStorage avatarStorage;
+    private final AvatarStorageService avatarStorage;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
     @Transactional
     public UserProfileDto upload(UUID userId, MultipartFile file) {
+        var user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
+
+        if (file.isEmpty()) {
+            throw new InvalidImageException("Uploaded file is empty");
+        }
+
         String contentType = file.getContentType();
         if (contentType == null || !ALLOWED_TYPES.contains(contentType.toLowerCase())) {
             throw new UnsupportedImageTypeException(contentType);
         }
 
-        byte[] bytes;
-        try {
-            bytes = file.getBytes();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read uploaded file", e);
-        }
-
-        if (bytes.length > maxFileSizeBytes) {
+        if (file.getSize() > maxFileSizeBytes) {
             throw new InvalidImageException("File exceeds the maximum allowed size of " + (maxFileSizeBytes / (1024 * 1024)) + " MB");
         }
 
-        String ext = validateMagicBytes(bytes);
+        byte[] bytes;
 
+        try {
+            bytes = file.getBytes();
+        } catch (IOException e) {
+            throw new InvalidImageException("Unable to read uploaded image");
+        }
+
+        String ext = validateMagicBytes(bytes);
         String url = avatarStorage.store(userId, bytes, ext);
 
-        var user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException(userId));
         user.setProfilePictureUrl(url);
         return userMapper.toProfileDto(userRepository.save(user));
     }

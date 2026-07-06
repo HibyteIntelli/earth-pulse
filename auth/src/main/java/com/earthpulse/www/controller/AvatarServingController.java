@@ -1,6 +1,6 @@
 package com.earthpulse.www.controller;
 
-import com.earthpulse.www.storage.AvatarStorage;
+import com.earthpulse.www.service.AvatarStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
 @RestController
@@ -21,7 +20,7 @@ public class AvatarServingController {
 
     private static final Pattern SAFE_FILENAME = Pattern.compile("^[0-9a-fA-F-]+\\.(jpg|png|webp)$");
 
-    private final AvatarStorage avatarStorage;
+    private final AvatarStorageService avatarStorage;
 
     @GetMapping("/{filename}")
     public ResponseEntity<Resource> serve(@PathVariable String filename) {
@@ -37,7 +36,7 @@ public class AvatarServingController {
         MediaType mediaType = resolveMediaType(filename);
         return ResponseEntity.ok()
                 .contentType(mediaType)
-                .cacheControl(CacheControl.maxAge(7, TimeUnit.DAYS).cachePublic())
+                .cacheControl(CacheControl.noCache().mustRevalidate())
                 .body(resource);
     }
 
