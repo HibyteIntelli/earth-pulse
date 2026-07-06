@@ -1,33 +1,69 @@
 import * as L from 'leaflet';
+import {
+  createElement,
+  Activity,
+  CloudLightning,
+  CloudSnow,
+  Droplets,
+  Factory,
+  Flame,
+  Haze,
+  MapPin,
+  Mountain,
+  Snowflake,
+  SunDim,
+  Thermometer,
+  Waves,
+} from 'lucide';
 import { EventCategoryId } from '../../models/event-category';
 
-const make = (file: string): L.Icon =>
-  L.icon({
-    iconUrl: `assets/markers/${file}`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 32],
-    popupAnchor: [0, -32],
-  });
+type IconNode = Parameters<typeof createElement>[0];
 
-const CATEGORY_ICONS: Record<EventCategoryId, L.Icon> = {
-  drought: make('drought.png'),
-  dustHaze: make('dust-haze.png'),
-  earthquakes: make('earthquake.png'),
-  floods: make('flood.png'),
-  landslides: make('landslide.png'),
-  manmade: make('manmade.png'),
-  seaLakeIce: make('sea-lake-ice.png'),
-  severeStorms: make('severe-storms.png'),
-  snow: make('snow.png'),
-  tempExtremes: make('temp-extremes.png'),
-  volcanoes: make('volcano.png'),
-  waterColor: make('water-color.png'),
-  wildfires: make('wildfire.png'),
+const Volcano: IconNode = [
+  ['path', { d: 'M8 8 4 20h16L16 8' }],
+  ['path', { d: 'M8 8h8' }],
+  ['path', { d: 'M12 8V3' }],
+  ['path', { d: 'M9.5 8 8.5 4.5' }],
+  ['path', { d: 'M14.5 8 15.5 4.5' }],
+];
+
+const CATEGORY_GLYPHS: Record<EventCategoryId, { icon: IconNode; color: string }> = {
+  drought: { icon: SunDim, color: '--ev-drought' },
+  dustHaze: { icon: Haze, color: '--ev-dust' },
+  earthquakes: { icon: Activity, color: '--ev-quake' },
+  floods: { icon: Waves, color: '--ev-flood' },
+  landslides: { icon: Mountain, color: '--ev-landslide' },
+  manmade: { icon: Factory, color: '--ev-manmade' },
+  seaLakeIce: { icon: Snowflake, color: '--ev-ice' },
+  severeStorms: { icon: CloudLightning, color: '--ev-storm' },
+  snow: { icon: CloudSnow, color: '--ev-snow' },
+  tempExtremes: { icon: Thermometer, color: '--ev-temp' },
+  volcanoes: { icon: Volcano, color: '--ev-volcano' },
+  waterColor: { icon: Droplets, color: '--ev-water' },
+  wildfires: { icon: Flame, color: '--ev-wildfire' },
 };
 
-const DEFAULT_ICON = make('default.png');
+const pin = (node: IconNode, color: string): L.DivIcon => {
+  const svg = createElement(node);
+  svg.setAttribute('width', '16');
+  svg.setAttribute('height', '16');
+  return L.divIcon({
+    html: `<span class="event-pin" style="--pin-color: var(${color})">${svg.outerHTML}</span>`,
+    className: '',
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -16],
+    tooltipAnchor: [0, -16],
+  });
+};
 
-export function iconFor(categories: readonly EventCategoryId[]): L.Icon {
+const CATEGORY_ICONS = Object.fromEntries(
+  Object.entries(CATEGORY_GLYPHS).map(([id, { icon, color }]) => [id, pin(icon, color)]),
+) as Record<EventCategoryId, L.DivIcon>;
+
+const DEFAULT_ICON = pin(MapPin, '--ink-dim');
+
+export function iconFor(categories: readonly EventCategoryId[]): L.DivIcon {
   const first = categories[0];
   return first ? (CATEGORY_ICONS[first] ?? DEFAULT_ICON) : DEFAULT_ICON;
 }
