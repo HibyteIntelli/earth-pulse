@@ -49,6 +49,12 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("Watch not found"));
     }
 
+    @ExceptionHandler(InvalidBoundingBoxException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidBoundingBox(InvalidBoundingBoxException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(ex.getMessage()));
+    }
+
     @ExceptionHandler(WrongPasswordException.class)
     public ResponseEntity<ErrorResponse> handleWrongPassword(WrongPasswordException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -70,7 +76,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.of(ex.getMessage()));
+                .body(ErrorResponse.of("Invalid request"));
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)

@@ -30,7 +30,7 @@ public class WatchController {
 
     @GetMapping
     public ResponseEntity<List<WatchResponseDto>> list(@AuthenticationPrincipal String userId) {
-        return ResponseEntity.ok(watchService.list(UUID.fromString(userId)));
+        return ResponseEntity.ok(watchService.list(principalId(userId)));
     }
 
     @PostMapping
@@ -39,7 +39,7 @@ public class WatchController {
             @Valid @RequestBody WatchRequestDto dto
     ) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(watchService.create(UUID.fromString(userId), dto));
+                .body(watchService.create(principalId(userId), dto));
     }
 
     @GetMapping("/{id}")
@@ -47,7 +47,7 @@ public class WatchController {
             @AuthenticationPrincipal String userId,
             @PathVariable UUID id
     ) {
-        return ResponseEntity.ok(watchService.get(UUID.fromString(userId), id));
+        return ResponseEntity.ok(watchService.get(principalId(userId), id));
     }
 
     @PatchMapping("/{id}")
@@ -56,7 +56,7 @@ public class WatchController {
             @PathVariable UUID id,
             @Valid @RequestBody WatchUpdateDto dto
     ) {
-        return ResponseEntity.ok(watchService.update(UUID.fromString(userId), id, dto));
+        return ResponseEntity.ok(watchService.update(principalId(userId), id, dto));
     }
 
     @DeleteMapping("/{id}")
@@ -64,7 +64,12 @@ public class WatchController {
             @AuthenticationPrincipal String userId,
             @PathVariable UUID id
     ) {
-        watchService.delete(UUID.fromString(userId), id);
+        watchService.delete(principalId(userId), id);
         return ResponseEntity.noContent().build();
+    }
+
+    private UUID principalId(String userId) {
+        if (userId == null) throw new IllegalStateException("No authenticated principal");
+        return UUID.fromString(userId);
     }
 }

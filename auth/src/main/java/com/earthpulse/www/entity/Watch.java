@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -42,7 +43,8 @@ public class Watch {
     @Column(nullable = false)
     private double maxLon;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
+    @BatchSize(size = 50)
     @CollectionTable(name = "watch_categories", joinColumns = @JoinColumn(name = "watch_id"))
     @Column(name = "category")
     private List<String> categories = new ArrayList<>();
@@ -59,5 +61,10 @@ public class Watch {
 
     @Setter(AccessLevel.NONE)
     @Column(nullable = false, updatable = false)
-    private Instant createdAt = Instant.now();
+    private Instant createdAt;
+
+    @PrePersist
+    void onCreate() {
+        this.createdAt = Instant.now();
+    }
 }
