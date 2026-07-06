@@ -45,6 +45,7 @@ export class Map implements AfterViewInit, OnDestroy {
   protected readonly menuOpen = signal(false);
   protected readonly selected = signal<ReadonlySet<EventCategoryId>>(new Set());
 
+  protected readonly dueTime = 250;
   protected readonly buttonLabel = computed(() => {
     const chosen = this.selected();
     if (chosen.size === 0) return 'All events';
@@ -61,7 +62,7 @@ export class Map implements AfterViewInit, OnDestroy {
   private watchReloads(): void {
     this.reload$
       .pipe(
-        debounceTime(250),
+        debounceTime(this.dueTime),
         switchMap((filter) =>
           this.ingestion.search(filter).pipe(
             map((page) => page?.items ?? []),
@@ -126,7 +127,6 @@ export class Map implements AfterViewInit, OnDestroy {
     return filter;
   }
 
-  /** Current viewport as the backend's `minLon,maxLat,maxLon,minLat` bbox, clamped to the world. */
   private currentBbox(): string | undefined {
     const map = this.leafletMap;
     if (!map) return undefined;
