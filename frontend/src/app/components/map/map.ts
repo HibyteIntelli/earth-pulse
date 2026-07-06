@@ -1,8 +1,23 @@
-import { AfterViewInit, Component, ElementRef, inject, OnDestroy, viewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  DestroyRef,
+  ElementRef,
+  inject,
+  OnDestroy,
+  signal,
+  viewChild,
+} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject, of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import * as L from 'leaflet';
 import { IngestionService } from '../../core/ingestion/ingestion.service';
 import { Event, EventFilter } from '../../core/ingestion/ingestion.models';
 import { iconFor } from './category-icons';
+import { colorForCategory } from './category-colors';
+import { EVENT_CATEGORIES, categoryTitle, EventCategoryId } from '../../models/event-category';
 import { MapStateService } from './map-state.service';
 import { SidePanel } from './side-panel/side-panel';
 
@@ -12,32 +27,99 @@ const WORLD_BOUNDS = L.latLngBounds([-90, -180], [90, 180]);
   selector: 'app-map',
   imports: [SidePanel],
   templateUrl: './map.html',
-  styleUrl: './map.css',
+  styleUrls: ['./panel-kit.css', './map.css'],
+  host: {
+    '(document:keydown.escape)': 'closeMenu()',
+  },
 })
 export class Map implements AfterViewInit, OnDestroy {
   private readonly mapContainer = viewChild.required<ElementRef<HTMLDivElement>>('mapContainer');
   private leafletMap?: L.Map;
   private readonly ingestion = inject(IngestionService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly mapState = inject(MapStateService);
   private readonly markers = L.layerGroup();
+  private readonly reload$ = new Subject<EventFilter>();
+
+  protected readonly categories = EVENT_CATEGORIES;
+  protected readonly menuOpen = signal(false);
+  protected readonly selected = signal<ReadonlySet<EventCategoryId>>(new Set());
+
+  protected readonly buttonLabel = computed(() => {
+    const chosen = this.selected();
+    if (chosen.size === 0) return 'All events';
+    if (chosen.size === 1) return categoryTitle([...chosen][0]);
+    return `${chosen.size} categories`;
+  });
 
   ngAfterViewInit(): void {
+    this.watchReloads();
     this.initMap();
-    this.loadEvents();
+    this.reload();
+  }
+
+  private watchReloads(): void {
+    this.reload$
+      .pipe(
+        switchMap((filter) =>
+          this.ingestion.search(filter).pipe(
+            map((page) => page?.items ?? []),
+            catchError((err) => {
+              console.error('Failed to load events', err);
+              return of<Event[]>([]);
+            }),
+          ),
+        ),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((events) => this.renderMarkers(events));
   }
 
   ngOnDestroy(): void {
     this.leafletMap?.remove();
   }
 
+  protected toggleMenu(): void {
+    this.menuOpen.update((open) => !open);
+  }
+
+  protected closeMenu(): void {
+    this.menuOpen.set(false);
+  }
+
+  protected isSelected(id: EventCategoryId): boolean {
+    return this.selected().has(id);
+  }
+
+  protected colorFor(id: EventCategoryId): string {
+    return colorForCategory(id);
+  }
+
+  protected selectAll(): void {
+    if (this.selected().size === 0) return;
+    this.selected.set(new Set());
+    this.reload();
+  }
+
+  protected toggleCategory(id: EventCategoryId): void {
+    const next = new Set(this.selected());
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    this.selected.set(next);
+    this.reload();
+  }
+
+  private reload(): void {
+    const chosen = this.selected();
+    const filter: EventFilter = chosen.size ? { category: [...chosen] } : {};
+    this.loadEvents(filter);
+  }
+
   private loadEvents(filter: EventFilter = {}): void {
-    this.ingestion.search(filter).subscribe({
-      next: (page) => this.renderMarkers(page?.items ?? []),
-      error: (err) => {
-        console.error('Failed to load events', err);
-        this.renderMarkers([]);
-      },
-    });
+    this.reload$.next(filter);
   }
 
   private renderMarkers(events: Event[] = []): void {
