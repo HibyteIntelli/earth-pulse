@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, of } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, debounceTime, map, switchMap } from 'rxjs/operators';
 import * as L from 'leaflet';
 import { IngestionService } from '../../core/ingestion/ingestion.service';
 import { Event, EventFilter } from '../../core/ingestion/ingestion.models';
@@ -61,6 +61,7 @@ export class Map implements AfterViewInit, OnDestroy {
   private watchReloads(): void {
     this.reload$
       .pipe(
+        debounceTime(250),
         switchMap((filter) =>
           this.ingestion.search(filter).pipe(
             map((page) => page?.items ?? []),
@@ -113,13 +114,28 @@ export class Map implements AfterViewInit, OnDestroy {
   }
 
   private reload(): void {
-    const chosen = this.selected();
-    const filter: EventFilter = chosen.size ? { category: [...chosen] } : {};
-    this.loadEvents(filter);
+    this.reload$.next(this.buildFilter());
   }
 
-  private loadEvents(filter: EventFilter = {}): void {
-    this.reload$.next(filter);
+  private buildFilter(): EventFilter {
+    const chosen = this.selected();
+    const filter: EventFilter = {};
+    if (chosen.size) filter.category = [...chosen];
+    const bbox = this.currentBbox();
+    if (bbox) filter.bbox = bbox;
+    return filter;
+  }
+
+  /** Current viewport as the backend's `minLon,maxLat,maxLon,minLat` bbox, clamped to the world. */
+  private currentBbox(): string | undefined {
+    const map = this.leafletMap;
+    if (!map) return undefined;
+    const bounds = map.getBounds();
+    const west = Math.max(bounds.getWest(), -180);
+    const east = Math.min(bounds.getEast(), 180);
+    const south = Math.max(bounds.getSouth(), -90);
+    const north = Math.min(bounds.getNorth(), 90);
+    return `${west},${north},${east},${south}`;
   }
 
   private renderMarkers(events: Event[] = []): void {
@@ -161,6 +177,7 @@ export class Map implements AfterViewInit, OnDestroy {
 
     this.fitWorldZoom();
     this.leafletMap.on('resize', () => this.fitWorldZoom());
+    this.leafletMap.on('moveend zoomend', () => this.reload());
   }
 
   private fitWorldZoom(): void {
