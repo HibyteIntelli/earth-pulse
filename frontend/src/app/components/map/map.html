@@ -1,62 +1,62 @@
-<div #mapContainer class="map"></div>
-
-<div class="filter" [class.filter--open]="menuOpen()">
-  @if (menuOpen()) {
-    <div class="filter__scrim" (click)="closeMenu()"></div>
-  }
-
-  <button
-    type="button"
-    class="filter__trigger panel-surface"
-    [class.is-active]="selected().size > 0"
-    aria-controls="filter-menu"
-    [attr.aria-expanded]="menuOpen()"
-    (click)="toggleMenu()"
-  >
-    <span class="filter__eyebrow">Filter</span>
-    <span class="filter__value">{{ buttonLabel() }}</span>
-    <svg class="filter__chevron" viewBox="0 0 12 8" aria-hidden="true">
-      <path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.6" />
-    </svg>
-  </button>
-
-  @if (menuOpen()) {
-    <div id="filter-menu" class="filter__menu panel-card" role="group" aria-label="Event categories">
-      <span class="filter__tag">Event categories // EONET</span>
-
-      <button
-        type="button"
-        class="filter__row filter__row--all"
-        role="checkbox"
-        [attr.aria-checked]="selected().size === 0"
-        [class.is-checked]="selected().size === 0"
-        (click)="selectAll()"
-      >
-        <span class="filter__box" aria-hidden="true"></span>
-        <span class="filter__label">All events</span>
-      </button>
-
-      <span class="filter__divider" aria-hidden="true"></span>
-
-      <div class="filter__list">
-        @for (cat of categories; track cat.id) {
-          <button
-            type="button"
-            class="filter__row"
-            role="checkbox"
-            [attr.aria-checked]="isSelected(cat.id)"
-            [class.is-checked]="isSelected(cat.id)"
-            (click)="toggleCategory(cat.id)"
-          >
-            <span class="filter__box" aria-hidden="true"></span>
-            <span class="filter__swatch" [style.background]="colorFor(cat.id)" aria-hidden="true"></span>
-            <span class="filter__label">{{ cat.title }}</span>
-          </button>
-        }
-      </div>
-    </div>
-  }
 <div class="map-shell">
   <div #mapContainer class="map"></div>
   <app-side-panel />
+
+  <div class="filter" [class.filter--open]="menuOpen()">
+    @if (menuOpen()) {
+      <div class="filter__scrim" (click)="closeMenu()"></div>
+    }
+
+    <button
+      type="button"
+      class="filter__trigger panel-surface"
+      [class.is-active]="selected().size > 0"
+      aria-controls="filter-menu"
+      [attr.aria-expanded]="menuOpen()"
+      (click)="toggleMenu()"
+    >
+      <span class="filter__eyebrow">Filter</span>
+      <span class="filter__value">{{ buttonLabel() }}</span>
+      <svg class="filter__chevron" viewBox="0 0 12 8" aria-hidden="true">
+        <path d="M1 1.5 6 6.5 11 1.5" fill="none" stroke="currentColor" stroke-width="1.6" />
+      </svg>
+    </button>
+
+    @if (menuOpen()) {
+      <div id="filter-menu" class="filter__menu panel-card" role="group" aria-label="Event categories">
+        <span class="filter__tag">Event categories // EONET</span>
+
+        <button
+          type="button"
+          class="filter__row filter__row--all"
+          role="checkbox"
+          [attr.aria-checked]="selected().size === 0"
+          [class.is-checked]="selected().size === 0"
+          (click)="selectAll()"
+        >
+          <span class="filter__box" aria-hidden="true"></span>
+          <span class="filter__label">All events</span>
+        </button>
+
+        <span class="filter__divider" aria-hidden="true"></span>
+
+        <div class="filter__list">
+          @for (cat of categories; track cat.id) {
+            <button
+              type="button"
+              class="filter__row"
+              role="checkbox"
+              [attr.aria-checked]="isSelected(cat.id)"
+              [class.is-checked]="isSelected(cat.id)"
+              (click)="toggleCategory(cat.id)"
+            >
+              <span class="filter__box" aria-hidden="true"></span>
+              <span class="filter__swatch" [style.background]="colorFor(cat.id)" aria-hidden="true"></span>
+              <span class="filter__label">{{ cat.title }}</span>
+            </button>
+          }
+        </div>
+      </div>
+    }
+  </div>
 </div>

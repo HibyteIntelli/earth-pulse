@@ -228,6 +228,8 @@
   .filter__chevron {
     transition: none;
   }
+}
+
 :host ::ng-deep .event-pin {
   display: grid;
   place-items: center;
