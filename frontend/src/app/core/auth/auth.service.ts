@@ -74,6 +74,12 @@ export class AuthService {
     return this.http.patch<UserProfile>(`${this.base}/account`, body);
   }
 
+  uploadAvatar(file: File): Observable<UserProfile> {
+    const form = new FormData();
+    form.append('file', file);
+    return this.http.post<UserProfile>(`${this.base}/account/avatar`, form);
+  }
+
   deleteAccount(): Observable<void> {
     return this.http.delete<void>(`${this.base}/account`);
   }

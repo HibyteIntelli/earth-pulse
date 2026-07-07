@@ -7,7 +7,8 @@ import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
 import { AuthService } from '../../core/auth/auth.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ApiError, UpdateAccountRequest } from '../../core/auth/auth.models';
+import { Observable, of, switchMap } from 'rxjs';
+import { ApiError, UpdateAccountRequest, UserProfile } from '../../core/auth/auth.models';
 
 const MAX_AVATAR_BYTES = 1_000_000;
 
@@ -46,6 +47,7 @@ export class Profile implements OnInit {
   protected readonly editingEmail = signal(false);
   protected readonly committedEmail = signal('');
   private avatarDirty = false;
+  private avatarFile: File | null = null;
 
   private readonly value = toSignal(this.form.valueChanges, {
     initialValue: this.form.getRawValue(),
@@ -102,6 +104,7 @@ export class Profile implements OnInit {
     }
     this.errorMessage.set(null);
     if (this.status() === 'saved') this.status.set('idle');
+    this.avatarFile = file;
     const reader = new FileReader();
     reader.onload = () => {
       this.avatarUrl.set(reader.result as string);
@@ -112,6 +115,7 @@ export class Profile implements OnInit {
 
   protected removePhoto(): void {
     this.avatarUrl.set(null);
+    this.avatarFile = null;
     this.avatarDirty = true;
     this.errorMessage.set(null);
     if (this.status() === 'saved') {
@@ -131,19 +135,24 @@ export class Profile implements OnInit {
     if (this.editingEmail() && email !== this.committedEmail()) {
       body.email = email;
     }
-    if (this.avatarDirty) {
-      body.profilePictureUrl = this.avatarUrl() ?? '';
+    if (this.avatarDirty && this.avatarFile === null) {
+      body.profilePictureUrl = '';
     }
 
+    const upload$: Observable<unknown> = this.avatarFile
+      ? this.auth.uploadAvatar(this.avatarFile)
+      : of(null);
+
     this.status.set('saving');
-    this.auth.updateAccount(body).subscribe({
-      next: (profile) => {
+    upload$.pipe(switchMap(() => this.auth.updateAccount(body))).subscribe({
+      next: (profile: UserProfile) => {
         this.committedEmail.set(profile.email);
         this.form.patchValue({ name: profile.name, email: profile.email });
         this.editingEmail.set(false);
         this.form.controls.email.disable();
         this.avatarUrl.set(profile.profilePictureUrl);
         this.avatarDirty = false;
+        this.avatarFile = null;
         this.status.set('saved');
       },
       error: (err: HttpErrorResponse) => {
