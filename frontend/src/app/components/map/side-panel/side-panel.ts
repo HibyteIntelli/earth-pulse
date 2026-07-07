@@ -16,7 +16,9 @@ import { Briefing, ReadingLevel } from '../../../core/llm/briefing.models';
   templateUrl: './side-panel.html',
   styleUrls: ['../../shared/panel-kit.css', './side-panel.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {},
+  host: {
+    '(document:keydown.escape)': 'onEscape()',
+  },
 })
 export class SidePanel {
   private readonly ingestion = inject(IngestionService);
@@ -157,6 +159,12 @@ export class SidePanel {
 
   protected close(): void {
     this.mapState.clearSelection();
+  }
+
+  protected onEscape(): void {
+    if (this.open()) {
+      this.close();
+    }
   }
 }
 
