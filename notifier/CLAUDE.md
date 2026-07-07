@@ -60,7 +60,7 @@ POSTGRES_USER: notifier_user
 POSTGRES_PORT: 5433 (host-mapped, container runs on 5432)
 ```
 
-Credentials in `application-local.properties` (gitignored).
+Credentials in `application.properties` (gitignored).
 
 ## Core responsibilities
 

@@ -10,11 +10,16 @@ import ro.hibyte.notifier.entity.NotificationLog;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface NotificationLogRepository extends JpaRepository<NotificationLog, UUID> {
 
     boolean existsByWatchIdAndEventId(UUID watchId, String eventId);
+
+    @Query("SELECT n FROM NotificationLog n LEFT JOIN FETCH n.briefingPrecautions " +
+           "WHERE n.watchId = :watchId AND n.eventId = :eventId")
+    Optional<NotificationLog> findByWatchIdAndEventId(@Param("watchId") UUID watchId, @Param("eventId") String eventId);
 
     List<NotificationLog> findByUserIdAndDeliveredAtIsNotNullOrderByDeliveredAtDesc(UUID userId);
 
