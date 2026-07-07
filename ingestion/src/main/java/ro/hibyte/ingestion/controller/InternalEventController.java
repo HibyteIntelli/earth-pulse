@@ -16,7 +16,6 @@ public class InternalEventController {
 
     private final EventService eventService;
 
-    // TODO: secure with X-Internal-Secret header
     @GetMapping("/{id}")
     public ResponseEntity<EventResponse> getEventById(@PathVariable String id) {
         return eventService.getEventById(id)
