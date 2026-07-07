@@ -3,13 +3,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import {
-  AuthResponse,
-  LoginRequest,
-  SignupRequest,
-  UpdateAccountRequest,
-  UserProfile,
-} from './auth.models';
+import { AuthResponse, LoginRequest, SignupRequest } from './auth.models';
 
 const TOKEN_KEY = 'earthpulse.token';
 
@@ -64,18 +58,6 @@ export class AuthService {
     this.clearAutoLogout();
     localStorage.removeItem(TOKEN_KEY);
     this._token.set(null);
-  }
-
-  me(): Observable<UserProfile> {
-    return this.http.get<UserProfile>(`${this.base}/account/me`);
-  }
-
-  updateAccount(body: UpdateAccountRequest): Observable<UserProfile> {
-    return this.http.patch<UserProfile>(`${this.base}/account`, body);
-  }
-
-  deleteAccount(): Observable<void> {
-    return this.http.delete<void>(`${this.base}/account`);
   }
 
   private setToken(token: string): void {
