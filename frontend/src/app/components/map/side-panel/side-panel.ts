@@ -100,7 +100,6 @@ export class SidePanel implements OnInit {
           this.loading.set(id !== null);
           if (id === null) this.event.set(null);
           this.readingLevel.set('SIMPLIFIED');
-          this.briefingCache.clear();
           this.briefing.set(null);
         }),
         switchMap((id) =>
