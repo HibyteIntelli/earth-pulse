@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  Injector,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap, tap } from 'rxjs';
@@ -20,11 +29,13 @@ import { Briefing, ReadingLevel } from '../../../core/llm/briefing.models';
     '(document:keydown.escape)': 'onEscape()',
   },
 })
-export class SidePanel {
+export class SidePanel implements OnInit {
   private readonly ingestion = inject(IngestionService);
   private readonly auth = inject(AuthService);
   private readonly briefings = inject(BriefingService);
   protected readonly mapState = inject(MapStateService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
 
   protected readonly event = signal<Event | null>(null);
   protected readonly loading = signal(false);
@@ -76,8 +87,13 @@ export class SidePanel {
     return out;
   });
 
-  constructor() {
-    toObservable(this.mapState.selectedEventId)
+  ngOnInit(): void {
+    this.setupEventLoading();
+    this.setupBriefingLoading();
+  }
+
+  private setupEventLoading(): void {
+    toObservable(this.mapState.selectedEventId, { injector: this.injector })
       .pipe(
         tap((id) => {
           this.error.set(false);
@@ -98,13 +114,15 @@ export class SidePanel {
                 }),
               ),
         ),
-        takeUntilDestroyed(),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((ev) => {
         this.loading.set(false);
         this.event.set(ev);
       });
+  }
 
+  private setupBriefingLoading(): void {
     const briefingRequest = computed(() => {
       if (this.loading()) return null;
       const ev = this.event();
@@ -113,7 +131,7 @@ export class SidePanel {
       return { ev, category, level: this.readingLevel() };
     });
 
-    toObservable(briefingRequest)
+    toObservable(briefingRequest, { injector: this.injector })
       .pipe(
         switchMap((req) => {
           this.briefingError.set(false);
@@ -145,7 +163,7 @@ export class SidePanel {
               }),
             );
         }),
-        takeUntilDestroyed(),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((b) => {
         this.briefingLoading.set(false);
