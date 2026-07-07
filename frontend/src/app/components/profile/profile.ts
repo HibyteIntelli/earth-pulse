@@ -96,7 +96,7 @@ export class Profile implements OnInit {
     const file = input.files?.[0];
     if (!file) return;
     if (file.size > MAX_AVATAR_BYTES) {
-      this.errorMessage.set('Image is too large (max 1 MB).');
+      this.errorMessage.set('Image is too large (max 2 MB).');
       input.value = '';
       return;
     }
