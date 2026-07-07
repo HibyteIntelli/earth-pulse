@@ -7,7 +7,7 @@ import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
 import { AuthService } from '../../core/auth/auth.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Observable, of, switchMap } from 'rxjs';
+import { Observable, of, switchMap, tap } from 'rxjs';
 import { ApiError, UpdateAccountRequest, UserProfile } from '../../core/auth/auth.models';
 
 const MAX_AVATAR_BYTES = 1_000_000;
@@ -48,6 +48,7 @@ export class Profile implements OnInit {
   protected readonly committedEmail = signal('');
   private avatarDirty = false;
   private avatarFile: File | null = null;
+  private avatarUploaded = false;
 
   private readonly value = toSignal(this.form.valueChanges, {
     initialValue: this.form.getRawValue(),
@@ -105,6 +106,7 @@ export class Profile implements OnInit {
     this.errorMessage.set(null);
     if (this.status() === 'saved') this.status.set('idle');
     this.avatarFile = file;
+    this.avatarUploaded = false;
     const reader = new FileReader();
     reader.onload = () => {
       this.avatarUrl.set(reader.result as string);
@@ -116,6 +118,7 @@ export class Profile implements OnInit {
   protected removePhoto(): void {
     this.avatarUrl.set(null);
     this.avatarFile = null;
+    this.avatarUploaded = false;
     this.avatarDirty = true;
     this.errorMessage.set(null);
     if (this.status() === 'saved') {
@@ -139,9 +142,10 @@ export class Profile implements OnInit {
       body.profilePictureUrl = '';
     }
 
-    const upload$: Observable<unknown> = this.avatarFile
-      ? this.auth.uploadAvatar(this.avatarFile)
-      : of(null);
+    const upload$: Observable<unknown> =
+      this.avatarFile && !this.avatarUploaded
+        ? this.auth.uploadAvatar(this.avatarFile).pipe(tap(() => (this.avatarUploaded = true)))
+        : of(null);
 
     this.status.set('saving');
     upload$.pipe(switchMap(() => this.auth.updateAccount(body))).subscribe({
@@ -153,6 +157,7 @@ export class Profile implements OnInit {
         this.avatarUrl.set(profile.profilePictureUrl);
         this.avatarDirty = false;
         this.avatarFile = null;
+        this.avatarUploaded = false;
         this.status.set('saved');
       },
       error: (err: HttpErrorResponse) => {
