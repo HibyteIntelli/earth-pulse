@@ -5,10 +5,11 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
-import { AuthService } from '../../core/auth/auth.service';
+import { UserService } from '../../core/user/user.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, of, switchMap, tap } from 'rxjs';
-import { ApiError, UpdateAccountRequest, UserProfile } from '../../core/auth/auth.models';
+import { ApiError } from '../../core/auth/auth.models';
+import { UpdateAccountRequest, UserProfile } from '../../core/user/user.models';
 
 const MAX_AVATAR_BYTES = 1_000_000;
 
@@ -20,7 +21,7 @@ const MAX_AVATAR_BYTES = 1_000_000;
 })
 export class Profile implements OnInit {
   private readonly fb = inject(FormBuilder);
-  private readonly auth = inject(AuthService);
+  private readonly userService = inject(UserService);
   private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
@@ -68,7 +69,7 @@ export class Profile implements OnInit {
 
   private loadProfile(): void {
     this.status.set('loading');
-    this.auth.me().subscribe({
+    this.userService.me().subscribe({
       next: (profile) => {
         this.committedEmail.set(profile.email);
         this.form.patchValue({ name: profile.name, email: profile.email });
@@ -144,11 +145,11 @@ export class Profile implements OnInit {
 
     const upload$: Observable<unknown> =
       this.avatarFile && !this.avatarUploaded
-        ? this.auth.uploadAvatar(this.avatarFile).pipe(tap(() => (this.avatarUploaded = true)))
+        ? this.userService.uploadAvatar(this.avatarFile).pipe(tap(() => (this.avatarUploaded = true)))
         : of(null);
 
     this.status.set('saving');
-    upload$.pipe(switchMap(() => this.auth.updateAccount(body))).subscribe({
+    upload$.pipe(switchMap(() => this.userService.updateAccount(body))).subscribe({
       next: (profile: UserProfile) => {
         this.committedEmail.set(profile.email);
         this.form.patchValue({ name: profile.name, email: profile.email });
