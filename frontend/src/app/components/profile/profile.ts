@@ -9,7 +9,7 @@ import { AuthService } from '../../core/auth/auth.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ApiError, UpdateAccountRequest } from '../../core/auth/auth.models';
 
-const MAX_AVATAR_BYTES = 1_000_000;
+const MAX_AVATAR_BYTES = 2_000_000;
 
 @Component({
   selector: 'app-profile',
