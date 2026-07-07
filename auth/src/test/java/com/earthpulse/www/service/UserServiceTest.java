@@ -8,7 +8,7 @@ import com.earthpulse.www.exception.BannedPasswordException;
 import com.earthpulse.www.exception.DuplicateEmailException;
 import com.earthpulse.www.exception.InvalidCredentialsException;
 import com.earthpulse.www.mapper.UserMapper;
-import com.earthpulse.www.storage.AvatarStorage;
+import com.earthpulse.www.service.AvatarStorageService;
 import com.earthpulse.www.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -50,7 +50,7 @@ public class UserServiceTest {
     private BannedPasswordService bannedPasswordService;
 
     @Mock
-    private AvatarStorage avatarStorage;
+    private AvatarStorageService avatarStorage;
 
     @InjectMocks
     private UserService userService;
