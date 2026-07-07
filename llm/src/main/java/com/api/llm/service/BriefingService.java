@@ -96,13 +96,9 @@ public class BriefingService {
         }
         var id = new BriefingId(request.getEventId(), request.getReadingLevel());
 
-        if (isCached(request)) {
-            var briefing = briefingRepository.findById(id).orElseThrow();
-            return new BriefingResponseDto(briefing);
-        }
-
-        if (!ollamaService.checkStatus()) {
-            throw new LlmUnavailableException("Ollama is unreachable", null);
+        var briefingOpt = briefingRepository.findById(id);
+        if (briefingOpt.isPresent()) {
+            return new BriefingResponseDto(briefingOpt.get());
         }
 
         var llmRequest = new BriefingLLMRequestDto(request.getCategory(), request.getMagnitudeLevel(), request.getReadingLevel());
