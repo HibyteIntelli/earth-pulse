@@ -30,4 +30,4 @@ eonet.poll-initial-delay-ms=60000
 spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://localhost:8083/.well-known/jwks.json
 
 # Shared secret for internal endpoints called by the Notifier Service (X-Internal-Secret header)
-ingestion.internal-secret=<RANDOM_SECRET_MIN_32_CHARS>
+ingestion.internal-secret=${INGESTION_INTERNAL_SECRET}

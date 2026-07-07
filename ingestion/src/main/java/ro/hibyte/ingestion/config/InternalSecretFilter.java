@@ -9,6 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class InternalSecretFilter extends OncePerRequestFilter {
@@ -32,7 +33,7 @@ public class InternalSecretFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         String secret = request.getHeader(HEADER);
 
-        if (internalSecret.equals(secret)) {
+        if (constantTimeEquals(internalSecret, secret)) {
             SecurityContextHolder.getContext().setAuthentication(
                     new UsernamePasswordAuthenticationToken("internal", null, List.of())
             );
@@ -43,5 +44,19 @@ public class InternalSecretFilter extends OncePerRequestFilter {
             response.setContentType("application/json");
             response.getWriter().write("{\"error\":\"Missing or invalid internal secret\"}");
         }
+    }
+
+    private static boolean constantTimeEquals(String expected, String actual) {
+        if (actual == null || actual.isEmpty()) {
+            return false;
+        }
+        byte[] a = expected.getBytes(StandardCharsets.UTF_8);
+        byte[] b = actual.getBytes(StandardCharsets.UTF_8);
+
+        int result = a.length ^ b.length;
+        for (int i = 0; i < a.length; i++) {
+            result |= a[i] ^ b[i % b.length];
+        }
+        return result == 0;
     }
 }
