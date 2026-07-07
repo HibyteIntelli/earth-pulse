@@ -1,0 +1,56 @@
+services:
+  llm:
+    build:
+      context: ./llm
+      dockerfile: Dockerfile
+    container_name: llm
+    environment:
+      OLLAMA_BASEURL: http://llm-ollama:11434
+      OLLAMA_MODEL: llama3
+      SPRING_DATASOURCE_URL: jdbc:postgresql://llm-postgres:5432/database
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://auth:8083/.well-known/jwks.json
+      LLM_INTERNAL_SECRET: change-me
+    ports:
+      - "8080:8080"
+    depends_on:
+      llm-postgres:
+        condition: service_healthy
+      llm-ollama:
+        condition: service_started
+
+  llm-postgres:
+    image: postgres:17
+    container_name: llm-postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: database
+    ports:
+      - "5432:5432"
+    volumes:
+      - llm-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d database"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  llm-ollama:
+    image: ollama/ollama:latest
+    container_name: llm-ollama
+    volumes:
+      - llm-ollama-data:/root/.ollama
+    entrypoint: >
+      /bin/sh -c "
+        ollama serve &
+        sleep 5 &&
+        ollama pull llama3 &&
+        wait
+      "
+
+volumes:
+  llm-postgres-data:
+  llm-ollama-data:
