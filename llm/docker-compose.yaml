@@ -7,15 +7,21 @@ services:
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: database
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d database"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   ollama:
     image: ollama/ollama:latest
     container_name: ollama-dev
     ports:
-      - "11434:11434"
+      - "11435:11434"
     volumes:
       - ollama-data:/root/.ollama
     entrypoint: >
