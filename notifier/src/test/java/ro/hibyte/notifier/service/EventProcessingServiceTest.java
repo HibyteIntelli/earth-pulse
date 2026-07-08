@@ -196,6 +196,7 @@ class EventProcessingServiceTest {
 
         service.processNewEvent(payload);
 
+        verifyNoInteractions(notificationEmailService);
         verify(notificationLogRepository).saveAndFlush(any());
         verify(notificationLogRepository).delete(any());
         verify(notificationLogRepository, never()).save(any());

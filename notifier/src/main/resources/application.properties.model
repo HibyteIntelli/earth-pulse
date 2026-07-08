@@ -14,7 +14,7 @@ spring.mail.from=noreply@earth-pulse.local
 spring.mail.properties.mail.smtp.auth=false
 spring.mail.properties.mail.smtp.starttls.enable=false
 
-spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://localhost:8080/.well-known/jwks.json
+spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://localhost:8083/.well-known/jwks.json
 
 spring.mvc.problemdetails.enabled=true
 
@@ -25,12 +25,12 @@ notifier.internal-secret=<INTERNAL_SECRET>
 # Try "0 * * * * *" (every minute) locally if you want to watch it fire without waiting a day.
 notifier.digest.cron=0 0 8 * * *
 
-# Auth Service — watch matching
-app.auth-service.url=http://localhost:8080
+# Auth Service — watch matching (auth's own server.port is 8083, per auth/README.md)
+app.auth-service.url=http://localhost:8083
 app.auth-service.internal-secret=<INTERNAL_SECRET>
 
-# LLM Service — briefing generation
-app.llm-service.url=http://localhost:8082
+# LLM Service — briefing generation (llm's own server.port is 8080, per llm/README.md)
+app.llm-service.url=http://localhost:8080
 app.llm-service.internal-secret=<INTERNAL_SECRET>
 
 # Frontend — used to build event links in notification emails

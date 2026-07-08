@@ -39,12 +39,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-/**
- * Proves the "precise delete" decision for DigestJobService under a real race: while the job is
- * mid-send for a watch, a concurrent EventProcessingService.processNewEvent call buffers a NEW
- * match for that same watch. The newly-buffered match must survive the job's cleanup — a naive
- * deleteByWatchId would wipe it out even though it was never included in the email that just sent.
- */
 @SpringBootTest
 @Testcontainers
 @ActiveProfiles("test")
@@ -103,7 +97,6 @@ class DigestJobConcurrencyIntegrationTest {
         when(authServiceClient.matchWatches(any())).thenReturn(List.of(watch));
         when(llmServiceClient.fetchBriefing(anyString(), any())).thenReturn(briefingResponse());
 
-        // Buffer event A up front — this is what the job will read and send.
         eventProcessingService.processNewEvent(payload(eventIdA));
         assertThat(digestQueueRepository.findByWatchId(watchId)).hasSize(1);
 
@@ -121,8 +114,6 @@ class DigestJobConcurrencyIntegrationTest {
 
         assertThat(jobReachedSendLatch.await(10, TimeUnit.SECONDS)).isTrue();
 
-        // While the job is paused inside sendDigestEmail (already past its DigestQueue read),
-        // buffer a brand new match for the SAME watch.
         eventProcessingService.processNewEvent(payload(eventIdB));
 
         producerFinishedLatch.countDown();

@@ -8,7 +8,6 @@ import java.util.List;
 
 @Data
 public class BriefingResponseDto {
-
     private String eventId;
     private String readingLevel;
     private String summary;

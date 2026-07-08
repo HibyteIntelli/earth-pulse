@@ -6,6 +6,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import ro.hibyte.notifier.entity.DeliveryMode;
 import ro.hibyte.notifier.entity.DigestQueue;
 import ro.hibyte.notifier.entity.NotificationLog;
@@ -16,7 +17,6 @@ import ro.hibyte.notifier.repository.NotificationLogRepository;
 
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,6 +42,7 @@ class DigestJobServiceTest {
     @BeforeEach
     void setUp() {
         service = new DigestJobService(digestQueueRepository, notificationLogRepository, notificationEmailService);
+        ReflectionTestUtils.setField(service, "self", service);
     }
 
     private DigestQueue digestEntry(UUID watchId, String eventId, String userEmail) {
@@ -96,8 +97,8 @@ class DigestJobServiceTest {
 
         when(digestQueueRepository.findDistinctWatchIds()).thenReturn(List.of(watchId));
         when(digestQueueRepository.findByWatchId(watchId)).thenReturn(List.of(entryA, entryB));
-        when(notificationLogRepository.findByWatchIdAndEventId(watchId, "EONET_A")).thenReturn(Optional.of(logA));
-        when(notificationLogRepository.findByWatchIdAndEventId(watchId, "EONET_B")).thenReturn(Optional.of(logB));
+        when(notificationLogRepository.findByWatchIdAndEventIdIn(eq(watchId), any()))
+                .thenReturn(List.of(logA, logB));
 
         service.sendDailyDigests();
 
@@ -121,7 +122,7 @@ class DigestJobServiceTest {
 
         when(digestQueueRepository.findDistinctWatchIds()).thenReturn(List.of(watchId));
         when(digestQueueRepository.findByWatchId(watchId)).thenReturn(List.of(entry));
-        when(notificationLogRepository.findByWatchIdAndEventId(watchId, "EONET_A")).thenReturn(Optional.of(log));
+        when(notificationLogRepository.findByWatchIdAndEventIdIn(eq(watchId), any())).thenReturn(List.of(log));
         doThrow(new RuntimeException("SMTP down")).when(notificationEmailService).sendDigestEmail(anyString(), any());
 
         service.sendDailyDigests();
@@ -137,7 +138,7 @@ class DigestJobServiceTest {
 
         when(digestQueueRepository.findDistinctWatchIds()).thenReturn(List.of(watchId));
         when(digestQueueRepository.findByWatchId(watchId)).thenReturn(List.of(entry));
-        when(notificationLogRepository.findByWatchIdAndEventId(watchId, "EONET_GHOST")).thenReturn(Optional.empty());
+        when(notificationLogRepository.findByWatchIdAndEventIdIn(eq(watchId), any())).thenReturn(List.of());
 
         service.sendDailyDigests();
 
@@ -158,8 +159,8 @@ class DigestJobServiceTest {
         when(digestQueueRepository.findDistinctWatchIds()).thenReturn(List.of(watchIdOk, watchIdFails));
         when(digestQueueRepository.findByWatchId(watchIdOk)).thenReturn(List.of(entryOk));
         when(digestQueueRepository.findByWatchId(watchIdFails)).thenReturn(List.of(entryFails));
-        when(notificationLogRepository.findByWatchIdAndEventId(watchIdOk, "EONET_OK")).thenReturn(Optional.of(logOk));
-        when(notificationLogRepository.findByWatchIdAndEventId(watchIdFails, "EONET_FAIL")).thenReturn(Optional.of(logFails));
+        when(notificationLogRepository.findByWatchIdAndEventIdIn(eq(watchIdOk), any())).thenReturn(List.of(logOk));
+        when(notificationLogRepository.findByWatchIdAndEventIdIn(eq(watchIdFails), any())).thenReturn(List.of(logFails));
         doNothing().when(notificationEmailService).sendDigestEmail(eq("ok@example.com"), any());
         doThrow(new RuntimeException("SMTP down")).when(notificationEmailService)
                 .sendDigestEmail(eq("fail@example.com"), any());

@@ -9,6 +9,7 @@ import ro.hibyte.notifier.entity.DeliveryMode;
 import ro.hibyte.notifier.entity.NotificationLog;
 
 import java.time.OffsetDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,6 +21,10 @@ public interface NotificationLogRepository extends JpaRepository<NotificationLog
     @Query("SELECT n FROM NotificationLog n LEFT JOIN FETCH n.briefingPrecautions " +
            "WHERE n.watchId = :watchId AND n.eventId = :eventId")
     Optional<NotificationLog> findByWatchIdAndEventId(@Param("watchId") UUID watchId, @Param("eventId") String eventId);
+
+    @Query("SELECT DISTINCT n FROM NotificationLog n LEFT JOIN FETCH n.briefingPrecautions " +
+           "WHERE n.watchId = :watchId AND n.eventId IN :eventIds")
+    List<NotificationLog> findByWatchIdAndEventIdIn(@Param("watchId") UUID watchId, @Param("eventIds") Collection<String> eventIds);
 
     List<NotificationLog> findByUserIdAndDeliveredAtIsNotNullOrderByDeliveredAtDesc(UUID userId);
 

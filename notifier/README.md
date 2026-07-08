@@ -28,7 +28,7 @@ spring.mail.port=1025
 spring.mail.properties.mail.smtp.auth=false
 spring.mail.properties.mail.smtp.starttls.enable=false
 
-spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://localhost:8080/.well-known/jwks.json
+spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://localhost:8083/.well-known/jwks.json
 
 notifier.internal-secret=<INTERNAL_SECRET>
 
@@ -36,14 +36,14 @@ notifier.internal-secret=<INTERNAL_SECRET>
 # locally if you want to watch it fire without waiting a day.
 notifier.digest.cron=0 0 8 * * *
 
-# Auth Service — called to find watches matching an incoming event.
+# Auth Service — called to find watches matching an incoming event. Auth's own server.port is 8083.
 # app.auth-service.internal-secret must match the secret configured in the Auth Service.
-app.auth-service.url=http://localhost:8080
+app.auth-service.url=http://localhost:8083
 app.auth-service.internal-secret=<INTERNAL_SECRET>
 
-# LLM Service — called to generate the briefing for each matched watch.
+# LLM Service — called to generate the briefing for each matched watch. LLM's own server.port is 8080.
 # app.llm-service.internal-secret must match the secret configured in the LLM Service.
-app.llm-service.url=http://localhost:8082
+app.llm-service.url=http://localhost:8080
 app.llm-service.internal-secret=<INTERNAL_SECRET>
 
 # Frontend — used to build event links in notification emails
