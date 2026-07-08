@@ -5,6 +5,8 @@ services:
       dockerfile: Dockerfile
     container_name: llm
     environment:
+      SERVER_PORT: 8080
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
       OLLAMA_BASEURL: http://llm-ollama:11434
       OLLAMA_MODEL: llama3
       SPRING_DATASOURCE_URL: jdbc:postgresql://llm-postgres:5432/${POSTGRES_DB}
@@ -53,6 +55,102 @@ services:
         wait
       "
 
+  notifier:
+    build:
+      context: ./notifier
+      dockerfile: Dockerfile
+    container_name: notifier
+    environment:
+      SERVER_PORT: 8084
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_DATASOURCE_URL: jdbc:postgresql://notifier-postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_MAIL_HOST: notifier-mailpit
+      SPRING_MAIL_PORT: 1025
+      SPRING_MAIL_FROM: noreply@earth-pulse.local
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://auth:8083/.well-known/jwks.json
+      NOTIFIER_INTERNAL_SECRET: ${NOTIFIER_INTERNAL_SECRET:?NOTIFIER_INTERNAL_SECRET is required}
+      APP_AUTH_SERVICE_URL: http://auth:8083
+      APP_AUTH_SERVICE_INTERNAL_SECRET: ${AUTH_INTERNAL_SECRET:?AUTH_INTERNAL_SECRET is required}
+      APP_LLM_SERVICE_URL: http://llm:8080
+      APP_LLM_SERVICE_INTERNAL_SECRET: ${LLM_INTERNAL_SECRET:?LLM_INTERNAL_SECRET is required}
+      APP_FRONTEND_BASE_URL: http://frontend:4200
+    ports:
+      - "8084:8084"
+    depends_on:
+      notifier-postgres:
+        condition: service_healthy
+      notifier-mailpit:
+        condition: service_started
+
+  notifier-postgres:
+    image: postgres:17.10
+    container_name: notifier-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5433:5432"
+    volumes:
+      - notifier-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  notifier-mailpit:
+    image: axllent/mailpit:latest
+    container_name: notifier-mailpit
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  ingestion:
+    build:
+      context: ./ingestion
+      dockerfile: Dockerfile
+    container_name: ingestion
+    environment:
+      SERVER_PORT: 8081
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      EONET_BASE_URL: https://eonet.gsfc.nasa.gov
+      SPRING_DATASOURCE_URL: jdbc:postgresql://ingestion-postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://auth:8083/.well-known/jwks.json
+      INGESTION_INTERNAL_SECRET: ${INGESTION_INTERNAL_SECRET:?INGESTION_INTERNAL_SECRET is required}
+    ports:
+      - "8081:8081"
+    depends_on:
+      ingestion-postgres:
+        condition: service_healthy
+
+  ingestion-postgres:
+    image: postgres:17.10
+    container_name: ingestion-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5431:5432"
+    volumes:
+      - ingestion-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
 volumes:
   llm-postgres-data:
   llm-ollama-data:
+  notifier-postgres-data:
+  ingestion-postgres-data:
