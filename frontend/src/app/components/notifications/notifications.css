@@ -255,6 +255,17 @@
   overflow-wrap: anywhere;
 }
 
+.event-link {
+  color: var(--ink);
+  text-decoration-color: var(--water-deep);
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+
+.event-link:hover {
+  color: var(--water-deep);
+}
+
 .sev {
   display: inline-block;
   padding: 0.08rem 0.42rem;

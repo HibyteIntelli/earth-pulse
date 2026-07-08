@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   ElementRef,
   inject,
   OnDestroy,
@@ -20,6 +21,7 @@ import { colorForCategory } from './category-colors';
 import { EVENT_CATEGORIES, categoryTitle, EventCategoryId } from '../../models/event-category';
 import { MapStateService } from './map-state.service';
 import { SidePanel } from './side-panel/side-panel';
+import { ActivatedRoute, Router } from '@angular/router';
 
 const WORLD_BOUNDS = L.latLngBounds([-90, -180], [90, 180]);
 
@@ -35,6 +37,8 @@ const WORLD_BOUNDS = L.latLngBounds([-90, -180], [90, 180]);
 export class Map implements AfterViewInit, OnDestroy {
   private readonly mapContainer = viewChild.required<ElementRef<HTMLDivElement>>('mapContainer');
   private leafletMap?: L.Map;
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly ingestion = inject(IngestionService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly mapState = inject(MapStateService);
@@ -53,9 +57,25 @@ export class Map implements AfterViewInit, OnDestroy {
     return `${chosen.size} categories`;
   });
 
+  constructor() {
+    effect(() => {
+      const id = this.mapState.selectedEventId();
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { event: id ?? null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    });
+  }
+
   ngAfterViewInit(): void {
     this.watchReloads();
     this.initMap();
+    const eventId = this.route.snapshot.queryParamMap.get('event');
+    if (eventId) {
+      this.mapState.select(eventId);
+    }
     this.reload();
   }
 

@@ -5,6 +5,18 @@
 
     <button type="button" class="habitat__close glass" (click)="close()" aria-label="Close">✕</button>
 
+    @if (event()) {
+      <button
+        type="button"
+        class="habitat__share glass"
+        [class.habitat__share--done]="linkCopied()"
+        (click)="copyLink()"
+        [attr.aria-label]="linkCopied() ? 'Link copied to clipboard' : 'Copy link to this event'"
+      >
+        {{ linkCopied() ? 'Copied ✓' : 'Copy link ↗' }}
+      </button>
+    }
+
     @if (loading()) {
       <div class="habitat__state" aria-busy="true">
         <span class="breathe"></span>

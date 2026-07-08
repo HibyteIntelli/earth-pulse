@@ -24,6 +24,7 @@ export class SidePanel {
 
   protected readonly open = computed(() => this.mapState.selectedEventId() !== null);
   protected readonly eventId = computed(() => this.event()?.id ?? '');
+  protected readonly linkCopied = signal(false);
 
   protected readonly taxon = computed(() => {
     const c = this.event()?.category ?? [];
@@ -86,6 +87,14 @@ export class SidePanel {
 
   protected close(): void {
     this.mapState.clearSelection();
+  }
+
+  protected copyLink(): void {
+    const url = `${location.origin}/map?event=${encodeURIComponent(this.eventId())}`;
+    navigator.clipboard.writeText(url).then(() => {
+      this.linkCopied.set(true);
+      setTimeout(() => this.linkCopied.set(false), 1600);
+    });
   }
 }
 
