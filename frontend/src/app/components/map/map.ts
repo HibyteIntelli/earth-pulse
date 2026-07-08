@@ -57,9 +57,12 @@ export class Map implements AfterViewInit, OnDestroy {
     return `${chosen.size} categories`;
   });
 
+  private urlSyncReady = false;
+
   constructor() {
     effect(() => {
       const id = this.mapState.selectedEventId();
+      if (!this.urlSyncReady) return;
       this.router.navigate([], {
         relativeTo: this.route,
         queryParams: { event: id ?? null },
@@ -78,6 +81,7 @@ export class Map implements AfterViewInit, OnDestroy {
       this.mapState.select(eventId);
       this.focusDeepLinkedEvent(eventId);
     }
+    this.urlSyncReady = true;
     this.reload();
   }
 
