@@ -5,9 +5,11 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { MessageModule } from 'primeng/message';
-import { AuthService } from '../../core/auth/auth.service';
+import { UserService } from '../../core/user/user.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ApiError, UpdateAccountRequest } from '../../core/auth/auth.models';
+import { Observable, of, switchMap, tap } from 'rxjs';
+import { ApiError } from '../../core/auth/auth.models';
+import { UpdateAccountRequest, UserProfile } from '../../core/user/user.models';
 
 const MAX_AVATAR_BYTES = 1_000_000;
 
@@ -19,7 +21,7 @@ const MAX_AVATAR_BYTES = 1_000_000;
 })
 export class Profile implements OnInit {
   private readonly fb = inject(FormBuilder);
-  private readonly auth = inject(AuthService);
+  private readonly userService = inject(UserService);
   private readonly destroyRef = inject(DestroyRef);
 
   ngOnInit(): void {
@@ -46,6 +48,8 @@ export class Profile implements OnInit {
   protected readonly editingEmail = signal(false);
   protected readonly committedEmail = signal('');
   private avatarDirty = false;
+  private avatarFile: File | null = null;
+  private avatarUploaded = false;
 
   private readonly value = toSignal(this.form.valueChanges, {
     initialValue: this.form.getRawValue(),
@@ -65,7 +69,7 @@ export class Profile implements OnInit {
 
   private loadProfile(): void {
     this.status.set('loading');
-    this.auth.me().subscribe({
+    this.userService.me().subscribe({
       next: (profile) => {
         this.committedEmail.set(profile.email);
         this.form.patchValue({ name: profile.name, email: profile.email });
@@ -102,6 +106,8 @@ export class Profile implements OnInit {
     }
     this.errorMessage.set(null);
     if (this.status() === 'saved') this.status.set('idle');
+    this.avatarFile = file;
+    this.avatarUploaded = false;
     const reader = new FileReader();
     reader.onload = () => {
       this.avatarUrl.set(reader.result as string);
@@ -112,6 +118,8 @@ export class Profile implements OnInit {
 
   protected removePhoto(): void {
     this.avatarUrl.set(null);
+    this.avatarFile = null;
+    this.avatarUploaded = false;
     this.avatarDirty = true;
     this.errorMessage.set(null);
     if (this.status() === 'saved') {
@@ -131,19 +139,26 @@ export class Profile implements OnInit {
     if (this.editingEmail() && email !== this.committedEmail()) {
       body.email = email;
     }
-    if (this.avatarDirty) {
-      body.profilePictureUrl = this.avatarUrl() ?? '';
+    if (this.avatarDirty && this.avatarFile === null) {
+      body.profilePictureUrl = '';
     }
 
+    const upload$: Observable<unknown> =
+      this.avatarFile && !this.avatarUploaded
+        ? this.userService.uploadAvatar(this.avatarFile).pipe(tap(() => (this.avatarUploaded = true)))
+        : of(null);
+
     this.status.set('saving');
-    this.auth.updateAccount(body).subscribe({
-      next: (profile) => {
+    upload$.pipe(switchMap(() => this.userService.updateAccount(body))).subscribe({
+      next: (profile: UserProfile) => {
         this.committedEmail.set(profile.email);
         this.form.patchValue({ name: profile.name, email: profile.email });
         this.editingEmail.set(false);
         this.form.controls.email.disable();
         this.avatarUrl.set(profile.profilePictureUrl);
         this.avatarDirty = false;
+        this.avatarFile = null;
+        this.avatarUploaded = false;
         this.status.set('saved');
       },
       error: (err: HttpErrorResponse) => {
