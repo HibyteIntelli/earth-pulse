@@ -1,5 +1,7 @@
 package com.earthpulse.www.entity;
 
+import com.earthpulse.www.enums.DigestMode;
+import com.earthpulse.www.enums.EventCategory;
 import com.earthpulse.www.enums.ReadingLevel;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -47,14 +49,16 @@ public class Watch {
     @BatchSize(size = 50)
     @CollectionTable(name = "watch_categories", joinColumns = @JoinColumn(name = "watch_id"))
     @Column(name = "category")
-    private List<String> categories = new ArrayList<>();
-
-    @Column(nullable = false)
-    private boolean digestMode = false;
+    @Enumerated(EnumType.STRING)
+    private List<EventCategory> categories = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
-    @Column
-    private ReadingLevel readingLevel;
+    @Column(nullable = false)
+    private DigestMode digestMode = DigestMode.IMMEDIATE;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ReadingLevel readingLevel = ReadingLevel.DEFAULT;
 
     @Column(nullable = false)
     private boolean active = true;

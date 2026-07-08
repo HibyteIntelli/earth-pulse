@@ -1,5 +1,7 @@
 package com.earthpulse.www.dto;
 
+import com.earthpulse.www.enums.DigestMode;
+import com.earthpulse.www.enums.EventCategory;
 import com.earthpulse.www.enums.ReadingLevel;
 
 import java.time.Instant;
@@ -13,8 +15,8 @@ public record WatchResponseDto(
         double maxLat,
         double minLon,
         double maxLon,
-        List<String> categories,
-        boolean digestMode,
+        List<EventCategory> categories,
+        DigestMode digestMode,
         ReadingLevel readingLevel,
         boolean active,
         Instant createdAt

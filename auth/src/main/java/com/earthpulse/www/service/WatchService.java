@@ -5,14 +5,17 @@ import com.earthpulse.www.dto.MatchingWatchDto;
 import com.earthpulse.www.dto.WatchRequestDto;
 import com.earthpulse.www.dto.WatchResponseDto;
 import com.earthpulse.www.dto.WatchUpdateDto;
+import com.earthpulse.www.enums.ReadingLevel;
+import com.earthpulse.www.exception.DuplicateWatchNameException;
 import com.earthpulse.www.exception.InvalidBoundingBoxException;
 import com.earthpulse.www.exception.UserNotFoundException;
+import com.earthpulse.www.exception.WatchLimitExceededException;
 import com.earthpulse.www.exception.WatchNotFoundException;
 import com.earthpulse.www.mapper.WatchMapper;
 import com.earthpulse.www.repository.UserRepository;
 import com.earthpulse.www.repository.WatchRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,12 +31,14 @@ public class WatchService {
     private final UserRepository userRepository;
     private final WatchMapper watchMapper;
 
-    private static final int MAX_WATCHES_PER_USER = 200;
+    @Value("${app.watch.max-per-user:200}")
+    private int maxWatchesPerUser;
+
     private static final int MAX_MATCHING_WATCHES = 1000;
 
     @Transactional(readOnly = true)
     public List<WatchResponseDto> list(UUID userId) {
-        return watchRepository.findAllByUserId(userId, PageRequest.of(0, MAX_WATCHES_PER_USER))
+        return watchRepository.findAllByUserId(userId, PageRequest.of(0, maxWatchesPerUser))
                 .stream()
                 .map(watchMapper::toResponseDto)
                 .toList();
@@ -42,16 +47,18 @@ public class WatchService {
     @Transactional
     public WatchResponseDto create(UUID userId, WatchRequestDto dto) {
         validateBoundingBox(dto.minLat(), dto.maxLat(), dto.minLon(), dto.maxLon());
-        var userRef = userRepository.getReferenceById(userId);
-        var watch = watchMapper.toEntity(dto, userRef);
-        if (watch.getCategories() == null) {
-            watch.setCategories(List.of());
+        var user = userRepository.findById(userId).orElseThrow(() -> new UserNotFoundException(userId));
+        if (watchRepository.countByUserId(userId) >= maxWatchesPerUser) {
+            throw new WatchLimitExceededException(maxWatchesPerUser);
         }
-        try {
-            return watchMapper.toResponseDto(watchRepository.save(watch));
-        } catch (EntityNotFoundException e) {
-            throw new UserNotFoundException(userId);
+        if (dto.name() != null && watchRepository.existsByUserIdAndName(userId, dto.name())) {
+            throw new DuplicateWatchNameException(dto.name());
         }
+        var watch = watchMapper.toEntity(dto, user);
+        if (watch.getReadingLevel() == null) {
+            watch.setReadingLevel(ReadingLevel.DEFAULT);
+        }
+        return watchMapper.toResponseDto(watchRepository.save(watch));
     }
 
     @Transactional(readOnly = true)
@@ -68,7 +75,12 @@ public class WatchService {
                 .orElseThrow(() -> new WatchNotFoundException(watchId));
 
         if (dto.name() != null) {
-            watch.setName(dto.name().isBlank() ? null : dto.name());
+            String newName = dto.name().isBlank() ? null : dto.name();
+            if (newName != null && !newName.equals(watch.getName())
+                    && watchRepository.existsByUserIdAndName(userId, newName)) {
+                throw new DuplicateWatchNameException(newName);
+            }
+            watch.setName(newName);
         }
 
         if (dto.minLat() != null || dto.maxLat() != null || dto.minLon() != null || dto.maxLon() != null) {

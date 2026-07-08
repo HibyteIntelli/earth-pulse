@@ -70,6 +70,10 @@ public class WatchController {
 
     private UUID principalId(String userId) {
         if (userId == null) throw new IllegalStateException("No authenticated principal");
-        return UUID.fromString(userId);
+        try {
+            return UUID.fromString(userId);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("Authenticated principal is not a valid UUID: " + userId);
+        }
     }
 }

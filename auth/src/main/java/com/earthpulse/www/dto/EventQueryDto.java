@@ -1,8 +1,8 @@
 package com.earthpulse.www.dto;
 
+import com.earthpulse.www.enums.EventCategory;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record EventQueryDto(
@@ -17,6 +17,6 @@ public record EventQueryDto(
         @DecimalMax(value = "180.0", message = "lon must be <= 180")
         Double lon,
 
-        @NotBlank(message = "category is required")
-        String category
+        @NotNull(message = "category is required")
+        EventCategory category
 ) {}
