@@ -71,12 +71,55 @@ export class Map implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.watchReloads();
+    this.watchFocus();
     this.initMap();
     const eventId = this.route.snapshot.queryParamMap.get('event');
     if (eventId) {
       this.mapState.select(eventId);
+      this.focusDeepLinkedEvent(eventId);
     }
     this.reload();
+  }
+
+  private focusDeepLinkedEvent(id: string): void {
+    this.ingestion
+      .getById(id)
+      .pipe(
+        catchError(() => of(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((ev) => {
+        const g = ev?.geometry;
+        if (!g) return;
+        const [lon, lat] = g.coordinates;
+        this.mapState.focusOn(lat, lon);
+      });
+  }
+
+  private watchFocus(): void {
+    this.mapState.focus$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(([lat, lng]) => {
+      const map = this.leafletMap;
+      if (!map) return;
+      map.flyTo([lat, lng], Math.max(map.getZoom(), 6), { duration: 0.8 });
+      this.pingLocation(lat, lng);
+    });
+  }
+
+  private pingLocation(lat: number, lng: number): void {
+    const map = this.leafletMap;
+    if (!map) return;
+    const ping = L.marker([lat, lng], {
+      icon: L.divIcon({
+        className: '',
+        html: '<span class="event-ping"><i class="event-ping__ring"></i><i class="event-ping__ring"></i><i class="event-ping__core"></i></span>',
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
+      }),
+      interactive: false,
+      keyboard: false,
+      zIndexOffset: 1000,
+    }).addTo(map);
+    setTimeout(() => ping.remove(), 3600);
   }
 
   private watchReloads(): void {

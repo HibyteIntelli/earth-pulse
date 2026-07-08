@@ -242,6 +242,42 @@
   box-shadow: 0 2px 6px rgba(15, 23, 20, 0.5);
 }
 
+:host ::ng-deep .event-ping {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: none;
+}
+
+:host ::ng-deep .event-ping__ring,
+:host ::ng-deep .event-ping__core {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+:host ::ng-deep .event-ping__core {
+  width: 12px;
+  height: 12px;
+  background: var(--forest-deep);
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 0 10px rgba(63, 107, 57, 0.7);
+}
+
+:host ::ng-deep .event-ping__ring {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--forest-deep);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.55);
+  animation: event-ping 3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+:host ::ng-deep .event-ping__ring:nth-child(2) {
+  animation-delay: 0.6s;
+}
+
 app-side-panel {
   position: absolute;
   top: 0;

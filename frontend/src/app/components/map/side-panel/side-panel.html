@@ -54,10 +54,21 @@
             <p class="card__note">{{ e.description || 'No description was provided for this event.' }}</p>
           </div>
 
+          @if (e.geometry) {
+            <button
+              type="button"
+              class="habitat__source habitat__source--ghost label-caps"
+              [style.--i]="cards().length + 1"
+              (click)="showOnMap()"
+            >
+              Show on map ◎
+            </button>
+          }
+
           @if (e.sourceUrl) {
             <a
               class="habitat__source label-caps"
-              [style.--i]="cards().length + 1"
+              [style.--i]="cards().length + 2"
               [href]="e.sourceUrl"
               target="_blank"
               rel="noopener noreferrer"

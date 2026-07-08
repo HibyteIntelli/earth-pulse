@@ -89,6 +89,13 @@ export class SidePanel {
     this.mapState.clearSelection();
   }
 
+  protected showOnMap(): void {
+    const g = this.event()?.geometry;
+    if (!g) return;
+    const [lon, lat] = g.coordinates;
+    this.mapState.focusOn(lat, lon);
+  }
+
   protected copyLink(): void {
     const url = `${location.origin}/map?event=${encodeURIComponent(this.eventId())}`;
     navigator.clipboard.writeText(url).then(() => {
