@@ -5,7 +5,7 @@
 
     <button type="button" class="habitat__close glass" (click)="close()" aria-label="Close">✕</button>
 
-    @if (event()) {
+    @if (event() && !loading()) {
       <button
         type="button"
         class="habitat__share glass"
