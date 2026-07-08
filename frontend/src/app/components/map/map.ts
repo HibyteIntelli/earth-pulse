@@ -76,13 +76,24 @@ export class Map implements AfterViewInit, OnDestroy {
     this.watchReloads();
     this.watchFocus();
     this.initMap();
-    const eventId = this.route.snapshot.queryParamMap.get('event');
-    if (eventId) {
-      this.mapState.select(eventId);
-      this.focusDeepLinkedEvent(eventId);
-    }
+    this.watchDeepLink();
     this.urlSyncReady = true;
     this.reload();
+  }
+
+  private watchDeepLink(): void {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const id = params.get('event');
+      if (id === this.mapState.selectedEventId()) {
+          return;
+      }
+      if (id) {
+        this.mapState.select(id);
+        this.focusDeepLinkedEvent(id);
+      } else {
+        this.mapState.clearSelection();
+      }
+    });
   }
 
   private focusDeepLinkedEvent(id: string): void {
