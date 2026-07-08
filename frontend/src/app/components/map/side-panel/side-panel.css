@@ -367,21 +367,21 @@
   align-self: flex-start;
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.34rem 0.7rem;
+  gap: 0.5rem;
+  padding: 0.36rem 0.75rem;
   border-radius: 999px;
-  border: 1px solid var(--sev-color, var(--ink-faint));
+  border: 1px solid color-mix(in srgb, var(--sev-color, var(--ink-faint)) 45%, transparent);
   background: color-mix(in srgb, var(--sev-color, var(--ink-faint)) 12%, transparent);
   --label-caps-size: 0.58rem;
   --label-caps-color: var(--sev-color, var(--ink-dim));
 }
 
 .brief__sev[data-severity='HIGH'] {
-  --sev-color: var(--ev-volcano);
+  --sev-color: #c1362a;
 }
 
 .brief__sev[data-severity='MODERATE'] {
-  --sev-color: var(--ev-wildfire);
+  --sev-color: #d08b1e;
 }
 
 .brief__sev[data-severity='LOW'] {
@@ -393,10 +393,21 @@
 }
 
 .brief__sev-dot {
-  width: 7px;
-  height: 7px;
+  position: relative;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: var(--sev-color, var(--ink-faint));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sev-color, var(--ink-faint)) 22%, transparent);
+}
+
+.brief__sev[data-severity='HIGH'] .brief__sev-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid var(--sev-color);
+  animation: pulse-ring 1.8s ease-out infinite;
 }
 
 .brief__summary {
