@@ -38,7 +38,9 @@ export class SidePanel {
 
   protected readonly cards = computed<EventCard[]>(() => {
     const e = this.event();
-    if (!e) return [];
+    if (!e) {
+      return [];
+    }
     const out: EventCard[] = [{ label: 'Event ID', value: e.id, wide: true }];
     if (e.geometry) {
       out.push({
@@ -46,9 +48,12 @@ export class SidePanel {
         value: formatCoords(e.geometry.coordinates[1], e.geometry.coordinates[0]),
       });
     }
-    if (e.eventDate) out.push({ label: 'Started', value: formatDate(e.eventDate) });
-    if (e.status === 'closed' && e.closedAt)
+    if (e.eventDate) {
+      out.push({ label: 'Started', value: formatDate(e.eventDate) });
+    }
+    if (e.status === 'closed' && e.closedAt) {
       out.push({ label: 'Ended', value: formatDate(e.closedAt) });
+    }
     if (e.magnitudeValue != null) {
       out.push({
         label: 'Strength',
