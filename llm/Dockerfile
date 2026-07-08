@@ -1,4 +1,3 @@
-# ---- Build stage ----
 FROM eclipse-temurin:25-jdk-alpine AS build
 WORKDIR /app
 
@@ -9,7 +8,6 @@ RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
 COPY src ./src
 RUN ./mvnw package -DskipTests -B
 
-# ---- Runtime stage ----
 FROM eclipse-temurin:25-jre-alpine AS runtime
 WORKDIR /app
 
