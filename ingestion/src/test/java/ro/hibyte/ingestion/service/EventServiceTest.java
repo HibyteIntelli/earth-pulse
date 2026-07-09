@@ -23,10 +23,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class EventServiceTest {
@@ -84,6 +81,7 @@ class EventServiceTest {
 
         ArgumentCaptor<NewEventPayloadDto> captor = ArgumentCaptor.forClass(NewEventPayloadDto.class);
         verify(notifierClient, times(1)).notifyNewEvent(captor.capture());
+        verify(eventRepository, times(1)).save(any(Event.class));
 
         NewEventPayloadDto sent = captor.getValue();
         assertThat(sent.getEventId()).isEqualTo(EVENT_ID);
@@ -97,7 +95,9 @@ class EventServiceTest {
         when(eventRepository.count()).thenReturn(0L);
         when(eventRepository.findById(EVENT_ID)).thenReturn(Optional.empty());
 
+        when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
         eventService.backfillEvents();
+        verify(eventRepository, times(1)).save(any(Event.class));
 
         verify(notifierClient, never()).notifyNewEvent(any());
     }
