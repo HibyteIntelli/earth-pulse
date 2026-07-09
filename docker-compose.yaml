@@ -1,4 +1,52 @@
 services:
+  auth:
+    build:
+      context: ./auth
+      dockerfile: Dockerfile
+    container_name: auth
+    environment:
+      SERVER_PORT: 8083
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_DATASOURCE_URL: jdbc:postgresql://auth-postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      APP_BASE_URL: http://auth:8083
+      APP_INTERNAL_SECRET: ${AUTH_INTERNAL_SECRET:?AUTH_INTERNAL_SECRET is required}
+      APP_JWT_PRIVATE_KEY: ${APP_JWT_PRIVATE_KEY}
+      APP_BANNED_PASSWORDS_TXT_PATH: /app/rockyou.txt
+      APP_BANNED_PASSWORDS_BLOOM_PATH: /app/banned_passwords.bloom
+      APP_RATE_LIMIT_LOGIN: 10
+      APP_RATE_LIMIT_SIGNUP: 5
+      APP_RATE_LIMIT_REFILL_DURATION: PT1M
+      APP_AVATAR_STORAGE_DIR: /app/avatar-store
+      APP_AVATAR_PUBLIC_BASE_URL: http://localhost:8083/avatars
+      APP_AVATAR_MAX_FILE_SIZE_BYTES: 1048576
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./auth/data/rockyou.txt:/app/rockyou.txt:ro
+    depends_on:
+      auth-postgres:
+        condition: service_healthy
+
+  auth-postgres:
+    image: postgres:17.10
+    container_name: auth-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5435:5432"
+    volumes:
+      - auth-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   llm:
     build:
       context: ./llm
@@ -20,6 +68,8 @@ services:
       llm-postgres:
         condition: service_healthy
       llm-ollama:
+        condition: service_started
+      auth:
         condition: service_started
 
   llm-postgres:
@@ -85,6 +135,8 @@ services:
         condition: service_healthy
       notifier-mailpit:
         condition: service_started
+      auth:
+        condition: service_started
 
   notifier-postgres:
     image: postgres:17.10
@@ -130,6 +182,8 @@ services:
     depends_on:
       ingestion-postgres:
         condition: service_healthy
+      auth:
+        condition: service_started
 
   ingestion-postgres:
     image: postgres:17.10
@@ -165,3 +219,4 @@ volumes:
   llm-ollama-data:
   notifier-postgres-data:
   ingestion-postgres-data:
+  auth-postgres-data:
