@@ -13,6 +13,7 @@ import ro.hibyte.ingestion.dto.eonet.EonetGeometry;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -75,6 +76,7 @@ public class Event {
         if (eonetEvent.getCategories() != null) {
             Set<String> categoryIds = eonetEvent.getCategories().stream()
                     .map(EonetCategory::getId)
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toSet());
             setCategoryIds(categoryIds);
         }
