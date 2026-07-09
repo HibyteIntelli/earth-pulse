@@ -15,11 +15,14 @@ public class AsyncConfig {
     @Bean
     public Executor taskExecutor() {
         var executor = new ThreadPoolTaskExecutor();
+
         executor.setCorePoolSize(2);
         executor.setMaxPoolSize(5);
         executor.setQueueCapacity(100);
         executor.setThreadNamePrefix("notifier-async-");
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.setWaitForTasksToCompleteOnShutdown(true);
+        executor.setAwaitTerminationSeconds(30);
         executor.initialize();
 
         return executor;
