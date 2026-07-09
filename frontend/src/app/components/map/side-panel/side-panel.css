@@ -381,7 +381,7 @@
 }
 
 .brief__sev[data-severity='MODERATE'] {
-  --sev-color: #d08b1e;
+  --sev-color: var(--ev-wildfire);
 }
 
 .brief__sev[data-severity='LOW'] {
