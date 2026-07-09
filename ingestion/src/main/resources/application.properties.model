@@ -36,3 +36,5 @@ ingestion.internal-secret=${INGESTION_INTERNAL_SECRET}
 # The secret must equal the Notifier's own notifier.internal-secret
 app.notifier-service.url=http://<NOTIFIER_SERVICE_HOST>
 app.notifier-service.internal-secret=${NOTIFIER_INTERNAL_SECRET}
+app.notifier-service.connect-timeout=3s
+app.notifier-service.read-timeout=10s
