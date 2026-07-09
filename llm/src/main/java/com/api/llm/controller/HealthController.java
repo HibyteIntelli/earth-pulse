@@ -28,7 +28,7 @@ public class HealthController {
             ollamaService.checkStatus();
             return ResponseEntity.status(HttpStatus.OK).body(Map.of("status", "UP"));
         } catch (LlmUnavailableException e) {
-            log.error("Ollama health check failed", e);
+            log.warn("Ollama health check failed: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of("status", "DOWN"));
         }
     }
