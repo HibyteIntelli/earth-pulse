@@ -101,8 +101,7 @@ public class BriefingService {
             return new BriefingResponseDto(briefingOpt.get());
         }
 
-        if (!ollamaService.checkStatus())
-            throw new LlmUnavailableException("Ollama is unreachable", null);
+        ollamaService.checkStatus();
 
         var llmRequest = new BriefingLLMRequestDto(request.getCategory(), request.getMagnitudeLevel(), request.getReadingLevel());
 
