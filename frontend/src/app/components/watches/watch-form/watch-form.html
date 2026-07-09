@@ -1,0 +1,115 @@
+<form class="watch-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+  <label class="field">
+    <span class="field__label">Watch name <span class="opt">| optional</span></span>
+    <input
+      pInputText
+      class="field__input"
+      formControlName="name"
+      type="text"
+      maxlength="255"
+      autocomplete="off"
+      placeholder="e.g. West Coast fire watch"
+    />
+  </label>
+
+  <div class="field">
+    <span class="field__label">Region</span>
+    <app-region-editor
+      [region]="region()"
+      (regionChange)="onRegionChange($event)"
+      [heightPx]="mode() === 'edit' ? 200 : 260"
+    />
+    @if (regionMissing()) {
+      <p-message severity="error" variant="simple" text="Draw a rectangular region on the map." />
+    }
+  </div>
+
+  <div class="field">
+    <span class="field__label">Categories <span class="opt">// none = all events</span></span>
+    <div class="chips">
+      @for (cat of categories; track cat.id) {
+        <button
+          type="button"
+          class="chip"
+          [class.is-on]="isSelected(cat.id)"
+          [attr.aria-pressed]="isSelected(cat.id)"
+          (click)="toggleCategory(cat.id)"
+        >
+          <span class="chip__swatch" [style.background]="categoryColor(cat.id)" aria-hidden="true"></span>
+          {{ cat.title }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="field">
+      <span class="field__label">Delivery</span>
+      <div class="seg" role="group" aria-label="Delivery mode">
+        @for (m of digestModes; track m) {
+          <button
+            type="button"
+            class="seg__opt"
+            [class.is-on]="form.controls.digestMode.value === m"
+            (click)="setDigest(m)"
+          >
+            {{ digestLabel(m) }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field__label">Reading level</span>
+      <div class="seg" role="group" aria-label="Reading level">
+        @for (r of readingLevels; track r) {
+          <button
+            type="button"
+            class="seg__opt"
+            [class.is-on]="form.controls.readingLevel.value === r"
+            (click)="setReading(r)"
+          >
+            {{ readingLabel(r) }}
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (mode() === 'edit') {
+    <div class="field">
+      <span class="field__label">Status</span>
+      <div class="seg" role="group" aria-label="Watch status">
+        <button
+          type="button"
+          class="seg__opt"
+          [class.is-on]="form.controls.active.value"
+          (click)="setActive(true)"
+        >
+          Active
+        </button>
+        <button
+          type="button"
+          class="seg__opt seg__opt--warn"
+          [class.is-on]="!form.controls.active.value"
+          (click)="setActive(false)"
+        >
+          Paused
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <p-message severity="error" variant="simple" [text]="errorMessage()!" />
+  }
+
+  <div class="watch-form__actions">
+    <button type="button" class="wbtn wbtn--ghost" (click)="onCancel()" [disabled]="pending()">
+      Cancel
+    </button>
+    <button pButton class="wbtn wbtn--go" type="submit" [disabled]="pending()">
+      {{ mode() === 'edit' ? 'Save changes' : 'Create watch' }}
+    </button>
+  </div>
+</form>

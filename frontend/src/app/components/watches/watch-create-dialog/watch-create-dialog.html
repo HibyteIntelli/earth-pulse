@@ -1,0 +1,30 @@
+@if (region(); as r) {
+  <div class="wd-overlay" role="dialog" aria-modal="true" aria-labelledby="wd-title">
+    <div class="wd-scrim" (click)="onCancel()"></div>
+
+    <div class="wd-card">
+      <span class="wd-tab">New watch | draft</span>
+
+      <header class="wd-head">
+        <div>
+          <span class="wd-eyebrow">Earth Pulse Command</span>
+          <h2 id="wd-title" class="wd-title">Commission a watch</h2>
+        </div>
+        <button type="button" class="wd-close" (click)="onCancel()" aria-label="Discard draft">
+          &times;
+        </button>
+      </header>
+
+      <div class="wd-body">
+        <app-watch-form
+          mode="create"
+          [initialRegion]="r"
+          [pending]="pending()"
+          [errorMessage]="error()"
+          (save)="onSave($event)"
+          (cancel)="onCancel()"
+        />
+      </div>
+    </div>
+  </div>
+}

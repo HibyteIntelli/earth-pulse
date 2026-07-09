@@ -1,0 +1,16 @@
+<div class="region-editor">
+  <div #mapEl class="region-editor__map" [style.height.px]="heightPx()"></div>
+
+  <div class="region-editor__bar">
+    @if (region(); as r) {
+      <span class="region-editor__coords">
+        {{ r.minLat | number: '1.2-2' }}, {{ r.minLon | number: '1.2-2' }}
+        &nbsp;&ndash;&nbsp;
+        {{ r.maxLat | number: '1.2-2' }}, {{ r.maxLon | number: '1.2-2' }}
+      </span>
+      <button type="button" class="region-editor__btn" (click)="clear()">Redraw</button>
+    } @else {
+      <span class="region-editor__hint">Drag on the map to draw a rectangular region</span>
+    }
+  </div>
+</div>

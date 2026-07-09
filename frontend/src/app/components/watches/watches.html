@@ -1,1 +1,185 @@
-<p>watches works!</p>
+<main class="dossier-stage">
+  <div class="classbar classbar--top">
+    &#9650;&nbsp;TOP&nbsp;SECRET&nbsp;&#9650;&nbsp;WATCH&nbsp;REGISTRY&nbsp;&#9650;&nbsp;EARTH&nbsp;PULSE&nbsp;COMMAND&nbsp;&#9650;
+  </div>
+
+  <div class="dossier-wrap">
+    <div class="decor" aria-hidden="true">
+      <svg class="decor__star" viewBox="0 0 100 100" fill="currentColor">
+        <polygon points="50,4 61,37 96,37 67,58 78,92 50,71 22,92 33,58 4,37 39,37" />
+      </svg>
+
+      <svg class="decor__reticle" viewBox="0 0 300 300" fill="none" stroke="currentColor">
+        <circle cx="150" cy="150" r="122" stroke-width="1.5" />
+        <circle cx="150" cy="150" r="82" stroke-width="1.5" stroke-dasharray="3 7" />
+        <path d="M150,8 L150,70 M150,230 L150,292 M8,150 L70,150 M230,150 L292,150" stroke-width="1.5" />
+        <path d="M138,150 L162,150 M150,138 L150,162" stroke-width="1.5" />
+      </svg>
+
+      <span class="decor__stencil decor__stencil--left">EARTH&nbsp;PULSE&nbsp;COMMAND&nbsp;//&nbsp;FORM&nbsp;EP&#8211;9&nbsp;//&nbsp;EYES&nbsp;ONLY</span>
+      <span class="decor__stencil decor__stencil--right">REGISTRY&nbsp;WATCH&#8211;7&nbsp;//&nbsp;NEED&#8211;TO&#8211;KNOW</span>
+
+      <span class="decor__corner decor__corner--tl"></span>
+      <span class="decor__corner decor__corner--tr"></span>
+      <span class="decor__corner decor__corner--bl"></span>
+      <span class="decor__corner decor__corner--br"></span>
+    </div>
+
+    <div class="watermark" aria-hidden="true">WATCHES</div>
+
+    <article class="dossier-card">
+      <header class="file-head">
+        <div>
+          <span class="file-tag">Watch registry</span>
+          <span class="file-no">EP&#8211;WATCH&#8211;REG</span>
+        </div>
+        <span class="stamp stamp--restricted">{{ activeCount() }} Active</span>
+      </header>
+
+      <div class="reg-head">
+        <h2 class="form__title">Standing watches</h2>
+        <p class="form__hint">
+          Regions flagged for automatic intercept. {{ total() }} on file ·
+          {{ activeCount() }} active.
+        </p>
+        <a class="reg-new" routerLink="/map">+ Draw a new watch on the map</a>
+      </div>
+
+      @if (status() === 'ready' && listError()) {
+        <p class="wnote wnote--err">{{ listError() }}</p>
+      }
+
+      @switch (status()) {
+        @case ('loading') {
+          <p class="wnote">Retrieving watch dossiers&hellip;</p>
+        }
+        @case ('error') {
+          <p class="wnote wnote--err">
+            {{ listError() }}
+            <button type="button" class="waction" (click)="reload()">Retry</button>
+          </p>
+        }
+        @default {
+          <ul class="wl">
+            @for (w of watches(); track w.id) {
+              <li class="watch" [class.is-paused]="!w.active" [attr.data-cat]="w.categories[0]">
+                <span class="watch__stripe" aria-hidden="true"></span>
+
+                @if (editingId() === w.id) {
+                  <div class="watch__edit">
+                    <h3 class="watch__edit-title">Amend watch</h3>
+                    <app-watch-form
+                      mode="edit"
+                      [watch]="w"
+                      [pending]="savingId() === w.id"
+                      [errorMessage]="formError()"
+                      (save)="onSave(w.id, $event)"
+                      (cancel)="cancelEdit()"
+                    />
+                  </div>
+                } @else {
+                  <div class="watch__body">
+                    <div class="watch__head">
+                      <h3 class="watch__title">{{ w.name || 'Unnamed watch' }}</h3>
+                      <span class="wstamp" [class.wstamp--paused]="!w.active">
+                        {{ w.active ? 'Active' : 'Paused' }}
+                      </span>
+                    </div>
+
+                    <div class="wcats">
+                      @if (w.categories.length) {
+                        @for (c of w.categories; track c) {
+                          <span class="wcat">
+                            <span class="wcat__swatch" [style.background]="categoryColor(c)" aria-hidden="true"></span>
+                            {{ categoryTitle(c) }}
+                          </span>
+                        }
+                      } @else {
+                        <span class="wcat wcat--all">All events</span>
+                      }
+                    </div>
+
+                    <dl class="wmeta">
+                      <div class="wmeta__row wmeta__row--wide">
+                        <dt>Region</dt>
+                        <dd>
+                          {{ w.minLat | number: '1.2-2' }}, {{ w.minLon | number: '1.2-2' }}
+                          &nbsp;&ndash;&nbsp;
+                          {{ w.maxLat | number: '1.2-2' }}, {{ w.maxLon | number: '1.2-2' }}
+                        </dd>
+                      </div>
+                      <div class="wmeta__row">
+                        <dt>Delivery</dt>
+                        <dd>{{ digestLabel(w.digestMode) }}</dd>
+                      </div>
+                      <div class="wmeta__row">
+                        <dt>Reading level</dt>
+                        <dd>{{ readingLabel(w.readingLevel) }}</dd>
+                      </div>
+                      <div class="wmeta__row">
+                        <dt>Opened</dt>
+                        <dd>{{ w.createdAt | date: 'mediumDate' }}</dd>
+                      </div>
+                    </dl>
+
+                    @if (confirmDeleteId() === w.id) {
+                      <div class="wconfirm">
+                        <span class="wconfirm__text">Delete this watch permanently?</span>
+                        <div class="wactions">
+                          <button
+                            type="button"
+                            class="waction waction--danger"
+                            (click)="confirmDelete(w.id)"
+                            [disabled]="busyId() === w.id"
+                          >
+                            Delete
+                          </button>
+                          <button type="button" class="waction waction--ghost" (click)="cancelDelete()">
+                            Keep
+                          </button>
+                        </div>
+                      </div>
+                    } @else {
+                      <div class="watch__foot">
+                        <div class="wactions">
+                          <button type="button" class="waction" (click)="startEdit(w.id)">Edit</button>
+                          <button
+                            type="button"
+                            class="waction waction--alt"
+                            (click)="togglePause(w)"
+                            [disabled]="busyId() === w.id"
+                          >
+                            {{ w.active ? 'Pause' : 'Resume' }}
+                          </button>
+                          <button type="button" class="waction waction--ghost" (click)="askDelete(w.id)">
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </li>
+            } @empty {
+              <li class="wl-empty">
+                <span class="wl-empty__mark">&#9633;</span>
+                No watches on file. Draw a region on the map to open one.
+                <a class="wl-empty__link" routerLink="/map">Go to the map &#8594;</a>
+              </li>
+            }
+          </ul>
+        }
+      }
+
+      <footer class="file-foot">
+        <span class="barcode" aria-hidden="true"></span>
+        <span class="stamp stamp--granted" aria-hidden="true">Eyes only</span>
+        <a routerLink="/map">Return to map</a>
+      </footer>
+    </article>
+  </div>
+
+  <div class="classbar classbar--bottom">
+    &#9660;&nbsp;AUTHORIZED&nbsp;PERSONNEL&nbsp;ONLY&nbsp;&#9660;&nbsp;DO&nbsp;NOT&nbsp;DUPLICATE&nbsp;&#9660;
+  </div>
+</main>

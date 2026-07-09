@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   ElementRef,
   inject,
   OnDestroy,
@@ -13,19 +14,22 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, of } from 'rxjs';
 import { catchError, debounceTime, map, switchMap } from 'rxjs/operators';
 import * as L from 'leaflet';
+import '@geoman-io/leaflet-geoman-free';
 import { IngestionService } from '../../core/ingestion/ingestion.service';
 import { Event, EventFilter } from '../../core/ingestion/ingestion.models';
+import { AuthService } from '../../core/auth/auth.service';
 import { iconFor } from './category-icons';
 import { colorForCategory } from './category-colors';
 import { EVENT_CATEGORIES, categoryTitle, EventCategoryId } from '../../models/event-category';
 import { MapStateService } from './map-state.service';
 import { SidePanel } from './side-panel/side-panel';
+import { WatchCreateDialog } from '../watches/watch-create-dialog/watch-create-dialog';
 
 const WORLD_BOUNDS = L.latLngBounds([-90, -180], [90, 180]);
 
 @Component({
   selector: 'app-map',
-  imports: [SidePanel],
+  imports: [SidePanel, WatchCreateDialog],
   templateUrl: './map.html',
   styleUrls: ['./panel-kit.css', './map.css'],
   host: {
@@ -38,8 +42,25 @@ export class Map implements AfterViewInit, OnDestroy {
   private readonly ingestion = inject(IngestionService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly mapState = inject(MapStateService);
+  private readonly auth = inject(AuthService);
   private readonly markers = L.layerGroup();
   private readonly reload$ = new Subject<EventFilter>();
+
+  protected readonly isAuthenticated = this.auth.isAuthenticated;
+  protected readonly drawMode = this.mapState.drawMode;
+
+  constructor() {
+    effect(() => {
+      const drawing = this.mapState.drawMode();
+      const map = this.leafletMap;
+      if (!map) return;
+      if (drawing) {
+        map.pm.enableDraw('Rectangle');
+      } else {
+        map.pm.disableDraw();
+      }
+    });
+  }
 
   protected readonly categories = EVENT_CATEGORIES;
   protected readonly menuOpen = signal(false);
@@ -178,6 +199,27 @@ export class Map implements AfterViewInit, OnDestroy {
     this.fitWorldZoom();
     this.leafletMap.on('resize', () => this.fitWorldZoom());
     this.leafletMap.on('moveend zoomend', () => this.reload());
+    this.leafletMap.on('pm:create', (e) => this.onRegionDrawn(e.layer as L.Rectangle));
+  }
+
+  private onRegionDrawn(layer: L.Rectangle): void {
+    const bounds = layer.getBounds();
+    layer.remove();
+    this.leafletMap?.pm.disableDraw();
+    this.mapState.setPendingWatchRegion({
+      minLat: bounds.getSouth(),
+      maxLat: bounds.getNorth(),
+      minLon: bounds.getWest(),
+      maxLon: bounds.getEast(),
+    });
+  }
+
+  protected toggleDraw(): void {
+    if (this.mapState.drawMode()) {
+      this.mapState.cancelDrawing();
+    } else {
+      this.mapState.startDrawing();
+    }
   }
 
   private fitWorldZoom(): void {

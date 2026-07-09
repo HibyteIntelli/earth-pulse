@@ -1,6 +1,19 @@
 <div class="map-shell">
   <div #mapContainer class="map"></div>
   <app-side-panel />
+  <app-watch-create-dialog />
+
+  @if (isAuthenticated()) {
+    <button
+      type="button"
+      class="draw-cta panel-surface"
+      [class.is-active]="drawMode()"
+      (click)="toggleDraw()"
+    >
+      <span class="draw-cta__mark" aria-hidden="true">@if (drawMode()) { &times; } @else { + }</span>
+      <span class="draw-cta__label">{{ drawMode() ? 'Cancel drawing' : 'Create watch' }}</span>
+    </button>
+  }
 
   <div class="filter" [class.filter--open]="menuOpen()">
     @if (menuOpen()) {
