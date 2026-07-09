@@ -73,16 +73,20 @@ public class NotificationEmailService {
         context.setVariable("events", sorted.stream().map(this::toEventView).toList());
 
         String html = templateEngine.process("digest-email", context);
-        String subject = "[Earth Pulse] Daily digest: " + sorted.size() + " event" + (sorted.size() == 1 ? "" : "s") + " matched";
+        String subject = buildDigestSubject(sorted.size());
 
         emailService.sendHtmlEmail(userEmail, subject, html);
+    }
+
+    private String buildDigestSubject(int count) {
+        return "[Earth Pulse] Daily digest: " + pluralizeEventCount(count) + " matched";
     }
 
     private String buildHeaderText(List<NotificationLog> events) {
         Map<Severity, Long> counts = events.stream()
                 .collect(Collectors.groupingBy(NotificationLog::getBriefingSeverity, Collectors.counting()));
 
-        StringBuilder text = new StringBuilder(events.size() + " event" + (events.size() == 1 ? "" : "s") + " matched: ")
+        StringBuilder text = new StringBuilder(pluralizeEventCount(events.size()) + " matched: ")
                 .append(counts.getOrDefault(Severity.HIGH, 0L)).append(" high, ")
                 .append(counts.getOrDefault(Severity.MODERATE, 0L)).append(" moderate, ")
                 .append(counts.getOrDefault(Severity.LOW, 0L)).append(" low");
@@ -92,6 +96,10 @@ public class NotificationEmailService {
             text.append(", ").append(unknown).append(" unknown");
         }
         return text.toString();
+    }
+
+    private String pluralizeEventCount(int count) {
+        return count + " event" + (count == 1 ? "" : "s");
     }
 
     private EventView toEventView(NotificationLog notificationLog) {
