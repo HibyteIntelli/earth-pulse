@@ -1,44 +1,66 @@
 package ro.hibyte.ingestion.client;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import ro.hibyte.ingestion.dto.notifier.NewEventPayloadDto;
 
-import java.net.http.HttpClient;
-import java.time.Duration;
-
 @Component
+@RequiredArgsConstructor
 @Slf4j
 public class NotifierClient {
-    private final RestClient restClient;
+    private static final int MAX_ATTEMPTS = 3;
+    private static final long INITIAL_BACKOFF_MS = 1000;
+    private static final int BACKOFF_MULTIPLIER = 2;
 
-    public NotifierClient(
-            @Value("${app.notifier-service.url}") String notifierUrl,
-            @Value("${app.notifier-service.internal-secret}") String internalSecret
-    ) {
-        var httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(3))
-                .build();
-        var factory = new JdkClientHttpRequestFactory(httpClient);
-        factory.setReadTimeout(Duration.ofSeconds(10));
-
-        this.restClient = RestClient.builder()
-                .baseUrl(notifierUrl)
-                .defaultHeader("X-Internal-Secret", internalSecret)
-                .requestFactory(factory)
-                .build();
-    }
+    private final RestClient notifierRestClient;
 
     @Async
     public void notifyNewEvent(NewEventPayloadDto payload) {
+        long backoffMs = INITIAL_BACKOFF_MS;
+
+        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+            try {
+                notifierRestClient.post().uri("/internal/events/new").body(payload).retrieve().toBodilessEntity();
+                return;
+            } catch (HttpClientErrorException e) {
+                log.error("Notifier returned {} for event {}", e.getStatusCode(), payload.getEventId(), e);
+                return;
+            } catch (HttpServerErrorException | ResourceAccessException e) {
+                if (attempt == MAX_ATTEMPTS) {
+                    logGivingUp(payload, attempt, e);
+                    return;
+                }
+                log.debug("Attempt {}/{} to notify Notifier of new event {} failed, retrying in {}ms",
+                        attempt, MAX_ATTEMPTS, payload.getEventId(), backoffMs);
+                if (!sleep(backoffMs)) {
+                    return;
+                }
+                backoffMs *= BACKOFF_MULTIPLIER;
+            } catch (Exception e) {
+                logGivingUp(payload, attempt, e);
+                return;
+            }
+        }
+    }
+
+    private void logGivingUp(NewEventPayloadDto payload, int attempt, Throwable e) {
+        log.error("Failed to notify Notifier of new event {} after {} attempt(s)", payload.getEventId(), attempt, e);
+    }
+
+    private boolean sleep(long millis) {
         try {
-            restClient.post().uri("/internal/events/new").body(payload).retrieve().toBodilessEntity();
-        } catch (Exception e) {
-            log.error("Failed to notify Notifier of new event {}", payload.getEventId(), e);
+            Thread.sleep(millis);
+            return true;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.warn("Retry wait for event notification interrupted, aborting further attempts", e);
+            return false;
         }
     }
 }
