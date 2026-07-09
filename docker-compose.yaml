@@ -125,7 +125,7 @@ services:
       APP_AUTH_SERVICE_INTERNAL_SECRET: ${AUTH_INTERNAL_SECRET:?AUTH_INTERNAL_SECRET is required}
       APP_LLM_SERVICE_URL: http://llm:8080
       APP_LLM_SERVICE_INTERNAL_SECRET: ${LLM_INTERNAL_SECRET:?LLM_INTERNAL_SECRET is required}
-      APP_FRONTEND_BASE_URL: http://frontend:4200
+      APP_FRONTEND_BASE_URL: ${FRONTEND_BASE_URL:-http://localhost:4200}
     ports:
       - "8084:8084"
     depends_on:
