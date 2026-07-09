@@ -1,7 +1,7 @@
 CREATE TABLE watches (
     id            UUID PRIMARY KEY,
     user_id       UUID NOT NULL
-        CONSTRAINT fk_watches_users REFERENCES users (id),
+        CONSTRAINT fk_watches_users REFERENCES users (id) ON DELETE CASCADE,
     name          VARCHAR(255),
     min_lat       DOUBLE PRECISION NOT NULL,
     max_lat       DOUBLE PRECISION NOT NULL,

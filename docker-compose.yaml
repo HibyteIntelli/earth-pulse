@@ -23,8 +23,6 @@ services:
       APP_AVATAR_MAX_FILE_SIZE_BYTES: 1048576
     ports:
       - "8083:8083"
-    volumes:
-      - ./auth/data/rockyou.txt:/app/rockyou.txt:ro
     depends_on:
       auth-postgres:
         condition: service_healthy
