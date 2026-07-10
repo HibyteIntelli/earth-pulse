@@ -17,6 +17,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private static final String LOGIN_PATH                   = "/auth/login";
     private static final String SIGNUP_PATH                  = "/auth/signup";
+    private static final String FORGOT_PASSWORD_PATH         = "/auth/forgot-password";
+    private static final String RESET_PASSWORD_PATH          = "/auth/reset-password";
     private static final String HEADER_REMAINING             = "X-Rate-Limit-Remaining";
     private static final String HEADER_RETRY_AFTER           = "X-Rate-Limit-Retry-After-Seconds";
     private static final String CONTENT_TYPE_JSON            = "application/json";
@@ -24,13 +26,19 @@ public class RateLimitFilter extends OncePerRequestFilter {
 
     private final int loginCapacity;
     private final int signupCapacity;
+    private final int forgotPasswordCapacity;
     private final Duration refillDuration;
     private final Map<String, Bucket> buckets = new ConcurrentHashMap<>();
 
-    public RateLimitFilter(int loginCapacity, int signupCapacity, Duration refillDuration) {
+    public RateLimitFilter(int loginCapacity, int signupCapacity, int forgotPasswordCapacity, Duration refillDuration) {
         this.loginCapacity = loginCapacity;
         this.signupCapacity = signupCapacity;
+        this.forgotPasswordCapacity = forgotPasswordCapacity;
         this.refillDuration = refillDuration;
+    }
+
+    public RateLimitFilter(int loginCapacity, int signupCapacity, Duration duration) {
+        this(loginCapacity, signupCapacity, signupCapacity, duration);
     }
 
     @Override
@@ -46,6 +54,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
             capacity = loginCapacity;
         } else if (SIGNUP_PATH.equals(path)) {
             capacity = signupCapacity;
+        } else if (FORGOT_PASSWORD_PATH.equals(path) || RESET_PASSWORD_PATH.equals(path)) {
+            capacity = forgotPasswordCapacity;
         } else {
             chain.doFilter(request, response);
             return;

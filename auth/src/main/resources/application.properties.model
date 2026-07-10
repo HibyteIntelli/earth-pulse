@@ -46,3 +46,18 @@ app.avatar.public-base-url=http://localhost:8083/avatars
 spring.servlet.multipart.max-file-size=1MB
 spring.servlet.multipart.max-request-size=2MB
 app.avatar.max-file-size-bytes=1048576
+
+# Mail — Mailpit for local dev (SMTP on 1025, web UI on http://localhost:8025)
+spring.mail.host=${SMTP_HOST:localhost}
+spring.mail.port=${SMTP_PORT:1025}
+spring.mail.username=${SMTP_USER:}
+spring.mail.password=${SMTP_PASSWORD:}
+spring.mail.properties.mail.smtp.auth=false
+spring.mail.properties.mail.smtp.starttls.enable=false
+app.mail.from=noreply@earthpulse.local
+
+# Password reset — token expiry in minutes
+app.password-reset.token-expiry-minutes=60
+
+# Rate limiting — forgot-password and reset-password endpoints
+app.rate-limit.forgot-password=5
