@@ -3,6 +3,13 @@
   <app-side-panel />
   <app-watch-create-dialog />
 
+  @if (watchCreated()) {
+    <div class="watch-toast" role="status" aria-live="polite">
+      <span class="watch-toast__title">Watch commissioned</span>
+      <span class="watch-toast__sub">Region filed to the registry</span>
+    </div>
+  }
+
   @if (isAuthenticated()) {
     <button
       type="button"

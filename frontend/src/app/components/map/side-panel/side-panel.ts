@@ -12,7 +12,6 @@ import { MapStateService } from '../map-state.service';
   templateUrl: './side-panel.html',
   styleUrls: ['../../shared/panel-kit.css', './side-panel.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {},
 })
 export class SidePanel {
   private readonly ingestion = inject(IngestionService);

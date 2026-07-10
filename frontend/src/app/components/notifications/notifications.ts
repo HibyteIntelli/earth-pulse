@@ -1,46 +1,56 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { ButtonModule } from 'primeng/button';
-import { categoryShortCode, categoryTitle } from '../../models/event-category';
+import { EventCategoryId, categoryShortCode, categoryTitle } from '../../models/event-category';
 import { deliveryModeLabel } from '../../models/delivery-mode';
-import { formatMagnitude } from '../../models/event-magnitude';
-import { FEED, Intercept } from './notifications.data';
-
+import { readingLevelLabel } from '../../core/watch/watch.models';
+import { NotificationService } from '../../core/notification/notification.service';
+import { Notification, severityLabel } from '../../core/notification/notification.models';
 
 @Component({
   selector: 'app-notifications',
-  imports: [RouterLink, ButtonModule],
+  imports: [RouterLink, DatePipe],
   templateUrl: './notifications.html',
   styleUrls: ['../shared/form-kit.css', '../shared/dossier-kit.css', './notifications.css'],
 })
-export class Notifications {
-  protected readonly intercepts = signal<Intercept[]>(FEED.map((i) => ({ ...i })));
+export class Notifications implements OnInit {
+  private readonly notificationService = inject(NotificationService);
 
-  protected readonly categoryLabel = categoryTitle;
   protected readonly categoryCode = categoryShortCode;
   protected readonly deliveryLabel = deliveryModeLabel;
-  protected readonly magnitudeLabel = formatMagnitude;
+  protected readonly readingLabel = readingLevelLabel;
+  protected readonly severityLabel = severityLabel;
 
-  protected readonly unread = computed(() => this.intercepts().filter((i) => !i.read).length);
-  protected readonly total = computed(() => this.intercepts().length);
+  protected readonly notifications = signal<Notification[]>([]);
+  protected readonly status = signal<'loading' | 'ready' | 'error'>('loading');
+  protected readonly total = computed(() => this.notifications().length);
 
-  protected markRead(id: string): void {
-    this.intercepts.update((list) =>
-      list.map((i) => (i.id === id ? { ...i, read: true } : i)),
-    );
+  ngOnInit(): void {
+    this.load();
   }
 
-  protected reopen(id: string): void {
-    this.intercepts.update((list) =>
-      list.map((i) => (i.id === id ? { ...i, read: false } : i)),
-    );
+  protected reload(): void {
+    this.load();
   }
 
-  protected markAllRead(): void {
-    this.intercepts.update((list) => list.map((i) => ({ ...i, read: true })));
+  protected primaryCategory(it: Notification): EventCategoryId | null {
+    return it.eventCategories[0] ?? null;
   }
 
-  protected dismiss(id: string): void {
-    this.intercepts.update((list) => list.filter((i) => i.id !== id));
+  protected categoriesLabel(it: Notification): string {
+    return it.eventCategories.map(categoryTitle).join(' · ');
+  }
+
+  private load(): void {
+    this.status.set('loading');
+    this.notificationService.list({ limit: 50 }).subscribe({
+      next: (page) => {
+        this.notifications.set(page.items);
+        this.status.set('ready');
+      },
+      error: () => {
+        this.status.set('error');
+      },
+    });
   }
 }

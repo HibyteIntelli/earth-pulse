@@ -10,5 +10,11 @@
     "secure": false,
     "changeOrigin": true,
     "pathRewrite": { "^/ingestion": "" }
+  },
+  "/notifier": {
+    "target": "http://localhost:8084",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": { "^/notifier": "" }
   }
 }

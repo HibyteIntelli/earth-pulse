@@ -40,6 +40,7 @@ export class WatchCreateDialog {
       next: () => {
         this.pending.set(false);
         this.mapState.cancelDrawing();
+        this.mapState.flashWatchCreated();
       },
       error: (err: HttpErrorResponse) => {
         this.pending.set(false);

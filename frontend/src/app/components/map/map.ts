@@ -48,6 +48,7 @@ export class Map implements AfterViewInit, OnDestroy {
 
   protected readonly isAuthenticated = this.auth.isAuthenticated;
   protected readonly drawMode = this.mapState.drawMode;
+  protected readonly watchCreated = this.mapState.watchCreated;
 
   constructor() {
     effect(() => {

@@ -1,5 +1,4 @@
 <main class="dossier-stage">
-
   <div class="classbar classbar--top">
     &#9650;&nbsp;TOP&nbsp;SECRET&nbsp;&#9650;&nbsp;SIGNAL&nbsp;INTERCEPT&nbsp;FEED&nbsp;&#9650;&nbsp;EARTH&nbsp;PULSE&nbsp;COMMAND&nbsp;&#9650;
   </div>
@@ -8,20 +7,10 @@
     <defs>
       <path id="seal-arc-top" d="M40,150 A110,110 0 0 0 260,150" />
       <path id="seal-arc-bottom" d="M40,150 A110,110 0 0 1 260,150" />
-      <filter id="seal-ink" x="-10%" y="-10%" width="120%" height="120%">
-        <feColorMatrix
-          type="matrix"
-          values="0 0 0 0 0.635
-                  0 0 0 0 0.231
-                  0 0 0 0 0.169
-                  0 0 0 0.9 0"
-        />
-      </filter>
     </defs>
   </svg>
 
   <div class="dossier-wrap">
-
     <div class="decor" aria-hidden="true">
       <svg class="decor__star" viewBox="0 0 100 100" fill="currentColor">
         <polygon points="50,4 61,37 96,37 67,58 78,92 50,71 22,92 33,58 4,37 39,37" />
@@ -46,172 +35,97 @@
     <div class="watermark" aria-hidden="true">INTERCEPTS</div>
 
     <article class="dossier-card">
-
-      <div class="gov-stamp gov-stamp--head" aria-hidden="true">
-        <svg viewBox="0 0 300 300">
-          <g fill="none" stroke="currentColor">
-            <circle cx="150" cy="150" r="145" stroke-width="6" />
-            <circle cx="150" cy="150" r="131" stroke-width="2" />
-            <circle cx="150" cy="150" r="90" stroke-width="2" />
-          </g>
-          <g class="seal-text" fill="currentColor" font-weight="700" letter-spacing="2">
-            <text font-size="21">
-              <textPath href="#seal-arc-top" startOffset="50%" text-anchor="middle">
-                ★ EARTH PULSE COMMAND ★
-              </textPath>
-            </text>
-            <text font-size="15">
-              <textPath href="#seal-arc-bottom" startOffset="50%" text-anchor="middle">
-                SIGNAL INTERCEPT · EYES ONLY
-              </textPath>
-            </text>
-          </g>
-          <g fill="currentColor">
-            <polygon points="18,150 22,144 29,144 24,140 26,133 18,137 10,133 12,140 7,144 14,144" />
-            <polygon points="282,150 286,144 293,144 288,140 290,133 282,137 274,133 276,140 271,144 278,144" />
-          </g>
-          <image href="assets/images.svg" x="103" y="103" width="94" height="94" filter="url(#seal-ink)" />
-        </svg>
-      </div>
-
       <header class="file-head">
         <div>
           <span class="file-tag">Signal intercept feed</span>
-          <span class="file-no">EP&#8211;INT&#8211;LOG&nbsp;//&nbsp;2026&#8211;06&#8211;23</span>
+          <span class="file-no">EP&#8211;INT&#8211;LOG</span>
         </div>
-        <span class="stamp stamp--restricted">{{ unread() }} New</span>
+        <span class="stamp stamp--restricted">{{ total() }} On file</span>
       </header>
 
       <div class="log-head">
         <h2 class="form__title">Intercept log</h2>
         <p class="form__hint">
-          Events flagged against your active watch regions. {{ total() }} on file ·
-          {{ unread() }} awaiting review.
+          Every alert sent to you when a watch matched an event. {{ total() }} on file.
         </p>
-        <button
-          pButton
-          type="button"
-          class="bulk"
-          (click)="markAllRead()"
-          [disabled]="unread() === 0"
-        >
-          Mark all actioned
-        </button>
       </div>
 
-      <ul class="log">
-        @for (it of intercepts(); track it.id) {
-          <li
-            class="intercept"
-            [class.is-read]="it.read"
-            [attr.data-cat]="it.category"
-          >
-            <span class="intercept__stripe" aria-hidden="true"></span>
-
-            <div class="intercept__seal" aria-hidden="true">
-              <svg viewBox="0 0 300 300">
-                <g fill="none" stroke="currentColor">
-                  <circle cx="150" cy="150" r="145" stroke-width="7" />
-                  <circle cx="150" cy="150" r="128" stroke-width="3" />
-                  <circle cx="150" cy="150" r="86" stroke-width="3" />
-                </g>
-                <g class="seal-text" fill="currentColor" font-weight="700" letter-spacing="2">
-                  <text font-size="23">
-                    <textPath href="#seal-arc-top" startOffset="50%" text-anchor="middle">
-                      ★ EARTH PULSE ★
-                    </textPath>
-                  </text>
-                  <text font-size="17">
-                    <textPath href="#seal-arc-bottom" startOffset="50%" text-anchor="middle">
-                      VERIFIED INTERCEPT
-                    </textPath>
-                  </text>
-                </g>
-                <polygon
-                  fill="currentColor"
-                  points="150,108 161,141 196,141 168,162 179,195 150,174 121,195 132,162 104,141 139,141"
-                />
-              </svg>
-            </div>
-
-            <div class="intercept__body">
-              <div class="intercept__top">
-                <span class="cat">{{ categoryCode(it.category) }}</span>
-                <span class="cat__label">{{ categoryLabel(it.category) }}</span>
-                <span class="intercept__no">{{ it.fileNo }}</span>
-                @if (!it.read) {
-                  <span class="status-stamp">New</span>
-                }
-              </div>
-
-              <h3 class="intercept__title">{{ it.title }}</h3>
-              <p class="intercept__brief">{{ it.briefing }}</p>
-
-              <dl class="meta">
-                <div class="meta__row">
-                  <dt>Magnitude</dt>
-                  <dd>{{ magnitudeLabel(it.magnitude) }}</dd>
-                </div>
-                <div class="meta__row">
-                  <dt>Location</dt>
-                  <dd>{{ it.location }}</dd>
-                </div>
-                <div class="meta__row">
-                  <dt>Coordinates</dt>
-                  <dd>{{ it.coords }}</dd>
-                </div>
-                <div class="meta__row">
-                  <dt>Grid ref</dt>
-                  <dd>{{ it.grid }}</dd>
-                </div>
-                <div class="meta__row">
-                  <dt>Watch</dt>
-                  <dd>{{ it.watch }}</dd>
-                </div>
-                <div class="meta__row">
-                  <dt>Delivery</dt>
-                  <dd>{{ deliveryLabel(it.deliveryMode) }}</dd>
-                </div>
-                <div class="meta__row">
-                  <dt>Event ID</dt>
-                  <dd>{{ it.eventId }}</dd>
-                </div>
-                <div class="meta__row">
-                  <dt>Logged</dt>
-                  <dd>{{ it.receivedAt }}</dd>
-                </div>
-              </dl>
-
-              <div class="intercept__foot">
-                <span class="received">{{ it.received }}</span>
-                <div class="actions">
-                  @if (!it.read) {
-                    <button pButton type="button" class="action" (click)="markRead(it.id)">
-                      Mark actioned
-                    </button>
-                  } @else {
-                    <button pButton type="button" class="action action--reopen" (click)="reopen(it.id)">
-                      Reopen case
-                    </button>
-                  }
-                  <button pButton type="button" class="action action--ghost" (click)="dismiss(it.id)">
-                    Dismiss
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            @if (it.read) {
-              <span class="case-stamp" aria-hidden="true">Actioned</span>
-            }
-          </li>
-        } @empty {
-          <li class="log-empty">
-            <span class="log-empty__mark">&#9633;</span>
-            No active intercepts. All channels quiet.
-          </li>
+      @switch (status()) {
+        @case ('loading') {
+          <p class="log-note">Retrieving intercept log&hellip;</p>
         }
-      </ul>
+        @case ('error') {
+          <p class="log-note log-note--err">
+            Could not load your notifications.
+            <button type="button" class="action" (click)="reload()">Retry</button>
+          </p>
+        }
+        @default {
+          <ul class="log">
+            @for (it of notifications(); track it.id) {
+              <li class="intercept" [attr.data-cat]="primaryCategory(it)" [attr.data-sev]="it.briefing.severity">
+                <span class="intercept__stripe" aria-hidden="true"></span>
+
+                <div class="intercept__body">
+                  <div class="intercept__top">
+                    @if (primaryCategory(it); as cat) {
+                      <span class="cat">{{ categoryCode(cat) }}</span>
+                    }
+                    <span class="cat__label">{{ categoriesLabel(it) }}</span>
+                    <span class="intercept__no">{{ it.eventId }}</span>
+                  </div>
+
+                  <h3 class="intercept__title">{{ it.eventTitle }}</h3>
+                  <p class="intercept__brief">{{ it.briefing.summary }}</p>
+
+                  <dl class="meta">
+                    <div class="meta__row">
+                      <dt>Severity</dt>
+                      <dd><span class="sev">{{ severityLabel(it.briefing.severity) }}</span></dd>
+                    </div>
+                    <div class="meta__row">
+                      <dt>Delivery</dt>
+                      <dd>{{ deliveryLabel(it.deliveryMode) }}</dd>
+                    </div>
+                    <div class="meta__row">
+                      <dt>Reading level</dt>
+                      <dd>{{ readingLabel(it.readingLevel) }}</dd>
+                    </div>
+                    <div class="meta__row">
+                      <dt>Event date</dt>
+                      <dd>{{ it.eventDate | date: 'medium' }}</dd>
+                    </div>
+                    <div class="meta__row meta__row--wide">
+                      <dt>Impact</dt>
+                      <dd>{{ it.briefing.impact }}</dd>
+                    </div>
+                  </dl>
+
+                  @if (it.briefing.precautions.length) {
+                    <ul class="precautions">
+                      @for (p of it.briefing.precautions; track p) {
+                        <li>{{ p }}</li>
+                      }
+                    </ul>
+                  }
+
+                  <div class="intercept__foot">
+                    <span class="received">Delivered {{ it.deliveredAt | date: 'short' }}</span>
+                    <a class="action" routerLink="/map" [queryParams]="{ event: it.eventId }">
+                      View on map
+                    </a>
+                  </div>
+                </div>
+              </li>
+            } @empty {
+              <li class="log-empty">
+                <span class="log-empty__mark">&#9633;</span>
+                No intercepts on file. Alerts appear here when one of your watches matches an event.
+              </li>
+            }
+          </ul>
+        }
+      }
 
       <footer class="file-foot">
         <span class="barcode" aria-hidden="true"></span>
