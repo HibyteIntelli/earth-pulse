@@ -1,6 +1,7 @@
 package com.api.llm.service;
 
 import com.api.llm.dto.BriefingLLMResponseDto;
+import com.api.llm.exception.LlmUnavailableException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ public class OllamaService {
         this.webClient = webClient;
     }
 
-    public boolean checkStatus() {
+    public void checkStatus() {
         try {
             webClient.get()
                     .uri("/api/version")
@@ -33,17 +34,24 @@ public class OllamaService {
                     .bodyToMono(String.class)
                     .block(Duration.ofSeconds(3));
 
-            return true;
-
         } catch (WebClientRequestException e) {
-            log.warn("Ollama is unreachable (network issue)", e);
-        } catch (WebClientResponseException e) {
-            log.warn("Ollama responded with HTTP error: {}", e.getStatusCode(), e);
-        } catch (Exception e) {
-            log.warn("Unexpected error during Ollama health check", e);
-        }
+            throw new LlmUnavailableException(
+                    "Ollama is unreachable (network issue)",
+                    e
+            );
 
-        return false;
+        } catch (WebClientResponseException e) {
+            throw new LlmUnavailableException(
+                    "Ollama responded with HTTP error: " + e.getStatusCode(),
+                    e
+            );
+
+        } catch (Exception e) {
+            throw new LlmUnavailableException(
+                    "Unexpected error during Ollama health check",
+                    e
+            );
+        }
     }
 
     public Mono<BriefingLLMResponseDto> generate(String prompt) {
