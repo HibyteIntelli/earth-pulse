@@ -23,18 +23,41 @@ public class AppConfig {
     @Value("${eonet.read-timeout:10s}")
     private Duration eonetReadTimeout;
 
-    @Bean
-    public RestClient eonetRestClient() {
+    @Value("${app.notifier-service.url}")
+    private String notifierUrl;
+
+    @Value("${app.notifier-service.internal-secret}")
+    private String notifierInternalSecret;
+
+    @Value("${app.notifier-service.connect-timeout:3s}")
+    private Duration notifierConnectTimeout;
+
+    @Value("${app.notifier-service.read-timeout:10s}")
+    private Duration notifierReadTimeout;
+
+    private RestClient.Builder restClientBuilder(String baseUrl, Duration connectTimeout, Duration readTimeout) {
         HttpClient httpClient = HttpClient.newBuilder()
-                .connectTimeout(eonetConnectTimeout)
+                .connectTimeout(connectTimeout)
                 .build();
         JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(httpClient);
-        requestFactory.setReadTimeout(eonetReadTimeout);
+        requestFactory.setReadTimeout(readTimeout);
 
         return RestClient.builder()
-                .baseUrl(eonetBaseUrl)
-                .requestFactory(requestFactory)
+                .baseUrl(baseUrl)
+                .requestFactory(requestFactory);
+    }
+
+    @Bean
+    public RestClient eonetRestClient() {
+        return restClientBuilder(eonetBaseUrl, eonetConnectTimeout, eonetReadTimeout)
                 .defaultHeaders(h -> h.setAccept(List.of(MediaType.APPLICATION_JSON)))
+                .build();
+    }
+
+    @Bean
+    public RestClient notifierRestClient() {
+        return restClientBuilder(notifierUrl, notifierConnectTimeout, notifierReadTimeout)
+                .defaultHeader("X-Internal-Secret", notifierInternalSecret)
                 .build();
     }
 }

@@ -31,3 +31,10 @@ spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://localhost:8083/.wel
 
 # Shared secret for internal endpoints called by the Notifier Service (X-Internal-Secret header)
 ingestion.internal-secret=${INGESTION_INTERNAL_SECRET}
+
+# Notifier push — outbound calls to the Notifier Service (X-Internal-Secret header)
+# The secret must equal the Notifier's own notifier.internal-secret
+app.notifier-service.url=http://<NOTIFIER_SERVICE_HOST>
+app.notifier-service.internal-secret=${NOTIFIER_INTERNAL_SECRET}
+app.notifier-service.connect-timeout=3s
+app.notifier-service.read-timeout=10s
