@@ -2,7 +2,7 @@ spring.application.name=notifier
 
 server.port=8084
 
-spring.datasource.url=jdbc:postgresql://localhost:5433/notifier_db
+spring.datasource.url=jdbc:postgresql://localhost:5435/notifier_db
 spring.datasource.username=<POSTGRES_USER>
 spring.datasource.password=<POSTGRES_PASSWORD>
 # First run only: set to "create" to let Hibernate build the schema from scratch, then switch back to "update"
