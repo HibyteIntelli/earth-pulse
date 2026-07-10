@@ -11,7 +11,6 @@ import java.util.List;
 import ro.hibyte.notifier.entity.CategoryEnum;
 @Data
 public class NewEventPayloadDto {
-
     @NotBlank
     private String eventId;
 

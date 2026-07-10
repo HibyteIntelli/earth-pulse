@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.UUID;
 
 @SpringBootTest
-class ManualEmailPreviewTest {
+class EmailPreviewTool {
 
     @Autowired
     private NotificationEmailService notificationEmailService;

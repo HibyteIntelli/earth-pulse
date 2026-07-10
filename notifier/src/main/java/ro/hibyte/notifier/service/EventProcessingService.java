@@ -13,8 +13,10 @@ import ro.hibyte.notifier.dto.BriefingSnapshotDto;
 import ro.hibyte.notifier.dto.MatchedWatchDto;
 import ro.hibyte.notifier.dto.NewEventPayloadDto;
 import ro.hibyte.notifier.entity.DeliveryMode;
+import ro.hibyte.notifier.entity.DigestQueue;
 import ro.hibyte.notifier.entity.NotificationLog;
 import ro.hibyte.notifier.entity.Severity;
+import ro.hibyte.notifier.repository.DigestQueueRepository;
 import ro.hibyte.notifier.repository.NotificationLogRepository;
 
 import java.time.OffsetDateTime;
@@ -26,6 +28,7 @@ import java.util.List;
 public class EventProcessingService {
 
     private final NotificationLogRepository notificationLogRepository;
+    private final DigestQueueRepository digestQueueRepository;
     private final AuthServiceClient authServiceClient;
     private final LlmServiceClient llmServiceClient;
     private final NotificationEmailService notificationEmailService;
@@ -86,8 +89,24 @@ public class EventProcessingService {
                             watch.getWatchId(), payload.getEventId(), e.getMessage());
                     notificationLogRepository.delete(notificationLog);
                 }
+            } else {
+                 try {
+                    DigestQueue digestEntry = DigestQueue.builder()
+                            .watchId(watch.getWatchId())
+                            .eventId(payload.getEventId())
+                            .userId(watch.getUserId())
+                            .userEmail(watch.getUserEmail())
+                            .readingLevel(watch.getReadingLevel())
+                            .matchedAt(OffsetDateTime.now())
+                            .build();
+                    digestQueueRepository.save(digestEntry);
+                } catch (Exception e) {
+                    log.error("Failed to buffer digest entry for watch={} event={}: {}. Releasing claim so a future retry can requeue.",
+                            watch.getWatchId(), payload.getEventId(), e.getMessage());
+                    notificationLogRepository.delete(notificationLog);
+                }
             }
-           }
+        }
     }
 
     private BriefingSnapshotDto fetchBriefing(String eventId, MatchedWatchDto watch) {
