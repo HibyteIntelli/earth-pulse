@@ -44,21 +44,25 @@ jobs:
 
   build-test-java:
     needs: changes
-    if: contains(fromJSON(needs.changes.outputs.changes), matrix.service)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         service: [auth, ingestion, llm, notifier]
+    env:
+      SHOULD_RUN: ${{ contains(fromJSON(needs.changes.outputs.changes), matrix.service) }}
     steps:
       - uses: actions/checkout@v4
+        if: env.SHOULD_RUN == 'true'
       - uses: actions/setup-java@v4
+        if: env.SHOULD_RUN == 'true'
         with:
           distribution: temurin
           java-version: '25'
           cache: maven
           cache-dependency-path: ${{ matrix.service }}/pom.xml
       - name: Build and test
+        if: env.SHOULD_RUN == 'true'
         working-directory: ${{ matrix.service }}
         run: |
           chmod +x mvnw
@@ -84,20 +88,24 @@ jobs:
 
   docker-java:
     needs: [changes, build-test-java]
-    if: github.event_name == 'push' && contains(fromJSON(needs.changes.outputs.changes), matrix.service)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         service: [auth, ingestion, llm, notifier]
+    env:
+      SHOULD_RUN: ${{ github.event_name == 'push' && contains(fromJSON(needs.changes.outputs.changes), matrix.service) }}
     steps:
       - uses: actions/checkout@v4
+        if: env.SHOULD_RUN == 'true'
       - uses: docker/login-action@v3
+        if: env.SHOULD_RUN == 'true'
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/build-push-action@v6
+        if: env.SHOULD_RUN == 'true'
         with:
           context: ${{ matrix.service }}
           push: true
