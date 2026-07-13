@@ -1,0 +1,125 @@
+name: CI/CD
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      changes: ${{ steps.filter.outputs.changes }}
+      repo: ${{ steps.repo.outputs.repo }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            auth:
+              - 'auth/**'
+            ingestion:
+              - 'ingestion/**'
+            llm:
+              - 'llm/**'
+            notifier:
+              - 'notifier/**'
+            frontend:
+              - 'frontend/**'
+      - id: repo
+        run: echo "repo=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+  build-test-java:
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.changes), matrix.service)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [auth, ingestion, llm, notifier]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+          cache-dependency-path: ${{ matrix.service }}/pom.xml
+      - name: Build and test
+        working-directory: ${{ matrix.service }}
+        run: |
+          chmod +x mvnw
+          ./mvnw -B verify
+
+  build-test-frontend:
+    needs: changes
+    if: contains(fromJSON(needs.changes.outputs.changes), 'frontend')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+
+  docker-java:
+    needs: [changes, build-test-java]
+    if: github.event_name == 'push' && contains(fromJSON(needs.changes.outputs.changes), matrix.service)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [auth, ingestion, llm, notifier]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.service }}
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ needs.changes.outputs.repo }}-${{ matrix.service }}:latest
+            ${{ env.REGISTRY }}/${{ needs.changes.outputs.repo }}-${{ matrix.service }}:${{ github.sha }}
+
+  docker-frontend:
+    needs: [changes, build-test-frontend]
+    if: github.event_name == 'push' && contains(fromJSON(needs.changes.outputs.changes), 'frontend')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ needs.changes.outputs.repo }}-frontend:latest
+            ${{ env.REGISTRY }}/${{ needs.changes.outputs.repo }}-frontend:${{ github.sha }}
