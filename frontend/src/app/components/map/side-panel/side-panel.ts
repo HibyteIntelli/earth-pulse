@@ -197,12 +197,15 @@ export class SidePanel implements OnInit {
       this.linkCopied.set(true);
       setTimeout(() => this.linkCopied.set(false), 1600);
     });
+  }
+
   protected onEscape(): void {
     if (this.open()) {
       this.close();
     }
   }
 }
+
 
 interface EventCard {
   label: string;
