@@ -346,13 +346,13 @@ components:
           description: Machine-readable error identifier.
           enum:
             - invalid_bbox
-            - invalid_date_range
-            - invalid_category
-            - invalid_sort
             - size_out_of_range
             - page_out_of_range
-            - event_not_found
             - unauthorized
+            - eonet_unavailable
+            - malformed_request
+            - internal_error
+            - event_not_found
           example: "invalid_bbox"
         message:
           type: string
