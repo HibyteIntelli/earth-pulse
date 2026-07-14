@@ -1,5 +1,6 @@
 package ro.hibyte.ingestion.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,16 +11,16 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import tools.jackson.databind.ObjectMapper;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final String internalSecret;
-
-    public SecurityConfig(@Value("${ingestion.internal-secret}") String internalSecret) {
-        this.internalSecret = internalSecret;
-    }
+    @Value("${ingestion.internal-secret}")
+    private String internalSecret;
+    private final ObjectMapper objectMapper;
 
     @Bean
     @Order(1)
@@ -29,7 +30,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
-                .addFilterBefore(new InternalSecretFilter(internalSecret),
+                .addFilterBefore(new InternalSecretFilter(internalSecret, objectMapper),
                         UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

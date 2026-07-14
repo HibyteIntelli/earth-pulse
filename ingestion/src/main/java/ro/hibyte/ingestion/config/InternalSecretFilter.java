@@ -7,6 +7,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
+import ro.hibyte.ingestion.dto.response.ErrorResponse;
+import ro.hibyte.ingestion.exception.ErrorCode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -17,12 +20,14 @@ public class InternalSecretFilter extends OncePerRequestFilter {
     private static final String HEADER = "X-Internal-Secret";
 
     private final String internalSecret;
+    private final ObjectMapper objectMapper;
 
-    public InternalSecretFilter(String internalSecret) {
+    public InternalSecretFilter(String internalSecret, ObjectMapper objectMapper) {
         if (internalSecret == null || internalSecret.isBlank()) {
             throw new IllegalArgumentException("ingestion.internal-secret must not be blank");
         }
         this.internalSecret = internalSecret;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -42,7 +47,8 @@ public class InternalSecretFilter extends OncePerRequestFilter {
             SecurityContextHolder.clearContext();
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
-            response.getWriter().write("{\"error\":\"Missing or invalid internal secret\"}");
+            ErrorResponse errorResponse = ErrorResponse.of(ErrorCode.UNAUTHORIZED, "Missing or invalid internal secret");
+            response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
         }
     }
 
