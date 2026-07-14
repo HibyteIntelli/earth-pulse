@@ -8,7 +8,6 @@ import java.util.UUID;
 
 @Data
 public class MatchedWatchDto {
-
     private UUID watchId;
     private UUID userId;
     private String userEmail;

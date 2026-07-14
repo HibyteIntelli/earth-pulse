@@ -16,9 +16,11 @@ import ro.hibyte.notifier.dto.MatchedWatchDto;
 import ro.hibyte.notifier.dto.NewEventPayloadDto;
 import ro.hibyte.notifier.entity.CategoryEnum;
 import ro.hibyte.notifier.entity.DeliveryMode;
+import ro.hibyte.notifier.entity.DigestQueue;
 import ro.hibyte.notifier.entity.NotificationLog;
 import ro.hibyte.notifier.entity.ReadingLevel;
 import ro.hibyte.notifier.entity.Severity;
+import ro.hibyte.notifier.repository.DigestQueueRepository;
 import ro.hibyte.notifier.repository.NotificationLogRepository;
 
 import java.time.OffsetDateTime;
@@ -38,6 +40,9 @@ class EventProcessingServiceTest {
     private NotificationLogRepository notificationLogRepository;
 
     @Mock
+    private DigestQueueRepository digestQueueRepository;
+
+    @Mock
     private AuthServiceClient authServiceClient;
 
     @Mock
@@ -50,7 +55,7 @@ class EventProcessingServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new EventProcessingService(notificationLogRepository, authServiceClient, llmServiceClient, notificationEmailService);
+        service = new EventProcessingService(notificationLogRepository, digestQueueRepository, authServiceClient, llmServiceClient, notificationEmailService);
         ReflectionTestUtils.setField(service, "frontendBaseUrl", "http://localhost:4200");
     }
 
@@ -147,7 +152,7 @@ class EventProcessingServiceTest {
     }
 
     @Test
-    void digestWatch_claimsUndeliveredLog_noEmailSent() {
+    void digestWatch_claimsUndeliveredLog_buffersDigestEntry_noEmailSent() {
         NewEventPayloadDto payload = payload();
         MatchedWatchDto watch = watch(DeliveryMode.DAILY_DIGEST);
 
@@ -164,6 +169,36 @@ class EventProcessingServiceTest {
         verify(notificationLogRepository).saveAndFlush(captor.capture());
         assertThat(captor.getValue().getDeliveredAt()).isNull();
         assertThat(captor.getValue().getDeliveryMode()).isEqualTo(DeliveryMode.DAILY_DIGEST);
+        verify(notificationLogRepository, never()).save(any());
+        verify(notificationLogRepository, never()).delete(any());
+
+        ArgumentCaptor<DigestQueue> digestCaptor = ArgumentCaptor.forClass(DigestQueue.class);
+        verify(digestQueueRepository).save(digestCaptor.capture());
+        DigestQueue digestEntry = digestCaptor.getValue();
+        assertThat(digestEntry.getWatchId()).isEqualTo(watch.getWatchId());
+        assertThat(digestEntry.getEventId()).isEqualTo(payload.getEventId());
+        assertThat(digestEntry.getUserId()).isEqualTo(watch.getUserId());
+        assertThat(digestEntry.getUserEmail()).isEqualTo(watch.getUserEmail());
+        assertThat(digestEntry.getReadingLevel()).isEqualTo(watch.getReadingLevel());
+        assertThat(digestEntry.getMatchedAt()).isNotNull();
+    }
+
+    @Test
+    void digestWatch_bufferingFails_releasesClaimForRetry() {
+        NewEventPayloadDto payload = payload();
+        MatchedWatchDto watch = watch(DeliveryMode.DAILY_DIGEST);
+
+        when(authServiceClient.matchWatches(payload)).thenReturn(List.of(watch));
+        when(notificationLogRepository.existsByWatchIdAndEventId(watch.getWatchId(), payload.getEventId())).thenReturn(false);
+        when(llmServiceClient.fetchBriefing(eq(payload.getEventId()), eq(watch.getReadingLevel()))).thenReturn(briefingResponse());
+        when(notificationLogRepository.saveAndFlush(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        doThrow(new RuntimeException("DB blip")).when(digestQueueRepository).save(any());
+
+        service.processNewEvent(payload);
+
+        verifyNoInteractions(notificationEmailService);
+        verify(notificationLogRepository).saveAndFlush(any());
+        verify(notificationLogRepository).delete(any());
         verify(notificationLogRepository, never()).save(any());
     }
 

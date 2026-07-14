@@ -16,12 +16,11 @@ POSTGRES_PORT=5433
 
 ### 2. Configure the app
 
-Copy `src/main/resources/application-local.properties.model` to `application-local.properties` in the same folder and fill in the same database credentials:
+Copy `src/main/resources/application.properties.model` to `application.properties` in the same folder and fill in the database credentials and secrets:
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5433/<POSTGRES_DB>
+spring.datasource.url=jdbc:postgresql://localhost:5433/notifier_db
 spring.datasource.username=<POSTGRES_USER>
 spring.datasource.password=<POSTGRES_PASSWORD>
-
 spring.jpa.hibernate.ddl-auto=update
 
 spring.mail.host=localhost
@@ -29,25 +28,29 @@ spring.mail.port=1025
 spring.mail.properties.mail.smtp.auth=false
 spring.mail.properties.mail.smtp.starttls.enable=false
 
-spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://localhost:8080/.well-known/jwks.json
+spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://localhost:8083/.well-known/jwks.json
 
-notifier.internal-secret=change-me
+notifier.internal-secret=<INTERNAL_SECRET>
 
-# Auth Service — called to find watches matching an incoming event.
+# Daily digest job schedule (cron). Set to something like "0 * * * * *" (every minute)
+# locally if you want to watch it fire without waiting a day.
+notifier.digest.cron=0 0 8 * * *
+
+# Auth Service — called to find watches matching an incoming event. Auth's own server.port is 8083.
 # app.auth-service.internal-secret must match the secret configured in the Auth Service.
-app.auth-service.url=http://localhost:8080
-app.auth-service.internal-secret=change-me
+app.auth-service.url=http://localhost:8083
+app.auth-service.internal-secret=<INTERNAL_SECRET>
 
-# LLM Service — called to generate the briefing for each matched watch.
+# LLM Service — called to generate the briefing for each matched watch. LLM's own server.port is 8080.
 # app.llm-service.internal-secret must match the secret configured in the LLM Service.
-app.llm-service.url=http://localhost:8082
-app.llm-service.internal-secret=change-me
+app.llm-service.url=http://localhost:8080
+app.llm-service.internal-secret=<INTERNAL_SECRET>
 
 # Frontend — used to build event links in notification emails
 app.frontend.base-url=http://localhost:4200
 ```
 
-`application-local.properties` is gitignored — never commit it.
+`application.properties` is gitignored — never commit it.
 
 > **First run only:** set `spring.jpa.hibernate.ddl-auto=create` to let Hibernate create the schema from scratch, then switch back to `update`.
 

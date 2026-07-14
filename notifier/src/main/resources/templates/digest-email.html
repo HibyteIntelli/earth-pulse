@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Daily digest</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f4f4f5; font-family:Arial, Helvetica, sans-serif; color:#1f2933;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f5; padding:24px 0;">
+    <tr>
+        <td align="center">
+            <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:8px; overflow:hidden;">
+                <tr>
+                    <td style="padding:24px 32px; border-bottom:1px solid #e5e7eb;">
+                        <h1 style="font-size:18px; margin:0;" th:text="${headerText}">N events matched</h1>
+                    </td>
+                </tr>
+                <th:block th:each="event : ${events}">
+                    <tbody th:replace="~{email-fragments :: eventCard(eventTitle=${event.eventTitle}, eventDate=${event.eventDate}, severity=${event.severity}, severityColor=${event.severityColor}, summary=${event.summary}, impact=${event.impact}, precautions=${event.precautions}, eventUrl=${event.eventUrl})}"></tbody>
+                </th:block>
+                <tr>
+                    <td style="padding:16px 32px; background-color:#f9fafb; font-size:12px; color:#9ca3af;">
+                        You are receiving this because you have a watch on Earth Pulse.
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

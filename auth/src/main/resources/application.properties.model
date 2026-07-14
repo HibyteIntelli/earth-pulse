@@ -26,6 +26,9 @@ app.rate-limit.login=10
 app.rate-limit.signup=5
 app.rate-limit.refill-duration=PT1M
 
+# Watches — max watches a single user can create
+app.watch.max-per-user=200
+
 # Banned passwords — absolute paths to the rockyou.txt wordlist and the serialized bloom filter cache
 # On first startup the bloom filter is built from rockyou.txt and written to bloom-path (~15s).
 # Subsequent startups load the pre-built filter (~0.5s). See README for setup instructions.

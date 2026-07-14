@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -44,6 +45,30 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.of("User not found"));
     }
 
+    @ExceptionHandler(WatchNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleWatchNotFound(WatchNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of("Watch not found"));
+    }
+
+    @ExceptionHandler(DuplicateWatchNameException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateWatchName(DuplicateWatchNameException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of(ex.getMessage()));
+    }
+
+    @ExceptionHandler(WatchLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleWatchLimitExceeded(WatchLimitExceededException ex) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ErrorResponse.of(ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidBoundingBoxException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidBoundingBox(InvalidBoundingBoxException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(ex.getMessage()));
+    }
+
     @ExceptionHandler(WrongPasswordException.class)
     public ResponseEntity<ErrorResponse> handleWrongPassword(WrongPasswordException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -71,7 +96,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.of(ex.getMessage()));
+                .body(ErrorResponse.of("Invalid request"));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleNotReadable(HttpMessageNotReadableException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of("Malformed request body: " + ex.getMostSpecificCause().getMessage()));
     }
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)

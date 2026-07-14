@@ -14,8 +14,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ro.hibyte.ingestion.client.EonetClient;
+import ro.hibyte.ingestion.client.NotifierClient;
 import ro.hibyte.ingestion.dto.eonet.EonetEvent;
 import ro.hibyte.ingestion.dto.eonet.EonetResponse;
+import ro.hibyte.ingestion.dto.notifier.NewEventPayloadDto;
 import ro.hibyte.ingestion.dto.request.EventFilter;
 import ro.hibyte.ingestion.dto.request.SortEnum;
 import ro.hibyte.ingestion.dto.response.EventPage;
@@ -36,6 +38,7 @@ public class EventService {
     private final EventRepository eventRepository;
     private final EonetClient eonetClient;
     private final EventSpecification eventSpecification;
+    private final NotifierClient notifierClient;
 
     @Value("${eonet.poll-days:30}")
     private int pollDays;
@@ -43,42 +46,55 @@ public class EventService {
     @Value("${eonet.backfill-days:30}")
     private int backfillDays;
 
-    private void upsertEvent(EonetEvent eonetEvent) {
+    private void upsertEvent(EonetEvent eonetEvent, boolean notify) {
         try {
-            saveEvent(eonetEvent);
+            saveEvent(eonetEvent, notify);
         } catch (DataIntegrityViolationException e) {
             if (eventRepository.existsById(eonetEvent.getId())) {
                 log.debug("Concurrent insert for event {}, retrying as update", eonetEvent.getId());
-                saveEvent(eonetEvent);
+                saveEvent(eonetEvent, notify);
             } else {
                 throw e;
             }
         }
     }
 
-    private void saveEvent(EonetEvent eonetEvent) {
-        Event event = eventRepository.findById(eonetEvent.getId())
-                .orElseGet(Event::new);
+    private void saveEvent(EonetEvent eonetEvent, boolean notify) {
+        Optional<Event> existing = eventRepository.findById(eonetEvent.getId());
+        boolean isNew = existing.isEmpty();
+        Event event = existing.orElseGet(Event::new);
         event.setEonetId(eonetEvent.getId());
         event.applyFields(eonetEvent);
-        eventRepository.save(event);
+        Event saved = eventRepository.save(event);
+
+        if (notify && isNew) {
+            notifyNewEvent(saved);
+        }
+    }
+
+    private void notifyNewEvent(Event event) {
+        if (event.getLongitude() == null || event.getLatitude() == null || event.getEventDate() == null) {
+            log.warn("Skipping notification for new event {}: missing geometry or event date", event.getEonetId());
+            return;
+        }
+        notifierClient.notifyNewEvent(new NewEventPayloadDto(event));
     }
 
     @EventListener(ApplicationReadyEvent.class)
     public void backfillEvents() {
         if (eventRepository.count() == 0) {
             log.info("No events found, starting backfill process");
-            fetchAndSave(backfillDays);
+            fetchAndSave(backfillDays, false);
         }
     }
 
     @Scheduled(fixedRateString = "${eonet.poll-interval-ms:3600000}",
             initialDelayString = "${eonet.poll-initial-delay-ms:60000}")
     public void fetchAndSaveEvents() {
-        fetchAndSave(pollDays);
+        fetchAndSave(pollDays, true);
     }
 
-    private void fetchAndSave(int days) {
+    private void fetchAndSave(int days, boolean notify) {
         try {
             EonetResponse response = eonetClient.fetchEvents(days);
 
@@ -86,7 +102,7 @@ public class EventService {
 
             response.getEvents().forEach(event -> {
                 try {
-                    upsertEvent(event);
+                    upsertEvent(event, notify);
                 } catch (Exception e) {
                     log.error("Failed to upsert event {}", event.getId(), e);
                 }

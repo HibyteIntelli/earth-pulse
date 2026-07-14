@@ -10,14 +10,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const token = auth.token();
 
-  const isInternalApi = [environment.apiBaseUrl, environment.ingestionBaseUrl].some((base) =>
-    req.url.startsWith(base),
-  );
+  const isInternalApi = [
+    environment.apiBaseUrl,
+    environment.ingestionBaseUrl,
+    environment.llmBaseUrl,
+  ].some((base) => req.url.startsWith(base));
 
   const authed =
-    token && isInternalApi
-      ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-      : req;
+    token && isInternalApi ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req;
 
   return next(authed).pipe(
     catchError((err: HttpErrorResponse) => {

@@ -49,10 +49,10 @@ docker compose up -d
 
 This starts two containers:
 
-| Container | Port | Description |
-|-----------|------|-------------|
-| `postgres-dev` | `5432` | PostgreSQL 17 database |
-| `ollama-dev` | `11434` | Ollama with `llama3` model |
+| Container | Port    | Description |
+|-----------|---------|-------------|
+| `postgres-dev` | `5434`  | PostgreSQL 17 database |
+| `ollama-dev` | `11435` | Ollama with `llama3` model |
 
 > **Note:** On first run, the Ollama container automatically pulls the `llama3` model (~4 GB). The app will fail to generate briefings until the pull is complete. Track progress with:
 > ```bash

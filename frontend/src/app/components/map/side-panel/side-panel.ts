@@ -1,26 +1,56 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  Injector,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap, tap } from 'rxjs';
 import { IngestionService } from '../../../core/ingestion/ingestion.service';
 import { Event } from '../../../core/ingestion/ingestion.models';
 import { categoryTitle } from '../../../models/event-category';
 import { MapStateService } from '../map-state.service';
+import { AuthService } from '../../../core/auth/auth.service';
+import { BriefingService } from '../../../core/llm/briefing.service';
+import { Briefing, ReadingLevel } from '../../../core/llm/briefing.models';
 
 @Component({
   selector: 'app-side-panel',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './side-panel.html',
   styleUrls: ['../../shared/panel-kit.css', './side-panel.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: {},
+  host: {
+    '(document:keydown.escape)': 'onEscape()',
+  },
 })
-export class SidePanel {
+export class SidePanel implements OnInit {
   private readonly ingestion = inject(IngestionService);
+  private readonly auth = inject(AuthService);
+  private readonly briefings = inject(BriefingService);
   protected readonly mapState = inject(MapStateService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
 
   protected readonly event = signal<Event | null>(null);
   protected readonly loading = signal(false);
   protected readonly error = signal(false);
+
+  protected readonly authenticated = this.auth.isAuthenticated;
+
+  protected readonly briefing = signal<Briefing | null>(null);
+  protected readonly briefingLoading = signal(false);
+  protected readonly briefingError = signal(false);
+
+  protected readonly readingLevel = signal<ReadingLevel>('SIMPLIFIED');
+  protected readonly detailedShown = computed(() => this.readingLevel() === 'DEFAULT');
+
+  private readonly briefingCache = new Map<string, Briefing>();
 
   protected readonly open = computed(() => this.mapState.selectedEventId() !== null);
   protected readonly eventId = computed(() => this.event()?.id ?? '');
@@ -63,13 +93,20 @@ export class SidePanel {
     return out;
   });
 
-  constructor() {
-    toObservable(this.mapState.selectedEventId)
+  ngOnInit(): void {
+    this.setupEventLoading();
+    this.setupBriefingLoading();
+  }
+
+  private setupEventLoading(): void {
+    toObservable(this.mapState.selectedEventId, { injector: this.injector })
       .pipe(
         tap((id) => {
           this.error.set(false);
           this.loading.set(id !== null);
           if (id === null) this.event.set(null);
+          this.readingLevel.set('SIMPLIFIED');
+          this.briefing.set(null);
         }),
         switchMap((id) =>
           id === null
@@ -82,12 +119,65 @@ export class SidePanel {
                 }),
               ),
         ),
-        takeUntilDestroyed(),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((ev) => {
         this.loading.set(false);
         this.event.set(ev);
       });
+  }
+
+  private setupBriefingLoading(): void {
+    const briefingRequest = computed(() => {
+      if (this.loading()) return null;
+      const ev = this.event();
+      const category = ev?.category[0];
+      if (!ev || !this.authenticated() || !category) return null;
+      return { ev, category, level: this.readingLevel() };
+    });
+
+    toObservable(briefingRequest, { injector: this.injector })
+      .pipe(
+        switchMap((req) => {
+          this.briefingError.set(false);
+          if (!req) {
+            this.briefingLoading.set(false);
+            return of<Briefing | null>(null);
+          }
+
+          const key = `${req.ev.id}:${req.level}`;
+          const cached = this.briefingCache.get(key);
+          if (cached) {
+            this.briefingLoading.set(false);
+            return of<Briefing | null>(cached);
+          }
+
+          this.briefingLoading.set(true);
+          return this.briefings
+            .getBriefing(req.ev.id, {
+              readingLevel: req.level,
+              magnitudeLevel: req.ev.magnitudeValue ?? 0,
+              category: req.category,
+            })
+            .pipe(
+              tap((b) => this.briefingCache.set(key, b)),
+              catchError((err) => {
+                console.error('Failed to load AI briefing', err);
+                this.briefingError.set(true);
+                return of<Briefing | null>(null);
+              }),
+            );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((b) => {
+        this.briefingLoading.set(false);
+        this.briefing.set(b);
+      });
+  }
+
+  protected toggleDetailed(): void {
+    this.readingLevel.update((level) => (level === 'DEFAULT' ? 'SIMPLIFIED' : 'DEFAULT'));
   }
 
   protected close(): void {
@@ -107,6 +197,10 @@ export class SidePanel {
       this.linkCopied.set(true);
       setTimeout(() => this.linkCopied.set(false), 1600);
     });
+  protected onEscape(): void {
+    if (this.open()) {
+      this.close();
+    }
   }
 }
 

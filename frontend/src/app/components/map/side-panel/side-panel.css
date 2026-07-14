@@ -287,3 +287,217 @@
   font-size: 0.78rem;
   color: var(--ev-volcano);
 }
+
+.brief {
+  position: relative;
+  margin: 1.4rem 1.1rem 0;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--line-strong);
+  animation: rise 0.5s ease both;
+  animation-delay: calc(0.08s + var(--i, 0) * 0.06s);
+}
+
+.brief__eyebrow {
+  display: block;
+  margin-bottom: 0.9rem;
+  --label-caps-size: 0.6rem;
+  --label-caps-tracking: 0.22em;
+  --label-caps-color: var(--forest-deep);
+}
+
+.brief__toggle {
+  display: inline-block;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0.95rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: transparent;
+  --label-caps-size: 0.6rem;
+  --label-caps-tracking: 0.12em;
+  --label-caps-color: var(--ink-dim);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.brief__toggle:hover {
+  background: var(--ink);
+  border-color: var(--ink);
+  --label-caps-color: var(--paper);
+}
+
+.brief__toggle[aria-pressed='true'] {
+  background: rgba(173, 209, 158, 0.4);
+  border-color: transparent;
+  --label-caps-color: var(--forest-deep);
+}
+
+.brief__gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.5rem 1.2rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.brief__gate-mark {
+  font-size: 1.5rem;
+  color: var(--ink-faint);
+  line-height: 1;
+}
+
+.brief__gate-text {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  line-height: 1.5;
+  color: var(--ink-dim);
+}
+
+.brief__gate-cta {
+  padding: 0.6rem 1rem;
+  border-radius: 999px;
+  background: var(--forest-deep);
+  --label-caps-size: 0.64rem;
+  --label-caps-tracking: 0.1em;
+  --label-caps-color: var(--paper);
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.brief__gate-cta:hover {
+  background: var(--ink);
+}
+
+.brief__loading {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.4rem 0;
+}
+
+.brief__muted {
+  --label-caps-color: var(--ink-faint);
+}
+
+.brief__err {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--ev-volcano);
+}
+
+.brief__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+
+.brief__sev {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.36rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--sev-color, var(--ink-faint)) 45%, transparent);
+  background: color-mix(in srgb, var(--sev-color, var(--ink-faint)) 12%, transparent);
+  --label-caps-size: 0.58rem;
+  --label-caps-color: var(--sev-color, var(--ink-dim));
+}
+
+.brief__sev[data-severity='HIGH'] {
+  --sev-color: #c1362a;
+}
+
+.brief__sev[data-severity='MODERATE'] {
+  --sev-color: var(--ev-wildfire);
+}
+
+.brief__sev[data-severity='LOW'] {
+  --sev-color: var(--forest-deep);
+}
+
+.brief__sev[data-severity='UNKNOWN'] {
+  --sev-color: var(--ink-faint);
+}
+
+.brief__sev-dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sev-color, var(--ink-faint));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sev-color, var(--ink-faint)) 22%, transparent);
+}
+
+.brief__sev[data-severity='HIGH'] .brief__sev-dot::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid var(--sev-color);
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+
+.brief__summary {
+  margin: 0;
+  font-family: var(--display);
+  font-size: 1.02rem;
+  line-height: 1.4;
+  color: var(--ink);
+}
+
+.brief__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.brief__label {
+  --label-caps-size: 0.56rem;
+  --label-caps-color: var(--forest-deep);
+  opacity: 0.75;
+}
+
+.brief__text {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--ink-dim);
+}
+
+.brief__list {
+  margin: 0;
+  padding-left: 1.05rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.brief__list li {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--ink-dim);
+}
+
+.brief__list li::marker {
+  color: var(--forest-deep);
+}
+
+.brief__disclaimer {
+  margin: 0.3rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px dotted var(--line-strong);
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  line-height: 1.45;
+  font-style: italic;
+  color: var(--ink-faint);
+}

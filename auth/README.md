@@ -56,6 +56,8 @@ app.banned-passwords.txt-path=/path/to/rockyou.txt
 app.banned-passwords.bloom-path=/path/to/banned_passwords.bloom
 ```
 
+**Running via `docker compose` (root `docker-compose.yaml`) instead:** place the downloaded file at `auth/data/rockyou.txt` — that path is bind-mounted into the container (see the `auth` service's `volumes` entry). The directory is gitignored; nothing there is ever committed.
+
 `bloom-path` does not need to exist — it will be created automatically on first startup (~15 s) and reused on subsequent ones (~0.5 s).
 
 ### 4. Start the database
