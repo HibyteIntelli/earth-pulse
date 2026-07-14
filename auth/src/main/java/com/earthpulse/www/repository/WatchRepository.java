@@ -24,6 +24,7 @@ public interface WatchRepository extends JpaRepository<Watch, UUID> {
 
     @Query("""
             SELECT DISTINCT w FROM Watch w
+            JOIN FETCH w.user
             WHERE w.active = true
               AND w.minLat <= :lat AND w.maxLat >= :lat
               AND w.minLon <= :lon AND w.maxLon >= :lon
@@ -33,6 +34,22 @@ public interface WatchRepository extends JpaRepository<Watch, UUID> {
             @Param("lat") double lat,
             @Param("lon") double lon,
             @Param("category") EventCategory category,
+            Pageable pageable
+    );
+
+    @Query("""
+            SELECT DISTINCT w FROM Watch w
+            JOIN FETCH w.user
+            LEFT JOIN w.categories c
+            WHERE w.active = true
+              AND w.minLat <= :lat AND w.maxLat >= :lat
+              AND w.minLon <= :lon AND w.maxLon >= :lon
+              AND (c IS NULL OR c IN :categories)
+            """)
+    List<Watch> findMatchingWatchesByCategories(
+            @Param("lat") double lat,
+            @Param("lon") double lon,
+            @Param("categories") List<EventCategory> categories,
             Pageable pageable
     );
 }

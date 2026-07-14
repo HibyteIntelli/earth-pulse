@@ -2,6 +2,7 @@ package com.earthpulse.www.controller;
 
 import com.earthpulse.www.dto.EventQueryDto;
 import com.earthpulse.www.dto.MatchingWatchDto;
+import com.earthpulse.www.dto.WatchMatchRequestDto;
 import com.earthpulse.www.service.WatchService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,13 @@ import java.util.List;
 public class InternalWatchController {
 
     private final WatchService watchService;
+
+    @PostMapping("/match")
+    public ResponseEntity<List<MatchingWatchDto>> findMatch(
+            @Valid @RequestBody WatchMatchRequestDto request
+    ) {
+        return ResponseEntity.ok(watchService.findMatchingByEvent(request));
+    }
 
     @PostMapping("/matching")
     public ResponseEntity<List<MatchingWatchDto>> findMatching(
