@@ -3,7 +3,9 @@
     <span class="dew dew--1" aria-hidden="true"></span>
     <span class="dew dew--2" aria-hidden="true"></span>
 
-    <button type="button" class="habitat__close glass" (click)="close()" aria-label="Close">✕</button>
+    <button type="button" class="habitat__close glass" (click)="close()" aria-label="Close">
+      ✕
+    </button>
 
     @if (loading()) {
       <div class="habitat__state" aria-busy="true">
@@ -13,7 +15,13 @@
     } @else if (error()) {
       <div class="habitat__state">
         <p class="habitat__error">This habitat could not be reached.</p>
-        <button type="button" class="habitat__source habitat__source--ghost label-caps" (click)="close()">Dismiss</button>
+        <button
+          type="button"
+          class="habitat__source habitat__source--ghost label-caps"
+          (click)="close()"
+        >
+          Dismiss
+        </button>
       </div>
     } @else if (event(); as e) {
       <div class="habitat__scroll">
@@ -39,7 +47,9 @@
 
           <div class="card card--wide glass" [style.--i]="cards().length">
             <span class="card__label label-caps">Description</span>
-            <p class="card__note">{{ e.description || 'No description was provided for this event.' }}</p>
+            <p class="card__note">
+              {{ e.description || 'No description was provided for this event.' }}
+            </p>
           </div>
 
           @if (e.sourceUrl) {
@@ -54,6 +64,70 @@
             </a>
           }
         </div>
+
+        <section class="brief" [style.--i]="cards().length + 2" aria-label="AI briefing">
+          <span class="brief__eyebrow label-caps">AI Field Briefing</span>
+
+          @if (authenticated() && (briefing() || briefingError())) {
+            <button
+              type="button"
+              class="brief__toggle label-caps"
+              [attr.aria-pressed]="detailedShown()"
+              (click)="toggleDetailed()"
+            >
+              {{ detailedShown() ? 'Show simple briefing' : 'Show detailed briefing' }}
+            </button>
+          }
+
+          @if (!authenticated()) {
+            <div class="brief__gate glass">
+              <span class="brief__gate-mark" aria-hidden="true">◍</span>
+              <p class="brief__gate-text">
+                Field briefings are restricted to registered operators.
+              </p>
+              <a routerLink="/login" class="brief__gate-cta label-caps"
+                >Log in to view AI brief →</a
+              >
+            </div>
+          } @else if (briefingLoading()) {
+            <div class="brief__loading" aria-busy="true">
+              <span class="breathe"></span>
+              <span class="brief__muted label-caps">Compiling briefing…</span>
+            </div>
+          } @else if (briefingError()) {
+            <p class="brief__err">The briefing service could not be reached.</p>
+          } @else if (briefing(); as b) {
+            <div class="brief__body">
+              <span class="brief__sev" [attr.data-severity]="b.severity">
+                <span class="brief__sev-dot" aria-hidden="true"></span>
+                <span class="label-caps">{{ b.severity }} severity</span>
+              </span>
+
+              <p class="brief__summary">{{ b.summary }}</p>
+
+              <div class="brief__field">
+                <span class="brief__label label-caps">Likely impact</span>
+                <p class="brief__text">{{ b.impact }}</p>
+              </div>
+
+              @if (b.precautions.length) {
+                <div class="brief__field">
+                  <span class="brief__label label-caps">Precautions</span>
+                  <ul class="brief__list">
+                    @for (p of b.precautions; track p) {
+                      <li>{{ p }}</li>
+                    }
+                  </ul>
+                </div>
+              }
+
+              <p class="brief__disclaimer">
+                AI-generated; always follow guidance from local authorities for the current
+                situation.
+              </p>
+            </div>
+          }
+        </section>
       </div>
     }
   </aside>

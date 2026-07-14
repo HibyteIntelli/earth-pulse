@@ -11,7 +11,7 @@ import { Observable, of, switchMap, tap } from 'rxjs';
 import { ApiError } from '../../core/auth/auth.models';
 import { UpdateAccountRequest, UserProfile } from '../../core/user/user.models';
 
-const MAX_AVATAR_BYTES = 1_000_000;
+const MAX_AVATAR_BYTES = 2_000_000;
 
 @Component({
   selector: 'app-profile',
@@ -100,7 +100,7 @@ export class Profile implements OnInit {
     const file = input.files?.[0];
     if (!file) return;
     if (file.size > MAX_AVATAR_BYTES) {
-      this.errorMessage.set('Image is too large (max 1 MB).');
+      this.errorMessage.set('Image is too large (max 2 MB).');
       input.value = '';
       return;
     }
