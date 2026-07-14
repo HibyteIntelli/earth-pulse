@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   DestroyRef,
+  effect,
   ElementRef,
   inject,
   OnDestroy,
@@ -20,6 +21,7 @@ import { colorForCategory } from './category-colors';
 import { EVENT_CATEGORIES, categoryTitle, EventCategoryId } from '../../models/event-category';
 import { MapStateService } from './map-state.service';
 import { SidePanel } from './side-panel/side-panel';
+import { ActivatedRoute, Router } from '@angular/router';
 
 const WORLD_BOUNDS = L.latLngBounds([-90, -180], [90, 180]);
 
@@ -35,6 +37,8 @@ const WORLD_BOUNDS = L.latLngBounds([-90, -180], [90, 180]);
 export class Map implements AfterViewInit, OnDestroy {
   private readonly mapContainer = viewChild.required<ElementRef<HTMLDivElement>>('mapContainer');
   private leafletMap?: L.Map;
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly ingestion = inject(IngestionService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly mapState = inject(MapStateService);
@@ -53,10 +57,84 @@ export class Map implements AfterViewInit, OnDestroy {
     return `${chosen.size} categories`;
   });
 
+  private urlSyncReady = false;
+
+  constructor() {
+    effect(() => {
+      const id = this.mapState.selectedEventId();
+      if (!this.urlSyncReady) return;
+      this.router.navigate([], {
+        relativeTo: this.route,
+        queryParams: { event: id ?? null },
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    });
+  }
+
   ngAfterViewInit(): void {
     this.watchReloads();
+    this.watchFocus();
     this.initMap();
+    this.watchDeepLink();
+    this.urlSyncReady = true;
     this.reload();
+  }
+
+  private watchDeepLink(): void {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const id = params.get('event');
+      if (id === this.mapState.selectedEventId()) {
+          return;
+      }
+      if (id) {
+        this.mapState.select(id);
+        this.focusDeepLinkedEvent(id);
+      } else {
+        this.mapState.clearSelection();
+      }
+    });
+  }
+
+  private focusDeepLinkedEvent(id: string): void {
+    this.ingestion
+      .getById(id)
+      .pipe(
+        catchError(() => of(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((ev) => {
+        const g = ev?.geometry;
+        if (!g) return;
+        const [lon, lat] = g.coordinates;
+        this.mapState.focusOn(lat, lon);
+      });
+  }
+
+  private watchFocus(): void {
+    this.mapState.focus$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(([lat, lng]) => {
+      const map = this.leafletMap;
+      if (!map) return;
+      map.flyTo([lat, lng], Math.max(map.getZoom(), 6), { duration: 0.8 });
+      this.pingLocation(lat, lng);
+    });
+  }
+
+  private pingLocation(lat: number, lng: number): void {
+    const map = this.leafletMap;
+    if (!map) return;
+    const ping = L.marker([lat, lng], {
+      icon: L.divIcon({
+        className: '',
+        html: '<span class="event-ping"><i class="event-ping__ring"></i><i class="event-ping__ring"></i><i class="event-ping__core"></i></span>',
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
+      }),
+      interactive: false,
+      keyboard: false,
+      zIndexOffset: 1000,
+    }).addTo(map);
+    setTimeout(() => ping.remove(), 3600);
   }
 
   private watchReloads(): void {

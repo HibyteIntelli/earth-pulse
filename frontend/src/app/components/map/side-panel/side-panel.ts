@@ -54,6 +54,7 @@ export class SidePanel implements OnInit {
 
   protected readonly open = computed(() => this.mapState.selectedEventId() !== null);
   protected readonly eventId = computed(() => this.event()?.id ?? '');
+  protected readonly linkCopied = signal(false);
 
   protected readonly taxon = computed(() => {
     const c = this.event()?.category ?? [];
@@ -67,7 +68,9 @@ export class SidePanel implements OnInit {
 
   protected readonly cards = computed<EventCard[]>(() => {
     const e = this.event();
-    if (!e) return [];
+    if (!e) {
+      return [];
+    }
     const out: EventCard[] = [{ label: 'Event ID', value: e.id, wide: true }];
     if (e.geometry) {
       out.push({
@@ -75,9 +78,12 @@ export class SidePanel implements OnInit {
         value: formatCoords(e.geometry.coordinates[1], e.geometry.coordinates[0]),
       });
     }
-    if (e.eventDate) out.push({ label: 'Started', value: formatDate(e.eventDate) });
-    if (e.status === 'closed' && e.closedAt)
+    if (e.eventDate) {
+      out.push({ label: 'Started', value: formatDate(e.eventDate) });
+    }
+    if (e.status === 'closed' && e.closedAt) {
       out.push({ label: 'Ended', value: formatDate(e.closedAt) });
+    }
     if (e.magnitudeValue != null) {
       out.push({
         label: 'Strength',
@@ -178,12 +184,28 @@ export class SidePanel implements OnInit {
     this.mapState.clearSelection();
   }
 
+  protected showOnMap(): void {
+    const g = this.event()?.geometry;
+    if (!g) return;
+    const [lon, lat] = g.coordinates;
+    this.mapState.focusOn(lat, lon);
+  }
+
+  protected copyLink(): void {
+    const url = `${location.origin}/map?event=${encodeURIComponent(this.eventId())}`;
+    navigator.clipboard.writeText(url).then(() => {
+      this.linkCopied.set(true);
+      setTimeout(() => this.linkCopied.set(false), 1600);
+    });
+  }
+
   protected onEscape(): void {
     if (this.open()) {
       this.close();
     }
   }
 }
+
 
 interface EventCard {
   label: string;

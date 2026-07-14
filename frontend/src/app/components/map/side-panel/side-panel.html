@@ -7,6 +7,18 @@
       ✕
     </button>
 
+    @if (event() && !loading()) {
+      <button
+        type="button"
+        class="habitat__share glass"
+        [class.habitat__share--done]="linkCopied()"
+        (click)="copyLink()"
+        [attr.aria-label]="linkCopied() ? 'Link copied to clipboard' : 'Copy link to this event'"
+      >
+        {{ linkCopied() ? 'Copied ✓' : 'Copy link ↗' }}
+      </button>
+    }
+
     @if (loading()) {
       <div class="habitat__state" aria-busy="true">
         <span class="breathe"></span>
@@ -52,10 +64,21 @@
             </p>
           </div>
 
+          @if (e.geometry) {
+            <button
+              type="button"
+              class="habitat__source habitat__source--ghost label-caps"
+              [style.--i]="cards().length + 1"
+              (click)="showOnMap()"
+            >
+              Show on map ◎
+            </button>
+          }
+
           @if (e.sourceUrl) {
             <a
               class="habitat__source label-caps"
-              [style.--i]="cards().length + 1"
+              [style.--i]="cards().length + 2"
               [href]="e.sourceUrl"
               target="_blank"
               rel="noopener noreferrer"

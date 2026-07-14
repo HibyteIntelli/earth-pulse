@@ -174,7 +174,11 @@
                 </div>
                 <div class="meta__row">
                   <dt>Event ID</dt>
-                  <dd>{{ it.eventId }}</dd>
+                  <dd>
+                    <a class="event-link" routerLink="/map" [queryParams]="{ event: it.eventId }">{{
+                      it.eventId
+                    }}</a>
+                  </dd>
                 </div>
                 <div class="meta__row">
                   <dt>Logged</dt>
