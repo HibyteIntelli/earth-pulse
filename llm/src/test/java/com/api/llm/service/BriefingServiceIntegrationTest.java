@@ -162,6 +162,19 @@ class BriefingServiceIntegrationTest extends BaseIntegrationTest {
         verify(ollamaService, times(2)).generate(anyString());
     }
 
+    @Test
+    void cleanData_removesAllBriefings() {
+        briefingRepository.save(new Briefing(
+                new BriefingId("EONET_10", "DEFAULT"),
+                "summary", "low", "impact",
+                Instant.now(), List.of("precaution 1", "precaution 2")
+        ));
+
+        briefingService.cleanData();
+
+        assertThat(briefingRepository.count()).isZero();
+    }
+
     private BriefingLLMResponseDto buildValidLLMResponse() {
         var response = new BriefingLLMResponseDto();
         response.setSummary("A significant seismic event has been detected in the region.");

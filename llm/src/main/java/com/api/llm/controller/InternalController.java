@@ -28,6 +28,12 @@ public class InternalController {
                 new BriefingRequestDto(id, readingLevel, magnitudeLevel, category));
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @DeleteMapping("/briefings")
+    public ResponseEntity<Void> cleanData() {
+        briefingService.cleanData();
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }
 
 
