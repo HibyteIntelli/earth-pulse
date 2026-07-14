@@ -7,9 +7,10 @@ import org.springframework.stereotype.Component;
 import ro.hibyte.ingestion.dto.request.CategoryEnum;
 import ro.hibyte.ingestion.dto.request.EventFilter;
 import ro.hibyte.ingestion.dto.request.StatusEnum;
-import ro.hibyte.ingestion.exception.InvalidFilterException;
 import ro.hibyte.ingestion.model.Event;
 import ro.hibyte.ingestion.model.EventStatus;
+import ro.hibyte.ingestion.validation.BoundingBox;
+import ro.hibyte.ingestion.validation.ValidatedEventFilter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +18,9 @@ import java.util.List;
 @Component
 public class EventSpecification {
 
-    public Specification<Event> build(EventFilter filter) {
-        double[] bbox = parseBbox(filter.getBbox());
+    public Specification<Event> build(ValidatedEventFilter validated) {
+        EventFilter filter = validated.original();
+        BoundingBox bbox = validated.bbox();
 
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -43,10 +45,10 @@ public class EventSpecification {
             }
 
             if (bbox != null) {
-                predicates.add(cb.greaterThanOrEqualTo(root.get("longitude"), bbox[0]));
-                predicates.add(cb.lessThanOrEqualTo(root.get("longitude"), bbox[2]));
-                predicates.add(cb.greaterThanOrEqualTo(root.get("latitude"), bbox[3]));
-                predicates.add(cb.lessThanOrEqualTo(root.get("latitude"), bbox[1]));
+                predicates.add(cb.greaterThanOrEqualTo(root.get("longitude"), bbox.minLon()));
+                predicates.add(cb.lessThanOrEqualTo(root.get("longitude"), bbox.maxLon()));
+                predicates.add(cb.greaterThanOrEqualTo(root.get("latitude"), bbox.minLat()));
+                predicates.add(cb.lessThanOrEqualTo(root.get("latitude"), bbox.maxLat()));
             }
 
             if (filter.getCategory() != null && !filter.getCategory().isEmpty()) {
@@ -60,37 +62,5 @@ public class EventSpecification {
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
-    }
-
-    private double[] parseBbox(String raw) {
-        if (raw == null) {
-            return null;
-        }
-        String[] parts = raw.split(",");
-        if (parts.length != 4) {
-            throw new InvalidFilterException("invalid_bbox",
-                    "bbox must have exactly 4 comma-separated values: min lon, max lat, max lon, min lat");
-        }
-
-        double minLon, maxLat, maxLon, minLat;
-        try {
-            minLon = Double.parseDouble(parts[0].trim());
-            maxLat = Double.parseDouble(parts[1].trim());
-            maxLon = Double.parseDouble(parts[2].trim());
-            minLat = Double.parseDouble(parts[3].trim());
-        } catch (NumberFormatException e) {
-            throw new InvalidFilterException("invalid_bbox", "bbox values must be valid numbers");
-        }
-
-        if (!Double.isFinite(minLon) || !Double.isFinite(maxLat)
-                || !Double.isFinite(maxLon) || !Double.isFinite(minLat)) {
-            throw new InvalidFilterException("invalid_bbox", "bbox values must be finite numbers");
-        }
-
-        if (minLon > maxLon || minLat > maxLat) {
-            throw new InvalidFilterException("invalid_bbox", "bbox coordinates are invalid: min must not exceed max");
-        }
-
-        return new double[]{minLon, maxLat, maxLon, minLat};
     }
 }
