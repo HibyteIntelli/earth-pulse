@@ -50,7 +50,7 @@ class EmailPreviewTool {
                 ))
                 .build();
 
-        String eventUrl = "http://localhost:4200/events/" + payload.getEventId();
+        String eventUrl = "http://localhost:4200/map?event=" + payload.getEventId();
 
         notificationEmailService.sendImmediateEmail(watch, payload, briefing, eventUrl);
     }
