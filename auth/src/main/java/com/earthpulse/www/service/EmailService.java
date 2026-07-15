@@ -12,8 +12,8 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
-    @Value("${app.base-url}")
-    private String baseUrl;
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
 
     @Value("${app.mail.from}")
     private String from;
@@ -28,10 +28,10 @@ public class EmailService {
 
                 Click the link below to set a new password. It expires in 1 hour.
 
-                %s/reset-password?token=%s
+                %s/forgot-password?token=%s
 
                 If you did not request this, you can safely ignore this email.
-                """.formatted(baseUrl, token));
+                """.formatted(frontendUrl, token));
         mailSender.send(message);
     }
 }

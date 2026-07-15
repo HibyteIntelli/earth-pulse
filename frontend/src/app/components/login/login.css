@@ -51,6 +51,24 @@ app-globe-scene {
 .legend--quake { --c: var(--ev-quake); }
 .legend--landslide { --c: var(--ev-landslide); }
 
+.form__forgot {
+  margin: -0.9rem 0 1.6rem;
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+}
+
+.form__forgot a {
+  color: var(--ink-dim);
+  text-decoration-color: var(--water-deep);
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+}
+
+.form__forgot a:hover {
+  color: var(--water-deep);
+}
+
 .submit {
   margin-top: 0.6rem;
 }

@@ -18,6 +18,9 @@ spring.flyway.baseline-version=0
 # Service identity — used as the JWT issuer claim (iss)
 app.base-url=http://localhost:8083
 
+# Frontend SPA origin — used to build user-facing links (e.g. password reset emails)
+app.frontend-url=http://localhost:4200
+
 # Shared secret for internal endpoints called by the Notifier Service (X-Internal-Secret header)
 app.internal-secret=<RANDOM_SECRET_MIN_32_CHARS>
 

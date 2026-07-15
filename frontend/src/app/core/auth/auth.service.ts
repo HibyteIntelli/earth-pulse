@@ -3,7 +3,14 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { AuthResponse, LoginRequest, SignupRequest } from './auth.models';
+import {
+  AuthResponse,
+  ForgotPasswordRequest,
+  LoginRequest,
+  MessageResponse,
+  ResetPasswordRequest,
+  SignupRequest,
+} from './auth.models';
 
 const TOKEN_KEY = 'earthpulse.token';
 
@@ -52,6 +59,14 @@ export class AuthService {
     return this.http
       .post<AuthResponse>(`${this.base}/auth/login`, body)
       .pipe(tap((res) => this.setToken(res.token)));
+  }
+
+  forgotPassword(body: ForgotPasswordRequest): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${this.base}/auth/forgot-password`, body);
+  }
+
+  resetPassword(body: ResetPasswordRequest): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${this.base}/auth/reset-password`, body);
   }
 
   logout(): void {
