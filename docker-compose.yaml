@@ -11,6 +11,7 @@ services:
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
       APP_BASE_URL: http://auth:8083
+      APP_FRONTEND_URL: ${FRONTEND_BASE_URL:-http://localhost:4200}
       APP_INTERNAL_SECRET: ${AUTH_INTERNAL_SECRET:?AUTH_INTERNAL_SECRET is required}
       APP_JWT_PRIVATE_KEY: ${APP_JWT_PRIVATE_KEY}
       APP_BANNED_PASSWORDS_TXT_PATH: /app/rockyou.txt
@@ -21,11 +22,18 @@ services:
       APP_AVATAR_STORAGE_DIR: /app/avatar-store
       APP_AVATAR_PUBLIC_BASE_URL: http://localhost:8083/avatars
       APP_AVATAR_MAX_FILE_SIZE_BYTES: 1048576
+      SPRING_MAIL_HOST: notifier-mailpit
+      SPRING_MAIL_PORT: 1025
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
+      APP_MAIL_FROM: noreply@earthpulse.local
     ports:
       - "8083:8083"
     depends_on:
       auth-postgres:
         condition: service_healthy
+      notifier-mailpit:
+        condition: service_started
 
   auth-postgres:
     image: postgres:17.10
