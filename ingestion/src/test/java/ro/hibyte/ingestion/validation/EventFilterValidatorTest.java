@@ -76,6 +76,15 @@ class EventFilterValidatorTest {
     }
 
     @Test
+    void rejectsBboxOutOfGeoRange() {
+        EventFilter filter = new EventFilter();
+        filter.setBbox("181,90,180,-89");
+
+        InvalidFilterException ex = assertThrows(InvalidFilterException.class, () -> validator.validate(filter));
+        assertThat(ex.getCode()).isEqualTo(ErrorCode.INVALID_BBOX);
+    }
+
+    @Test
     void appliesDefaultSizeAndPageWhenMissing() {
         EventFilter filter = new EventFilter();
 

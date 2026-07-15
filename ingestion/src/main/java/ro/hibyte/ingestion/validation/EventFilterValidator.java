@@ -45,6 +45,11 @@ public class EventFilterValidator {
             throw new InvalidFilterException(ErrorCode.INVALID_BBOX, "bbox values must be finite numbers");
         }
 
+        if (minLon < -180 || minLon > 180 || maxLon < -180 || maxLon > 180
+                || minLat < -90 || minLat > 90 || maxLat < -90 || maxLat > 90) {
+            throw new InvalidFilterException(ErrorCode.INVALID_BBOX, "bbox coordinates are invalid: longitude must be between -180 and 180, latitude between -90 and 90");
+        }
+
         if (minLon > maxLon || minLat > maxLat) {
             throw new InvalidFilterException(ErrorCode.INVALID_BBOX, "bbox coordinates are invalid: min must not exceed max");
         }
