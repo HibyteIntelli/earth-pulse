@@ -26,7 +26,7 @@ services:
       SPRING_MAIL_PORT: 1025
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: "false"
       SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: "false"
-      APP_MAIL_FROM: noreply@earthpulse.local
+      APP_MAIL_FROM: noreply@earth-pulse.local
     ports:
       - "8083:8083"
     depends_on:
