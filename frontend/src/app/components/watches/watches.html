@@ -79,11 +79,13 @@
           <span class="file-tag">Watch registry</span>
           <span class="file-no">EP&#8211;WATCH&#8211;LOG</span>
         </div>
-        <span class="stamp stamp--restricted">{{ activeCount() }} active</span>
       </header>
 
       <div class="log-head">
-        <h2 class="form__title">Surveillance regions</h2>
+        <div class="log-head__row">
+          <h2 class="form__title">Surveillance regions</h2>
+          <span class="stamp stamp--restricted">{{ activeCount() }} active</span>
+        </div>
         <p class="form__hint">
           {{ total() }} watch{{ total() === 1 ? '' : 'es' }} on file. Draw a new region from the
           <a routerLink="/map">live map</a> to add another.
