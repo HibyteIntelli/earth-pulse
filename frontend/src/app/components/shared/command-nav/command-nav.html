@@ -16,9 +16,11 @@
         Map
       </a>
     </li>
+    @if (isLoggedIn()) {
     <li><a routerLink="/watches" routerLinkActive="is-active">Watches</a></li>
     <li><a routerLink="/notifications" routerLinkActive="is-active">Notifications</a></li>
     <li><a routerLink="/profile" routerLinkActive="is-active">Profile</a></li>
+    }
     @if (isLoggedIn()) {
       <li>
         <button type="button" class="cmd-nav__logout" (click)="promptLogout()">Logout</button>
