@@ -33,7 +33,7 @@ public interface NotificationLogRepository extends JpaRepository<NotificationLog
            "AND (:eventId IS NULL OR n.eventId = :eventId) " +
            "AND (:category IS NULL OR :category MEMBER OF n.eventCategories) " +
            "AND (:deliveryMode IS NULL OR n.deliveryMode = :deliveryMode) " +
-           "AND (:since IS NULL OR n.deliveredAt >= :since)")
+           "AND n.deliveredAt >= COALESCE(:since, n.deliveredAt)")
     Page<NotificationLog> findByFilters(
             @Param("userId") UUID userId,
             @Param("eventId") String eventId,

@@ -16,5 +16,11 @@
     "secure": false,
     "changeOrigin": true,
     "pathRewrite": { "^/llm": "/api" }
+  },
+  "/notifier": {
+    "target": "http://localhost:8084",
+    "secure": false,
+    "changeOrigin": true,
+    "pathRewrite": { "^/notifier": "" }
   }
 }

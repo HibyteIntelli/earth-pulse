@@ -3,4 +3,5 @@ export const environment = {
   apiBaseUrl: '/api',
   ingestionBaseUrl: '/ingestion',
   llmBaseUrl: '/llm',
+  notifierBaseUrl: '/notifier',
 };
