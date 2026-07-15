@@ -8,7 +8,7 @@ info:
   version: 1.0.0
 
 servers:
-  - url: http://localhost:8082
+  - url: http://localhost:8080
     description: Local development
 
 tags:
@@ -26,10 +26,10 @@ components:
       scheme: bearer
       bearerFormat: JWT
 
-    internalApiKey:
+    internalSecret:
       type: apiKey
       in: header
-      name: X-API-Key
+      name: X-Internal-Secret
 
   schemas:
 
@@ -92,42 +92,32 @@ components:
             - Stay indoors if smoke is visible in your area
             - Follow evacuation instructions from local authorities
 
-    ProblemDetail:
+    ErrorMessage:
+      type: string
+      description: Plain-text error message.
+      example: "Invalid event id"
+
+    InternalAuthError:
       type: object
-      description: RFC 7807 problem detail.
+      description: Returned when the X-Internal-Secret header is missing or invalid.
       properties:
-        type:
+        error:
           type: string
-          format: uri
-          example: "https://earthpulse.io/errors/not-found"
-
-        title:
-          type: string
-          example: "Resource Not Found"
-
-        status:
-          type: integer
-          example: 404
-
-        detail:
-          type: string
-          example: "Briefing for event EONET_6543 was not found"
-
-        instance:
-          type: string
-          format: uri
-          example: "/briefings/EONET_6543"
+          example: "Missing or invalid internal secret"
 
     HealthResponse:
       type: object
       properties:
         status:
           type: string
+          enum:
+            - UP
+            - DOWN
           example: UP
 
 paths:
 
-  /briefings/{eventId}:
+  /api/briefings/{eventId}:
 
     parameters:
       - name: eventId
@@ -195,18 +185,47 @@ paths:
         "400":
           description: Event ID does not match the EONET_<digits> format.
           content:
-            application/json:
+            text/plain:
               schema:
-                $ref: '#/components/schemas/ProblemDetail'
+                $ref: '#/components/schemas/ErrorMessage'
+
+        "401":
+          description: Missing or invalid JWT bearer token.
 
         "503":
           description: LLM service unavailable.
           content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+  /api/internal/briefings:
+
+    delete:
+      tags:
+        - Briefings
+      summary: Delete all cached briefings
+      operationId: cleanupBriefings
+
+      security:
+        - internalSecret: []
+
+      description: >
+        Internal cleanup endpoint used by backend services.
+        Deletes all cached briefings from the database.
+
+      responses:
+        "204":
+          description: All briefings were deleted successfully.
+
+        "401":
+          description: Missing or invalid X-Internal-Secret header.
+          content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetail'
+                $ref: '#/components/schemas/InternalAuthError'
 
-  /internal/briefings/{eventId}:
+  /api/internal/briefings/{eventId}:
 
     parameters:
       - name: eventId
@@ -223,7 +242,7 @@ paths:
       operationId: getInternalBriefing
 
       security:
-        - internalApiKey: []
+        - internalSecret: []
 
       description: >
         Internal endpoint used by backend services.
@@ -275,27 +294,44 @@ paths:
         "400":
           description: Event ID does not match the EONET_<digits> format.
           content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorMessage'
+
+        "401":
+          description: Missing or invalid X-Internal-Secret header.
+          content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProblemDetail'
+                $ref: '#/components/schemas/InternalAuthError'
 
         "503":
           description: LLM service unavailable.
           content:
-            application/json:
+            text/plain:
               schema:
-                $ref: '#/components/schemas/ProblemDetail'
+                $ref: '#/components/schemas/ErrorMessage'
 
-  /health:
+  /api/health:
     get:
       tags:
         - Health
       summary: Health check
       operationId: healthCheck
 
+      description: >
+        Checks connectivity to the underlying Ollama LLM service.
+
       responses:
         "200":
           description: Service is healthy.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+        "503":
+          description: LLM service (Ollama) is unreachable.
           content:
             application/json:
               schema:
