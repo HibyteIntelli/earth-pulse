@@ -91,7 +91,7 @@ class DigestJobConcurrencyIntegrationTest {
         watch.setWatchId(watchId);
         watch.setUserId(UUID.randomUUID());
         watch.setUserEmail(userEmail);
-        watch.setDigestMode(DeliveryMode.DAILY_DIGEST);
+        watch.setDigestMode(DeliveryMode.DAILY);
         watch.setReadingLevel(ReadingLevel.DEFAULT);
 
         when(authServiceClient.matchWatches(any())).thenReturn(List.of(watch));

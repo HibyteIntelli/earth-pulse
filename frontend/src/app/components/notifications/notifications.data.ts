@@ -50,7 +50,7 @@ export const FEED: readonly Intercept[] = [
     grid: '27W VL 8810 3402',
     magnitude: { value: null, unit: null },
     watch: 'NORTH ATLANTIC · GEOWATCH',
-    deliveryMode: 'DAILY_DIGEST',
+    deliveryMode: 'DAILY',
     receivedAt: '2026‑06‑23 02:47Z',
     received: 'Intercepted 1 h 43 m ago',
     briefing:

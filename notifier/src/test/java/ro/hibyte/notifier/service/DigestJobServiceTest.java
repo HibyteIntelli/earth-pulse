@@ -67,7 +67,7 @@ class DigestJobServiceTest {
                 .eventCategories(List.of("wildfires"))
                 .eventUrl("http://localhost:4200/events/" + eventId)
                 .eventDate(OffsetDateTime.now())
-                .deliveryMode(DeliveryMode.DAILY_DIGEST)
+                .deliveryMode(DeliveryMode.DAILY)
                 .readingLevel(ReadingLevel.DEFAULT)
                 .briefingSummary("Summary for " + eventId)
                 .briefingImpact("Impact for " + eventId)

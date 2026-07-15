@@ -154,7 +154,7 @@ class EventProcessingServiceTest {
     @Test
     void digestWatch_claimsUndeliveredLog_buffersDigestEntry_noEmailSent() {
         NewEventPayloadDto payload = payload();
-        MatchedWatchDto watch = watch(DeliveryMode.DAILY_DIGEST);
+        MatchedWatchDto watch = watch(DeliveryMode.DAILY);
 
         when(authServiceClient.matchWatches(payload)).thenReturn(List.of(watch));
         when(notificationLogRepository.existsByWatchIdAndEventId(watch.getWatchId(), payload.getEventId())).thenReturn(false);
@@ -168,7 +168,7 @@ class EventProcessingServiceTest {
         ArgumentCaptor<NotificationLog> captor = ArgumentCaptor.forClass(NotificationLog.class);
         verify(notificationLogRepository).saveAndFlush(captor.capture());
         assertThat(captor.getValue().getDeliveredAt()).isNull();
-        assertThat(captor.getValue().getDeliveryMode()).isEqualTo(DeliveryMode.DAILY_DIGEST);
+        assertThat(captor.getValue().getDeliveryMode()).isEqualTo(DeliveryMode.DAILY);
         verify(notificationLogRepository, never()).save(any());
         verify(notificationLogRepository, never()).delete(any());
 
@@ -186,7 +186,7 @@ class EventProcessingServiceTest {
     @Test
     void digestWatch_bufferingFails_releasesClaimForRetry() {
         NewEventPayloadDto payload = payload();
-        MatchedWatchDto watch = watch(DeliveryMode.DAILY_DIGEST);
+        MatchedWatchDto watch = watch(DeliveryMode.DAILY);
 
         when(authServiceClient.matchWatches(payload)).thenReturn(List.of(watch));
         when(notificationLogRepository.existsByWatchIdAndEventId(watch.getWatchId(), payload.getEventId())).thenReturn(false);
