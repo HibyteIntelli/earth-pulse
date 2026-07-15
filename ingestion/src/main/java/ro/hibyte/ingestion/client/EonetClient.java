@@ -35,7 +35,7 @@ public class EonetClient {
                     .body(String.class);
         } catch (RestClientException e) {
             log.error("Failed to fetch events from EONET (days={})", days, e);
-            throw new EonetUnavailableException("EONET is unavailable: " + e.getMessage());
+            throw new EonetUnavailableException("EONET is unavailable: " + e.getMessage(), e);
         }
 
         if (json == null) {

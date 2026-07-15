@@ -13,4 +13,10 @@ public abstract class IngestionException extends RuntimeException{
         this.code = code;
         this.status = status;
     }
+
+    protected IngestionException(ErrorCode code, HttpStatus status, String message, Throwable cause){
+        super(message, cause);
+        this.code = code;
+        this.status = status;
+    }
 }
