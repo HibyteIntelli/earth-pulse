@@ -79,11 +79,13 @@
           <span class="file-tag">Signal intercept feed</span>
           <span class="file-no">EP&#8211;INT&#8211;LOG</span>
         </div>
-        <span class="stamp stamp--restricted">{{ total() }} on file</span>
       </header>
 
       <div class="log-head">
-        <h2 class="form__title">Intercept log</h2>
+        <div class="log-head__row">
+          <h2 class="form__title">Intercept log</h2>
+          <span class="stamp stamp--restricted">{{ total() }} on file</span>
+        </div>
         <p class="form__hint">Events delivered against your active watch regions.</p>
 
         <div class="segmented">

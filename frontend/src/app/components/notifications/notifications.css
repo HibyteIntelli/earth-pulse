@@ -22,6 +22,18 @@
   padding: 1.5rem clamp(1.5rem, 4vw, 2.4rem) 0.4rem;
 }
 
+.log-head__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem 1rem;
+  flex-wrap: wrap;
+}
+
+.log-head__row .form__title {
+  margin: 0;
+}
+
 .log-head .form__hint {
   margin-bottom: 1.1rem;
 }
