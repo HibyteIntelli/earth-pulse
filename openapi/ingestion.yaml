@@ -346,13 +346,12 @@ components:
           description: Machine-readable error identifier.
           enum:
             - invalid_bbox
-            - invalid_date_range
-            - invalid_category
-            - invalid_sort
             - size_out_of_range
             - page_out_of_range
-            - event_not_found
             - unauthorized
+            - eonet_unavailable
+            - malformed_request
+            - internal_error
           example: "invalid_bbox"
         message:
           type: string
@@ -370,7 +369,4 @@ components:
         application/json:
           schema: { $ref: '#/components/schemas/Error' }
     NotFound:
-      description: Event not found.
-      content:
-        application/json:
-          schema: { $ref: '#/components/schemas/Error' }
+      description: Event not found. No response body.

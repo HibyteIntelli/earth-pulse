@@ -1,14 +1,10 @@
 package ro.hibyte.ingestion.exception;
 
-import lombok.Getter;
+import org.springframework.http.HttpStatus;
 
-@Getter
-public class InvalidFilterException extends RuntimeException {
+public class InvalidFilterException extends IngestionException {
 
-    private final String code;
-
-    public InvalidFilterException(String code, String message) {
-        super(message);
-        this.code = code;
+    public InvalidFilterException(ErrorCode code, String message) {
+        super(code, HttpStatus.BAD_REQUEST, message);
     }
 }

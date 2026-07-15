@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 import ro.hibyte.ingestion.dto.eonet.EonetEvent;
 import ro.hibyte.ingestion.dto.eonet.EonetResponse;
+import ro.hibyte.ingestion.exception.EonetUnavailableException;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
@@ -20,15 +22,26 @@ public class EonetClient {
     private final ObjectMapper objectMapper;
 
     public EonetResponse fetchEvents(int days) {
-        String json = eonetRestClient
-                .get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/api/v3/events")
-                        .queryParam("status", "all")
-                        .queryParam("days", days)
-                        .build())
-                .retrieve()
-                .body(String.class);
+        String json;
+        try {
+            json = eonetRestClient
+                    .get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/api/v3/events")
+                            .queryParam("status", "all")
+                            .queryParam("days", days)
+                            .build())
+                    .retrieve()
+                    .body(String.class);
+        } catch (RestClientException e) {
+            log.error("Failed to fetch events from EONET (days={})", days, e);
+            throw new EonetUnavailableException("EONET is unavailable: " + e.getMessage(), e);
+        }
+
+        if (json == null) {
+            log.error("EONET returned an empty response body (days={})", days);
+            throw new EonetUnavailableException("EONET returned an empty response body");
+        }
 
         List<EonetEvent> events = new ArrayList<>();
         for (String eventJson : splitEvents(json)) {

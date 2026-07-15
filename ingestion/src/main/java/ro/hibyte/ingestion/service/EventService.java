@@ -22,10 +22,11 @@ import ro.hibyte.ingestion.dto.request.EventFilter;
 import ro.hibyte.ingestion.dto.request.SortEnum;
 import ro.hibyte.ingestion.dto.response.EventPage;
 import ro.hibyte.ingestion.dto.response.EventResponse;
-import ro.hibyte.ingestion.exception.InvalidFilterException;
 import ro.hibyte.ingestion.model.Event;
 import ro.hibyte.ingestion.repository.EventRepository;
 import ro.hibyte.ingestion.repository.EventSpecification;
+import ro.hibyte.ingestion.validation.EventFilterValidator;
+import ro.hibyte.ingestion.validation.ValidatedEventFilter;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +40,7 @@ public class EventService {
     private final EonetClient eonetClient;
     private final EventSpecification eventSpecification;
     private final NotifierClient notifierClient;
+    private final EventFilterValidator eventFilterValidator;
 
     @Value("${eonet.poll-days:30}")
     private int pollDays;
@@ -118,29 +120,19 @@ public class EventService {
     }
 
     public EventPage searchEvents(EventFilter filter) {
-        if (filter == null) filter = new EventFilter();
+        ValidatedEventFilter validated = eventFilterValidator.validate(filter);
 
-        int size = filter.getSize() != null ? filter.getSize() : 100;
-        int page = filter.getPage() != null ? filter.getPage() : 0;
+        Specification<Event> spec = eventSpecification.build(validated);
+        Sort sort = buildSort(validated.original().getSort());
 
-        if (size < 1 || size > 500) {
-            throw new InvalidFilterException("size_out_of_range", "size must be between 1 and 500");
-        }
-        if (page < 0) {
-            throw new InvalidFilterException("page_out_of_range", "page must be >= 0");
-        }
-
-        Specification<Event> spec = eventSpecification.build(filter);
-        Sort sort = buildSort(filter.getSort());
-
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Pageable pageable = PageRequest.of(validated.page(), validated.size(), sort);
         Page<Event> result = eventRepository.findAll(spec, pageable);
 
         List<EventResponse> items = result.getContent().stream()
                 .map(EventResponse::new)
                 .toList();
 
-        return new EventPage(items, (int) result.getTotalElements(), page, size);
+        return new EventPage(items, (int) result.getTotalElements(), validated.page(), validated.size());
     }
 
     private Sort buildSort(SortEnum sortEnum) {
