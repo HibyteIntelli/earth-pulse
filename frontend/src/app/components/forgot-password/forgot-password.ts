@@ -86,7 +86,7 @@ export class ForgotPassword {
 
   protected readonly resetForm = this.fb.nonNullable.group(
     {
-      password: ['', [Validators.required, strengthValidator]],
+      password: ['', [Validators.required, Validators.minLength(8), strengthValidator]],
       confirm: ['', Validators.required],
     },
     { validators: passwordsMatchValidator },

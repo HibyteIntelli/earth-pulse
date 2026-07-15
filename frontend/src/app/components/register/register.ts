@@ -73,7 +73,7 @@ export class Register {
     {
       email: ['', [Validators.required, Validators.email]],
       name: ['', Validators.required],
-      password: ['', [Validators.required, strengthValidator]],
+      password: ['', [Validators.required, Validators.minLength(8), strengthValidator]],
       confirm: ['', Validators.required],
       consent: [false, Validators.requiredTrue],
     },
