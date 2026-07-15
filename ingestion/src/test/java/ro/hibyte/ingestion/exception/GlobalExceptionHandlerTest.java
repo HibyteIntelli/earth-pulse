@@ -47,6 +47,20 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void exceptionsInternalDoNotLeakTheirMessage() {
+        RuntimeException ex = new RuntimeException("sensitive internal detail: class EventService faulty");
+        WebRequest request = mock(WebRequest.class);
+
+        ResponseEntity<Object> response = handler.handleExceptionInternal(
+                ex, null, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
+
+        ErrorResponse body = (ErrorResponse) response.getBody();
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(body.getCode()).isEqualTo("internal_error");
+        assertThat(body.getMessage()).isEqualTo("An unexpected error occurred");
+    }
+
+    @Test
     void springHandledExceptionsGetTheSameErrorResponseFormat() {
         Exception ex = new Exception("Request body is missing");
         WebRequest request = mock(WebRequest.class);
