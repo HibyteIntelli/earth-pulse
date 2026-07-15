@@ -34,6 +34,9 @@ public class SecurityConfig {
     @Value("${app.rate-limit.refill-duration}")
     private Duration refillDuration;
 
+    @Value("${app.rate-limit.forgot-password:5}")
+    private int forgotPasswordCapacity;
+
     @Bean
     @Order(1)
     public SecurityFilterChain internalFilterChain(HttpSecurity http){
@@ -54,7 +57,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-                .addFilterBefore(new RateLimitFilter(loginCapacity, signupCapacity, refillDuration), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new RateLimitFilter(loginCapacity, signupCapacity, forgotPasswordCapacity, refillDuration), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 

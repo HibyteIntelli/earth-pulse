@@ -3,6 +3,7 @@ package com.earthpulse.www;
 import com.earthpulse.www.dto.JwkKeyDto;
 import com.earthpulse.www.dto.JwksDto;
 import com.earthpulse.www.service.BannedPasswordService;
+import com.earthpulse.www.service.EmailService;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.JWTClaimsSet;
@@ -62,6 +63,9 @@ class AuthFlowIT {
 
     @MockitoBean
     private BannedPasswordService bannedPasswordService;
+
+    @MockitoBean
+    private EmailService emailService;
 
     @Test
     @DisplayName("POST /auth/signup: valid payload returns 201 Created with empty body")

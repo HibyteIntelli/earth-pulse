@@ -10,6 +10,7 @@ import java.util.UUID;
 public record MatchingWatchDto(
         UUID watchId,
         UUID userId,
+        String userEmail,
         DigestMode digestMode,
         ReadingLevel readingLevel,
         List<EventCategory> categories

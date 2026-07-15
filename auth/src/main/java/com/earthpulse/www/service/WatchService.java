@@ -2,6 +2,7 @@ package com.earthpulse.www.service;
 
 import com.earthpulse.www.dto.EventQueryDto;
 import com.earthpulse.www.dto.MatchingWatchDto;
+import com.earthpulse.www.dto.WatchMatchRequestDto;
 import com.earthpulse.www.dto.WatchRequestDto;
 import com.earthpulse.www.dto.WatchResponseDto;
 import com.earthpulse.www.dto.WatchUpdateDto;
@@ -124,6 +125,17 @@ public class WatchService {
     @Transactional(readOnly = true)
     public List<MatchingWatchDto> findMatching(EventQueryDto query) {
         return watchRepository.findMatchingWatches(query.lat(), query.lon(), query.category(),
+                        PageRequest.of(0, MAX_MATCHING_WATCHES))
+                .stream()
+                .map(watchMapper::toMatchingDto)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<MatchingWatchDto> findMatchingByEvent(WatchMatchRequestDto request) {
+        double lat = request.point().lat();
+        double lon = request.point().lon();
+        return watchRepository.findMatchingWatchesByCategories(lat, lon, request.categories(),
                         PageRequest.of(0, MAX_MATCHING_WATCHES))
                 .stream()
                 .map(watchMapper::toMatchingDto)

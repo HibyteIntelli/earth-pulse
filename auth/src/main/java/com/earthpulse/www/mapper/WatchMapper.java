@@ -31,5 +31,6 @@ public interface WatchMapper {
 
     @Mapping(target = "watchId", source = "id")
     @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "userEmail", source = "user.email")
     MatchingWatchDto toMatchingDto(Watch watch);
 }

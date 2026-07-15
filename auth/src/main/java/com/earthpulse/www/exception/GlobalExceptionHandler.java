@@ -1,6 +1,7 @@
 package com.earthpulse.www.exception;
 
 import com.earthpulse.www.dto.ErrorResponse;
+import com.earthpulse.www.exception.InvalidResetTokenException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -67,6 +68,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleInvalidBoundingBox(InvalidBoundingBoxException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of(ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidResetTokenException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidResetToken(InvalidResetTokenException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of("Invalid or expired password reset token"));
     }
 
     @ExceptionHandler(WrongPasswordException.class)
