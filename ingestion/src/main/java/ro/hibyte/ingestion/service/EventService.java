@@ -88,10 +88,17 @@ public class EventService {
             throw new EventAlreadyExistsException(
                     "Event with eonetId '" + eonetEvent.getId() + "' already exists");
         }
-        upsertEvent(eonetEvent, true);
-        return eventRepository.findById(eonetEvent.getId())
-                .map(EventResponse::new)
-                .orElseThrow();
+        Event event = new Event();
+        event.setEonetId(eonetEvent.getId());
+        event.applyFields(eonetEvent);
+        try {
+            Event saved = eventRepository.save(event);
+            notifyNewEvent(saved);
+            return new EventResponse(saved);
+        } catch (DataIntegrityViolationException e) {
+            throw new EventAlreadyExistsException(
+                    "Event with eonetId '" + eonetEvent.getId() + "' already exists");
+        }
     }
 
     @EventListener(ApplicationReadyEvent.class)

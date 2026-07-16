@@ -28,17 +28,25 @@ public class TestEventRequest {
     private OffsetDateTime closed;
 
     public EonetEvent toEonetEvent() {
-        if (eonetId == null) {
+        if (eonetId == null || eonetId.isBlank()) {
             throw new InvalidFilterException(ErrorCode.MALFORMED_REQUEST, "eonetId is required");
         }
-        if (title == null) {
+        if (title == null || title.isBlank()) {
             throw new InvalidFilterException(ErrorCode.MALFORMED_REQUEST, "title is required");
         }
         if (longitude == null) {
             throw new InvalidFilterException(ErrorCode.MALFORMED_REQUEST, "longitude is required");
         }
+        if (!Double.isFinite(longitude) || longitude < -180 || longitude > 180) {
+            throw new InvalidFilterException(ErrorCode.MALFORMED_REQUEST,
+                    "longitude must be between -180 and 180");
+        }
         if (latitude == null) {
             throw new InvalidFilterException(ErrorCode.MALFORMED_REQUEST, "latitude is required");
+        }
+        if (!Double.isFinite(latitude) || latitude < -90 || latitude > 90) {
+            throw new InvalidFilterException(ErrorCode.MALFORMED_REQUEST,
+                    "latitude must be between -90 and 90");
         }
         if (eventDate == null) {
             throw new InvalidFilterException(ErrorCode.MALFORMED_REQUEST, "eventDate is required");
