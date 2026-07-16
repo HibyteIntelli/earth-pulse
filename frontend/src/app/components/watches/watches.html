@@ -92,6 +92,10 @@
         </p>
       </div>
 
+      @if (actionError()) {
+        <p-message severity="error" variant="simple" [text]="actionError()!" />
+      }
+
       @if (loading()) {
         <div class="registry-state" aria-busy="true">
           <span class="breathe"></span>

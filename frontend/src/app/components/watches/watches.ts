@@ -1,15 +1,18 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 import { ButtonModule } from 'primeng/button';
+import { MessageModule } from 'primeng/message';
 import { WatchService } from '../../core/watch/watch.service';
 import { Watch } from '../../core/watch/watch.models';
 import { categoryTitle } from '../../models/event-category';
 import { deliveryModeLabel } from '../../models/delivery-mode';
+import { ApiError } from '../../core/auth/auth.models';
 import { WatchEdit } from './watch-edit/watch-edit';
 
 @Component({
   selector: 'app-watches',
-  imports: [RouterLink, ButtonModule, WatchEdit],
+  imports: [RouterLink, ButtonModule, MessageModule, WatchEdit],
   templateUrl: './watches.html',
   styleUrls: ['../shared/form-kit.css', '../shared/dossier-kit.css', './watches.css'],
 })
@@ -19,6 +22,7 @@ export class Watches implements OnInit {
   protected readonly watches = signal<Watch[]>([]);
   protected readonly loading = signal(false);
   protected readonly error = signal(false);
+  protected readonly actionError = signal<string | null>(null);
   protected readonly editingWatch = signal<Watch | null>(null);
   protected readonly pendingDeleteId = signal<string | null>(null);
 
@@ -56,12 +60,16 @@ export class Watches implements OnInit {
   }
 
   protected togglePause(w: Watch): void {
+    this.actionError.set(null);
     this.watchService.update(w.id, { active: !w.active }).subscribe({
       next: (updated) => this.replace(updated),
+      error: (err: HttpErrorResponse) =>
+        this.actionError.set(this.describeError(err, 'Could not update the watch.')),
     });
   }
 
   protected confirmDelete(id: string): void {
+    this.actionError.set(null);
     this.pendingDeleteId.set(id);
   }
 
@@ -70,12 +78,21 @@ export class Watches implements OnInit {
   }
 
   protected remove(id: string): void {
+    this.actionError.set(null);
     this.watchService.delete(id).subscribe({
       next: () => {
         this.watches.update((list) => list.filter((w) => w.id !== id));
         this.pendingDeleteId.set(null);
       },
+      error: (err: HttpErrorResponse) => {
+        this.pendingDeleteId.set(null);
+        this.actionError.set(this.describeError(err, 'Could not delete the watch.'));
+      },
     });
+  }
+
+  private describeError(err: HttpErrorResponse, fallback: string): string {
+    return (err.error as ApiError | undefined)?.message ?? fallback;
   }
 
   protected startEdit(w: Watch): void {
