@@ -99,6 +99,13 @@ services:
       - "11435:11434"
     volumes:
       - llm-ollama-data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     entrypoint: >
       /bin/sh -c "
         ollama serve &
