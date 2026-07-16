@@ -96,8 +96,11 @@ public class EventService {
             notifyNewEvent(saved);
             return new EventResponse(saved);
         } catch (DataIntegrityViolationException e) {
-            throw new EventAlreadyExistsException(
-                    "Event with eonetId '" + eonetEvent.getId() + "' already exists");
+            if (eventRepository.existsById(eonetEvent.getId())) {
+                throw new EventAlreadyExistsException(
+                        "Event with eonetId '" + eonetEvent.getId() + "' already exists");
+            }
+            throw e;
         }
     }
 
