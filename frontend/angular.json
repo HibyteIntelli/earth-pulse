@@ -3,7 +3,8 @@
   "version": 1,
   "cli": {
     "packageManager": "npm",
-    "analytics": false
+    "analytics": false,
+    "schematicCollections": ["@schematics/angular", "playwright-ng-schematics"]
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -25,11 +26,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/colors.css",
-              "src/animations.css",
-              "src/styles.css"
-            ]
+            "styles": ["src/colors.css", "src/animations.css", "src/styles.css"]
           },
           "configurations": {
             "production": {
@@ -72,6 +69,17 @@
         },
         "test": {
           "builder": "@angular/build:unit-test"
+        },
+        "e2e": {
+          "builder": "playwright-ng-schematics:playwright",
+          "options": {
+            "devServerTarget": "earth-pulse-frontend:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "earth-pulse-frontend:serve:production"
+            }
+          }
         }
       }
     }
