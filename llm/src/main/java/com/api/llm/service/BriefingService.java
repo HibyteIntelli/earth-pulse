@@ -13,6 +13,7 @@ import com.api.llm.repository.BriefingRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -123,6 +124,13 @@ public class BriefingService {
         briefingRepository.save(briefing);
 
         return new BriefingResponseDto(briefing);
+    }
+
+    @Transactional
+    public void cleanData() {
+        long count = briefingRepository.count();
+        briefingRepository.deleteAll();
+        log.info("Cleaned {} briefing(s) from the database", count);
     }
 
 }
