@@ -22,6 +22,7 @@ import ro.hibyte.ingestion.dto.request.EventFilter;
 import ro.hibyte.ingestion.dto.request.SortEnum;
 import ro.hibyte.ingestion.dto.response.EventPage;
 import ro.hibyte.ingestion.dto.response.EventResponse;
+import ro.hibyte.ingestion.exception.EventAlreadyExistsException;
 import ro.hibyte.ingestion.model.Event;
 import ro.hibyte.ingestion.repository.EventRepository;
 import ro.hibyte.ingestion.repository.EventSpecification;
@@ -80,6 +81,27 @@ public class EventService {
             return;
         }
         notifierClient.notifyNewEvent(new NewEventPayloadDto(event));
+    }
+
+    public EventResponse ingestTestEvent(EonetEvent eonetEvent) {
+        if (eventRepository.existsById(eonetEvent.getId())) {
+            throw new EventAlreadyExistsException(
+                    "Event with eonetId '" + eonetEvent.getId() + "' already exists");
+        }
+        Event event = new Event();
+        event.setEonetId(eonetEvent.getId());
+        event.applyFields(eonetEvent);
+        try {
+            Event saved = eventRepository.save(event);
+            notifyNewEvent(saved);
+            return new EventResponse(saved);
+        } catch (DataIntegrityViolationException e) {
+            if (eventRepository.existsById(eonetEvent.getId())) {
+                throw new EventAlreadyExistsException(
+                        "Event with eonetId '" + eonetEvent.getId() + "' already exists");
+            }
+            throw e;
+        }
     }
 
     @EventListener(ApplicationReadyEvent.class)

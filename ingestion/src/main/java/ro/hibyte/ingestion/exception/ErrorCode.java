@@ -9,6 +9,7 @@ public enum ErrorCode {
     UNAUTHORIZED("unauthorized"),
     EONET_UNAVAILABLE("eonet_unavailable"),
     MALFORMED_REQUEST("malformed_request"),
+    EVENT_ALREADY_EXISTS("event_already_exists"),
     INTERNAL_ERROR("internal_error");
 
     private final String value;
