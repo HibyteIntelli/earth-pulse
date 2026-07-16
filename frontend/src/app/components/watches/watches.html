@@ -1,1 +1,188 @@
-<p>watches works!</p>
+<main class="dossier-stage">
+
+  <div class="classbar classbar--top">
+    &#9650;&nbsp;TOP&nbsp;SECRET&nbsp;&#9650;&nbsp;WATCH&nbsp;REGISTRY&nbsp;&#9650;&nbsp;EARTH&nbsp;PULSE&nbsp;COMMAND&nbsp;&#9650;
+  </div>
+
+  <svg class="seal-defs" aria-hidden="true" width="0" height="0" focusable="false">
+    <defs>
+      <path id="seal-arc-top" d="M40,150 A110,110 0 0 0 260,150" />
+      <path id="seal-arc-bottom" d="M40,150 A110,110 0 0 1 260,150" />
+      <filter id="seal-ink" x="-10%" y="-10%" width="120%" height="120%">
+        <feColorMatrix
+          type="matrix"
+          values="0 0 0 0 0.635
+                  0 0 0 0 0.231
+                  0 0 0 0 0.169
+                  0 0 0 0.9 0"
+        />
+      </filter>
+    </defs>
+  </svg>
+
+  <div class="dossier-wrap">
+
+    <div class="decor" aria-hidden="true">
+      <svg class="decor__star" viewBox="0 0 100 100" fill="currentColor">
+        <polygon points="50,4 61,37 96,37 67,58 78,92 50,71 22,92 33,58 4,37 39,37" />
+      </svg>
+
+      <svg class="decor__reticle" viewBox="0 0 300 300" fill="none" stroke="currentColor">
+        <circle cx="150" cy="150" r="122" stroke-width="1.5" />
+        <circle cx="150" cy="150" r="82" stroke-width="1.5" stroke-dasharray="3 7" />
+        <path d="M150,8 L150,70 M150,230 L150,292 M8,150 L70,150 M230,150 L292,150" stroke-width="1.5" />
+        <path d="M138,150 L162,150 M150,138 L150,162" stroke-width="1.5" />
+      </svg>
+
+      <span class="decor__stencil decor__stencil--left">EARTH&nbsp;PULSE&nbsp;COMMAND&nbsp;//&nbsp;FORM&nbsp;EP&#8211;14&nbsp;//&nbsp;EYES&nbsp;ONLY</span>
+      <span class="decor__stencil decor__stencil--right">SURVEILLANCE&nbsp;GRID&nbsp;//&nbsp;NEED&#8211;TO&#8211;KNOW</span>
+
+      <span class="decor__corner decor__corner--tl"></span>
+      <span class="decor__corner decor__corner--tr"></span>
+      <span class="decor__corner decor__corner--bl"></span>
+      <span class="decor__corner decor__corner--br"></span>
+    </div>
+
+    <div class="watermark" aria-hidden="true">WATCHES</div>
+
+    <article class="dossier-card">
+
+      <div class="gov-stamp gov-stamp--head" aria-hidden="true">
+        <svg viewBox="0 0 300 300">
+          <g fill="none" stroke="currentColor">
+            <circle cx="150" cy="150" r="145" stroke-width="6" />
+            <circle cx="150" cy="150" r="131" stroke-width="2" />
+            <circle cx="150" cy="150" r="90" stroke-width="2" />
+          </g>
+          <g class="seal-text" fill="currentColor" font-weight="700" letter-spacing="2">
+            <text font-size="21">
+              <textPath href="#seal-arc-top" startOffset="50%" text-anchor="middle">
+                ★ EARTH PULSE COMMAND ★
+              </textPath>
+            </text>
+            <text font-size="15">
+              <textPath href="#seal-arc-bottom" startOffset="50%" text-anchor="middle">
+                WATCH REGISTRY · EYES ONLY
+              </textPath>
+            </text>
+          </g>
+          <g fill="currentColor">
+            <polygon points="18,150 22,144 29,144 24,140 26,133 18,137 10,133 12,140 7,144 14,144" />
+            <polygon points="282,150 286,144 293,144 288,140 290,133 282,137 274,133 276,140 271,144 278,144" />
+          </g>
+          <image href="assets/images.svg" x="103" y="103" width="94" height="94" filter="url(#seal-ink)" />
+        </svg>
+      </div>
+
+      <header class="file-head">
+        <div>
+          <span class="file-tag">Watch registry</span>
+          <span class="file-no">EP&#8211;WATCH&#8211;LOG</span>
+        </div>
+      </header>
+
+      <div class="log-head">
+        <div class="log-head__row">
+          <h2 class="form__title">Surveillance regions</h2>
+          <span class="stamp stamp--restricted">{{ activeCount() }} active</span>
+        </div>
+        <p class="form__hint">
+          {{ total() }} watch{{ total() === 1 ? '' : 'es' }} on file. Draw a new region from the
+          <a routerLink="/map">live map</a> to add another.
+        </p>
+      </div>
+
+      @if (actionError()) {
+        <p-message severity="error" variant="simple" [text]="actionError()!" />
+      }
+
+      @if (loading()) {
+        <div class="registry-state" aria-busy="true">
+          <span class="breathe"></span>
+          <p class="registry-muted">Loading watch registry…</p>
+        </div>
+      } @else if (error()) {
+        <p class="registry-error">Could not load your watches. Please try again later.</p>
+      } @else {
+        <ul class="registry">
+          @for (w of watches(); track w.id) {
+            <li class="watch-card" [class.is-paused]="!w.active">
+              <span class="watch-card__stripe" aria-hidden="true"></span>
+
+              <div class="watch-card__top">
+                <h3 class="watch-card__title">{{ w.name || 'Unnamed watch' }}</h3>
+                <span class="status-stamp" [class.status-stamp--paused]="!w.active">
+                  {{ w.active ? 'Active' : 'Paused' }}
+                </span>
+              </div>
+
+              <dl class="meta">
+                <div class="meta__row meta__row--wide">
+                  <dt>Region</dt>
+                  <dd>{{ regionLabel(w) }}</dd>
+                </div>
+                <div class="meta__row">
+                  <dt>Categories</dt>
+                  <dd>{{ categoriesLabel(w) }}</dd>
+                </div>
+                <div class="meta__row">
+                  <dt>Notify me</dt>
+                  <dd>{{ deliveryLabel(w.digestMode) }}</dd>
+                </div>
+                <div class="meta__row">
+                  <dt>Reading level</dt>
+                  <dd>{{ w.readingLevel === 'SIMPLIFIED' ? 'Simplified' : 'Default' }}</dd>
+                </div>
+              </dl>
+
+              @if (pendingDeleteId() === w.id) {
+                <div class="confirm-bar">
+                  <span>Delete this watch permanently?</span>
+                  <div class="actions">
+                    <button pButton type="button" class="action action--ghost" (click)="cancelDelete()">
+                      Cancel
+                    </button>
+                    <button pButton type="button" class="action action--danger" (click)="remove(w.id)">
+                      Confirm delete
+                    </button>
+                  </div>
+                </div>
+              } @else {
+                <div class="watch-card__foot">
+                  <div class="actions">
+                    <button pButton type="button" class="action" (click)="startEdit(w)">Edit</button>
+                    <button pButton type="button" class="action action--ghost" (click)="togglePause(w)">
+                      {{ w.active ? 'Pause' : 'Resume' }}
+                    </button>
+                    <button pButton type="button" class="action action--ghost" (click)="confirmDelete(w.id)">
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              }
+            </li>
+          } @empty {
+            <li class="log-empty">
+              <span class="log-empty__mark">&#9633;</span>
+              No watches yet. Draw a region on the <a routerLink="/map">map</a> to start monitoring.
+            </li>
+          }
+        </ul>
+      }
+
+      <footer class="file-foot">
+        <span class="barcode" aria-hidden="true"></span>
+        <span class="stamp stamp--granted" aria-hidden="true">Eyes only</span>
+        <a routerLink="/map">Return to map</a>
+      </footer>
+    </article>
+  </div>
+
+  <div class="classbar classbar--bottom">
+    &#9660;&nbsp;AUTHORIZED&nbsp;PERSONNEL&nbsp;ONLY&nbsp;&#9660;&nbsp;DO&nbsp;NOT&nbsp;DUPLICATE&nbsp;&#9660;
+  </div>
+</main>
+
+@if (editingWatch(); as w) {
+  <app-watch-edit [watch]="w" (saved)="onEditSaved($event)" (cancelled)="onEditCancelled()" />
+}

@@ -19,6 +19,8 @@ import ro.hibyte.notifier.entity.Severity;
 import ro.hibyte.notifier.repository.DigestQueueRepository;
 import ro.hibyte.notifier.repository.NotificationLogRepository;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -136,7 +138,8 @@ public class EventProcessingService {
     }
 
     private String buildEventUrl(String eventId) {
-        return frontendBaseUrl + "/events/" + eventId;
+        String encodedEventId = URLEncoder.encode(eventId, StandardCharsets.UTF_8);
+        return frontendBaseUrl + "/map?event=" + encodedEventId;
     }
 
 }

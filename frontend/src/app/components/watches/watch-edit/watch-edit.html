@@ -1,0 +1,93 @@
+<div
+  class="modal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="watch-edit-title"
+  (click)="cancel()"
+>
+  <form
+    class="modal-card"
+    [formGroup]="form"
+    (ngSubmit)="submit()"
+    (click)="$event.stopPropagation()"
+    novalidate
+  >
+    <button type="button" class="modal-close glass" (click)="cancel()" aria-label="Close">
+      ✕
+    </button>
+
+    <header class="modal-head">
+      <span class="modal-eyebrow label-caps">Edit watch</span>
+      <h2 class="modal-title" id="watch-edit-title">Adjust this region</h2>
+      <p class="modal-hint">Drag the rectangle's corners to reshape the watched area.</p>
+    </header>
+
+    <div #editMap class="edit-map"></div>
+
+    @if (serverError(); as error) {
+      <p class="modal-error">{{ error }}</p>
+    }
+
+    <label class="field">
+      <span class="field__label label-caps">Name (optional)</span>
+      <input
+        class="field__input"
+        type="text"
+        formControlName="name"
+        placeholder="e.g. West Coast wildfire watch"
+        maxlength="255"
+      />
+    </label>
+
+    <div class="field">
+      <span class="field__label label-caps">Categories</span>
+      <p class="field__hint">Leave empty to match every category.</p>
+      <div class="cat-grid">
+        @for (cat of categories; track cat.id) {
+          <button
+            type="button"
+            class="cat-chip"
+            role="checkbox"
+            [attr.aria-checked]="isSelected(cat.id)"
+            [class.is-checked]="isSelected(cat.id)"
+            (click)="toggleCategory(cat.id)"
+          >
+            <span class="cat-chip__swatch" [style.background]="colorFor(cat.id)" aria-hidden="true"></span>
+            {{ cat.title }}
+          </button>
+        }
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field__label label-caps">Notify me</span>
+      <div class="segmented">
+        @for (mode of digestModes; track mode.value) {
+          <label class="segmented__option" [class.is-active]="form.controls.digestMode.value === mode.value">
+            <input type="radio" formControlName="digestMode" [value]="mode.value" />
+            {{ mode.label }}
+          </label>
+        }
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="field__label label-caps">Briefing reading level</span>
+      <div class="segmented">
+        @for (level of readingLevels; track level.value) {
+          <label class="segmented__option" [class.is-active]="form.controls.readingLevel.value === level.value">
+            <input type="radio" formControlName="readingLevel" [value]="level.value" />
+            {{ level.label }}
+          </label>
+        }
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="modal-ghost" (click)="cancel()">Cancel</button>
+      <button type="submit" class="modal-submit" [disabled]="loading()">
+        {{ loading() ? 'Saving…' : 'Save changes' }}
+      </button>
+    </div>
+  </form>
+</div>

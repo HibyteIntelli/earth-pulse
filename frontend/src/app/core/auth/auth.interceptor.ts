@@ -14,6 +14,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     environment.apiBaseUrl,
     environment.ingestionBaseUrl,
     environment.llmBaseUrl,
+    environment.notifierBaseUrl,
   ].some((base) => req.url.startsWith(base));
 
   const authed =

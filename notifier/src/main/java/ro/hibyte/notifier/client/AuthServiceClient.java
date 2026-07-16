@@ -1,6 +1,7 @@
 package ro.hibyte.notifier.client;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -8,7 +9,6 @@ import org.springframework.web.client.RestClient;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import ro.hibyte.notifier.dto.EventMatchRequestDto;
-import ro.hibyte.notifier.dto.EventMatchResponseDto;
 import ro.hibyte.notifier.dto.MatchedWatchDto;
 import ro.hibyte.notifier.dto.NewEventPayloadDto;
 import ro.hibyte.notifier.entity.CategoryEnum;
@@ -44,15 +44,13 @@ public class AuthServiceClient {
         );
 
         try {
-            EventMatchResponseDto response = restClient.post()
+            List<MatchedWatchDto> matches = restClient.post()
                     .uri("/internal/watches/match")
                     .body(request)
                     .retrieve()
-                    .body(EventMatchResponseDto.class);
+                    .body(new ParameterizedTypeReference<List<MatchedWatchDto>>() {});
 
-            return response != null && response.getMatches() != null
-                    ? response.getMatches()
-                    : List.of();
+            return matches != null ? matches : List.of();
         } catch (Exception e) {
             throw new IllegalStateException(
                     "Failed to fetch matching watches for event=" + payload.getEventId(), e);

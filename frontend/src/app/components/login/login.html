@@ -65,6 +65,10 @@
           <p-message severity="success" variant="simple" text="Operator commissioned. Sign in to continue." />
         }
 
+        @if (justReset()) {
+          <p-message severity="success" variant="simple" text="Access keys reissued. Sign in with your new password." />
+        }
+
         @if (serverError(); as error) {
           <p-message severity="error" variant="simple" [text]="error" />
         }
@@ -106,6 +110,10 @@
             <p-message severity="error" variant="simple" text="Password is required." />
           }
         </label>
+
+        <p class="form__forgot">
+          <a routerLink="/forgot-password">Forgot your access keys?</a>
+        </p>
 
         <button pButton class="submit" type="submit" [disabled]="loading()">
           <span>{{ loading() ? 'Authenticating…' : 'Authenticate' }}</span>

@@ -77,145 +77,130 @@
       <header class="file-head">
         <div>
           <span class="file-tag">Signal intercept feed</span>
-          <span class="file-no">EP&#8211;INT&#8211;LOG&nbsp;//&nbsp;2026&#8211;06&#8211;23</span>
+          <span class="file-no">EP&#8211;INT&#8211;LOG</span>
         </div>
-        <span class="stamp stamp--restricted">{{ unread() }} New</span>
       </header>
 
       <div class="log-head">
-        <h2 class="form__title">Intercept log</h2>
-        <p class="form__hint">
-          Events flagged against your active watch regions. {{ total() }} on file ·
-          {{ unread() }} awaiting review.
-        </p>
-        <button
-          pButton
-          type="button"
-          class="bulk"
-          (click)="markAllRead()"
-          [disabled]="unread() === 0"
-        >
-          Mark all actioned
-        </button>
+        <div class="log-head__row">
+          <h2 class="form__title">Intercept log</h2>
+          <span class="stamp stamp--restricted">{{ total() }} on file</span>
+        </div>
+        <p class="form__hint">Events delivered against your active watch regions.</p>
+
+        <div class="segmented">
+          <button
+            type="button"
+            class="segmented__option"
+            [class.is-active]="deliveryFilter() === null"
+            (click)="setDeliveryFilter(null)"
+          >
+            All
+          </button>
+          <button
+            type="button"
+            class="segmented__option"
+            [class.is-active]="deliveryFilter() === 'IMMEDIATE'"
+            (click)="setDeliveryFilter('IMMEDIATE')"
+          >
+            Immediate
+          </button>
+          <button
+            type="button"
+            class="segmented__option"
+            [class.is-active]="deliveryFilter() === 'DAILY'"
+            (click)="setDeliveryFilter('DAILY')"
+          >
+            Daily digest
+          </button>
+        </div>
       </div>
 
-      <ul class="log">
-        @for (it of intercepts(); track it.id) {
-          <li
-            class="intercept"
-            [class.is-read]="it.read"
-            [attr.data-cat]="it.category"
-          >
-            <span class="intercept__stripe" aria-hidden="true"></span>
+      @if (loading()) {
+        <div class="registry-state" aria-busy="true">
+          <span class="breathe"></span>
+          <p class="registry-muted">Loading intercept log…</p>
+        </div>
+      } @else if (error()) {
+        <p class="registry-error">Could not load your notifications. Please try again later.</p>
+      } @else {
+        <ul class="log">
+          @for (it of items(); track it.id) {
+            <li class="intercept" [attr.data-cat]="it.eventCategories[0]">
+              <span class="intercept__stripe" aria-hidden="true"></span>
 
-            <div class="intercept__seal" aria-hidden="true">
-              <svg viewBox="0 0 300 300">
-                <g fill="none" stroke="currentColor">
-                  <circle cx="150" cy="150" r="145" stroke-width="7" />
-                  <circle cx="150" cy="150" r="128" stroke-width="3" />
-                  <circle cx="150" cy="150" r="86" stroke-width="3" />
-                </g>
-                <g class="seal-text" fill="currentColor" font-weight="700" letter-spacing="2">
-                  <text font-size="23">
-                    <textPath href="#seal-arc-top" startOffset="50%" text-anchor="middle">
-                      ★ EARTH PULSE ★
-                    </textPath>
-                  </text>
-                  <text font-size="17">
-                    <textPath href="#seal-arc-bottom" startOffset="50%" text-anchor="middle">
-                      VERIFIED INTERCEPT
-                    </textPath>
-                  </text>
-                </g>
-                <polygon
-                  fill="currentColor"
-                  points="150,108 161,141 196,141 168,162 179,195 150,174 121,195 132,162 104,141 139,141"
-                />
-              </svg>
-            </div>
-
-            <div class="intercept__body">
-              <div class="intercept__top">
-                <span class="cat">{{ categoryCode(it.category) }}</span>
-                <span class="cat__label">{{ categoryLabel(it.category) }}</span>
-                <span class="intercept__no">{{ it.fileNo }}</span>
-                @if (!it.read) {
-                  <span class="status-stamp">New</span>
-                }
-              </div>
-
-              <h3 class="intercept__title">{{ it.title }}</h3>
-              <p class="intercept__brief">{{ it.briefing }}</p>
-
-              <dl class="meta">
-                <div class="meta__row">
-                  <dt>Magnitude</dt>
-                  <dd>{{ magnitudeLabel(it.magnitude) }}</dd>
-                </div>
-                <div class="meta__row">
-                  <dt>Location</dt>
-                  <dd>{{ it.location }}</dd>
-                </div>
-                <div class="meta__row">
-                  <dt>Coordinates</dt>
-                  <dd>{{ it.coords }}</dd>
-                </div>
-                <div class="meta__row">
-                  <dt>Grid ref</dt>
-                  <dd>{{ it.grid }}</dd>
-                </div>
-                <div class="meta__row">
-                  <dt>Watch</dt>
-                  <dd>{{ it.watch }}</dd>
-                </div>
-                <div class="meta__row">
-                  <dt>Delivery</dt>
-                  <dd>{{ deliveryLabel(it.deliveryMode) }}</dd>
-                </div>
-                <div class="meta__row">
-                  <dt>Event ID</dt>
-                  <dd>
-                    <a class="event-link" routerLink="/map" [queryParams]="{ event: it.eventId }">{{
-                      it.eventId
-                    }}</a>
-                  </dd>
-                </div>
-                <div class="meta__row">
-                  <dt>Logged</dt>
-                  <dd>{{ it.receivedAt }}</dd>
-                </div>
-              </dl>
-
-              <div class="intercept__foot">
-                <span class="received">{{ it.received }}</span>
-                <div class="actions">
-                  @if (!it.read) {
-                    <button pButton type="button" class="action" (click)="markRead(it.id)">
-                      Mark actioned
-                    </button>
-                  } @else {
-                    <button pButton type="button" class="action action--reopen" (click)="reopen(it.id)">
-                      Reopen case
-                    </button>
+              <div class="intercept__body">
+                <div class="intercept__top">
+                  <span class="cat">{{ deliveryLabel(it.deliveryMode) }}</span>
+                  @for (cat of it.eventCategories; track cat) {
+                    <span class="cat__label">{{ categoryLabel(cat) }}</span>
                   }
-                  <button pButton type="button" class="action action--ghost" (click)="dismiss(it.id)">
-                    Dismiss
-                  </button>
                 </div>
-              </div>
-            </div>
 
-            @if (it.read) {
-              <span class="case-stamp" aria-hidden="true">Actioned</span>
-            }
-          </li>
-        } @empty {
-          <li class="log-empty">
-            <span class="log-empty__mark">&#9633;</span>
-            No active intercepts. All channels quiet.
-          </li>
+                <h3 class="intercept__title">{{ it.eventTitle }}</h3>
+
+                @if (it.briefing; as b) {
+                  <span class="brief__sev" [attr.data-severity]="b.severity">
+                    <span class="brief__sev-dot" aria-hidden="true"></span>
+                    {{ b.severity }} severity
+                  </span>
+                  <p class="intercept__brief">{{ b.summary }}</p>
+
+                  <div class="brief__field">
+                    <span class="brief__label">Likely impact</span>
+                    <p class="brief__text">{{ b.impact }}</p>
+                  </div>
+
+                  @if (b.precautions.length) {
+                    <div class="brief__field">
+                      <span class="brief__label">Precautions</span>
+                      <ul class="brief__list">
+                        @for (p of b.precautions; track p) {
+                          <li>{{ p }}</li>
+                        }
+                      </ul>
+                    </div>
+                  }
+                }
+
+                <dl class="meta">
+                  <div class="meta__row">
+                    <dt>Reading level</dt>
+                    <dd>{{ it.readingLevel === 'SIMPLIFIED' ? 'Simplified' : 'Default' }}</dd>
+                  </div>
+                  <div class="meta__row">
+                    <dt>Event ID</dt>
+                    <dd>
+                      <a class="event-link" routerLink="/map" [queryParams]="{ event: it.eventId }">{{
+                        it.eventId
+                      }}</a>
+                    </dd>
+                  </div>
+                  @if (it.deliveredAt) {
+                    <div class="meta__row">
+                      <dt>Delivered</dt>
+                      <dd>{{ it.deliveredAt | date: 'yyyy-MM-dd HH:mm' }}</dd>
+                    </div>
+                  }
+                </dl>
+              </div>
+            </li>
+          } @empty {
+            <li class="log-empty">
+              <span class="log-empty__mark">&#9633;</span>
+              No intercepts yet. Create a watch on the <a routerLink="/map">map</a> to start receiving them.
+            </li>
+          }
+        </ul>
+
+        @if (hasMore()) {
+          <div class="load-more">
+            <button pButton type="button" class="bulk" (click)="loadMore()" [disabled]="loadingMore()">
+              {{ loadingMore() ? 'Loading…' : 'Load more' }}
+            </button>
+          </div>
         }
-      </ul>
+      }
 
       <footer class="file-foot">
         <span class="barcode" aria-hidden="true"></span>

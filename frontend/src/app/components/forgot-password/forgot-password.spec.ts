@@ -3,19 +3,19 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 
-import { Watches } from './watches';
+import { ForgotPassword } from './forgot-password';
 
-describe('Watches', () => {
-  let component: Watches;
-  let fixture: ComponentFixture<Watches>;
+describe('ForgotPassword', () => {
+  let component: ForgotPassword;
+  let fixture: ComponentFixture<ForgotPassword>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Watches],
+      imports: [ForgotPassword],
       providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Watches);
+    fixture = TestBed.createComponent(ForgotPassword);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

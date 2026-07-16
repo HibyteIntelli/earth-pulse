@@ -1,6 +1,21 @@
 <div class="map-shell">
   <div #mapContainer class="map"></div>
   <app-side-panel />
+  <app-create-watch />
+
+  @if (authenticated() && !drawMode() && !hasWatchDraft()) {
+    <button type="button" class="watch-trigger panel-surface" (click)="startWatchDraw()">
+      <span class="watch-trigger__eyebrow">Watches</span>
+      <span class="watch-trigger__value">+ New watch</span>
+    </button>
+  }
+
+  @if (drawMode()) {
+    <div class="watch-hint panel-surface" role="status">
+      <span>Drag on the map to draw a watch region</span>
+      <button type="button" class="watch-hint__cancel" (click)="cancelWatchDraw()">Cancel</button>
+    </div>
+  }
 
   <div class="filter" [class.filter--open]="menuOpen()">
     @if (menuOpen()) {

@@ -42,6 +42,7 @@ export class Login {
   protected readonly justRegistered = signal(
     this.route.snapshot.queryParamMap.get('registered') === '1',
   );
+  protected readonly justReset = signal(this.route.snapshot.queryParamMap.get('reset') === '1');
 
   onSubmit(): void {
     if (this.form.invalid) {

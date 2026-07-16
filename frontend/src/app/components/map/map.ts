@@ -14,6 +14,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject, of } from 'rxjs';
 import { catchError, debounceTime, map, switchMap } from 'rxjs/operators';
 import * as L from 'leaflet';
+import '@geoman-io/leaflet-geoman-free';
 import { IngestionService } from '../../core/ingestion/ingestion.service';
 import { Event, EventFilter } from '../../core/ingestion/ingestion.models';
 import { iconFor } from './category-icons';
@@ -21,13 +22,15 @@ import { colorForCategory } from './category-colors';
 import { EVENT_CATEGORIES, categoryTitle, EventCategoryId } from '../../models/event-category';
 import { MapStateService } from './map-state.service';
 import { SidePanel } from './side-panel/side-panel';
+import { CreateWatch } from './create-watch/create-watch';
+import { AuthService } from '../../core/auth/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 
 const WORLD_BOUNDS = L.latLngBounds([-90, -180], [90, 180]);
 
 @Component({
   selector: 'app-map',
-  imports: [SidePanel],
+  imports: [SidePanel, CreateWatch],
   templateUrl: './map.html',
   styleUrls: ['./panel-kit.css', './map.css'],
   host: {
@@ -37,13 +40,19 @@ const WORLD_BOUNDS = L.latLngBounds([-90, -180], [90, 180]);
 export class Map implements AfterViewInit, OnDestroy {
   private readonly mapContainer = viewChild.required<ElementRef<HTMLDivElement>>('mapContainer');
   private leafletMap?: L.Map;
+  private drawnRegion?: L.Layer;
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly ingestion = inject(IngestionService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly mapState = inject(MapStateService);
+  private readonly auth = inject(AuthService);
   private readonly markers = L.layerGroup();
   private readonly reload$ = new Subject<EventFilter>();
+
+  protected readonly authenticated = this.auth.isAuthenticated;
+  protected readonly drawMode = this.mapState.drawMode;
+  protected readonly hasWatchDraft = computed(() => this.mapState.pendingWatchRegion() !== null);
 
   protected readonly categories = EVENT_CATEGORIES;
   protected readonly menuOpen = signal(false);
@@ -70,6 +79,32 @@ export class Map implements AfterViewInit, OnDestroy {
         replaceUrl: true,
       });
     });
+
+    effect(() => {
+      const drawing = this.mapState.drawMode();
+      const map = this.leafletMap;
+      if (!map) return;
+      if (drawing) {
+        map.pm.enableDraw('Rectangle');
+      } else {
+        map.pm.disableDraw('Rectangle');
+      }
+    });
+
+    effect(() => {
+      if (this.mapState.pendingWatchRegion() === null) {
+        this.drawnRegion?.remove();
+        this.drawnRegion = undefined;
+      }
+    });
+  }
+
+  protected startWatchDraw(): void {
+    this.mapState.startDrawingWatch();
+  }
+
+  protected cancelWatchDraw(): void {
+    this.mapState.cancelWatchDraft();
   }
 
   ngAfterViewInit(): void {
@@ -256,6 +291,17 @@ export class Map implements AfterViewInit, OnDestroy {
     this.fitWorldZoom();
     this.leafletMap.on('resize', () => this.fitWorldZoom());
     this.leafletMap.on('moveend zoomend', () => this.reload());
+    this.leafletMap.on('pm:create', (e) => {
+      this.drawnRegion?.remove();
+      this.drawnRegion = e.layer;
+      const bounds = (e.layer as L.Rectangle).getBounds();
+      this.mapState.regionDrawn({
+        minLat: bounds.getSouth(),
+        maxLat: bounds.getNorth(),
+        minLon: bounds.getWest(),
+        maxLon: bounds.getEast(),
+      });
+    });
   }
 
   private fitWorldZoom(): void {

@@ -1,46 +1,80 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { categoryShortCode, categoryTitle } from '../../models/event-category';
-import { deliveryModeLabel } from '../../models/delivery-mode';
-import { formatMagnitude } from '../../models/event-magnitude';
-import { FEED, Intercept } from './notifications.data';
+import { NotificationService } from '../../core/notification/notification.service';
+import { NotificationItem } from '../../core/notification/notification.models';
+import { categoryTitle } from '../../models/event-category';
+import { DeliveryMode, deliveryModeLabel } from '../../models/delivery-mode';
 
+const PAGE_SIZE = 20;
 
 @Component({
   selector: 'app-notifications',
-  imports: [RouterLink, ButtonModule],
+  imports: [RouterLink, ButtonModule, DatePipe],
   templateUrl: './notifications.html',
   styleUrls: ['../shared/form-kit.css', '../shared/dossier-kit.css', './notifications.css'],
 })
-export class Notifications {
-  protected readonly intercepts = signal<Intercept[]>(FEED.map((i) => ({ ...i })));
+export class Notifications implements OnInit {
+  private readonly notificationService = inject(NotificationService);
+
+  protected readonly items = signal<NotificationItem[]>([]);
+  protected readonly total = signal(0);
+  protected readonly loading = signal(false);
+  protected readonly loadingMore = signal(false);
+  protected readonly error = signal(false);
+  protected readonly deliveryFilter = signal<DeliveryMode | null>(null);
 
   protected readonly categoryLabel = categoryTitle;
-  protected readonly categoryCode = categoryShortCode;
   protected readonly deliveryLabel = deliveryModeLabel;
-  protected readonly magnitudeLabel = formatMagnitude;
 
-  protected readonly unread = computed(() => this.intercepts().filter((i) => !i.read).length);
-  protected readonly total = computed(() => this.intercepts().length);
+  protected readonly hasMore = computed(() => this.items().length < this.total());
 
-  protected markRead(id: string): void {
-    this.intercepts.update((list) =>
-      list.map((i) => (i.id === id ? { ...i, read: true } : i)),
-    );
+  ngOnInit(): void {
+    this.load();
   }
 
-  protected reopen(id: string): void {
-    this.intercepts.update((list) =>
-      list.map((i) => (i.id === id ? { ...i, read: false } : i)),
-    );
+  protected setDeliveryFilter(mode: DeliveryMode | null): void {
+    if (this.deliveryFilter() === mode) return;
+    this.deliveryFilter.set(mode);
+    this.load();
   }
 
-  protected markAllRead(): void {
-    this.intercepts.update((list) => list.map((i) => ({ ...i, read: true })));
+  protected loadMore(): void {
+    this.loadingMore.set(true);
+    this.notificationService
+      .list({
+        deliveryMode: this.deliveryFilter() ?? undefined,
+        limit: PAGE_SIZE,
+        offset: this.items().length,
+      })
+      .subscribe({
+        next: (page) => {
+          this.items.update((list) => [...list, ...page.items]);
+          this.total.set(page.total);
+          this.loadingMore.set(false);
+        },
+        error: () => {
+          this.loadingMore.set(false);
+        },
+      });
   }
 
-  protected dismiss(id: string): void {
-    this.intercepts.update((list) => list.filter((i) => i.id !== id));
+  private load(): void {
+    this.loading.set(true);
+    this.error.set(false);
+    this.notificationService
+      .list({ deliveryMode: this.deliveryFilter() ?? undefined, limit: PAGE_SIZE, offset: 0 })
+      .subscribe({
+        next: (page) => {
+          this.items.set(page.items);
+          this.total.set(page.total);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set(true);
+          this.loading.set(false);
+        },
+      });
   }
 }
