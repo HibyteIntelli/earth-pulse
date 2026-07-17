@@ -38,3 +38,8 @@ app.notifier-service.url=http://<NOTIFIER_SERVICE_HOST>
 app.notifier-service.internal-secret=${NOTIFIER_INTERNAL_SECRET}
 app.notifier-service.connect-timeout=3s
 app.notifier-service.read-timeout=10s
+
+# Notifier push retry/backoff (exponential): backoffMs starts at initial and is multiplied each retry
+notifier.retry.max-attempts=3
+notifier.retry.initial-backoff-ms=1000
+notifier.retry.backoff-multiplier=2
