@@ -95,18 +95,19 @@ jobs:
       matrix:
         service: [auth, ingestion, llm, notifier]
     env:
-      SHOULD_RUN: ${{ github.event_name == 'push' && contains(fromJSON(needs.changes.outputs.changes), matrix.service) }}
+      SHOULD_BUILD: ${{ contains(fromJSON(needs.changes.outputs.changes), matrix.service) }}
+      SHOULD_PUSH: ${{ github.event_name == 'push' && contains(fromJSON(needs.changes.outputs.changes), matrix.service) }}
     steps:
       - uses: actions/checkout@v4
-        if: env.SHOULD_RUN == 'true'
+        if: env.SHOULD_BUILD == 'true'
       - uses: docker/login-action@v3
-        if: env.SHOULD_RUN == 'true'
+        if: env.SHOULD_PUSH == 'true'
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build image
-        if: env.SHOULD_RUN == 'true'
+        if: env.SHOULD_BUILD == 'true'
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.service }}
@@ -114,7 +115,7 @@ jobs:
           load: true
           tags: ${{ env.REGISTRY }}/${{ needs.changes.outputs.repo }}-${{ matrix.service }}:${{ github.sha }}
       - name: Scan image (report all severities to Security tab)
-        if: env.SHOULD_RUN == 'true'
+        if: env.SHOULD_BUILD == 'true'
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/${{ needs.changes.outputs.repo }}-${{ matrix.service }}:${{ github.sha }}
@@ -123,13 +124,13 @@ jobs:
           ignore-unfixed: true
           severity: CRITICAL,HIGH,MEDIUM
       - name: Upload scan results to Security tab
-        if: env.SHOULD_RUN == 'true'
+        if: env.SHOULD_BUILD == 'true'
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-results.sarif
           category: trivy-${{ matrix.service }}
       - name: Fail build on critical/high vulnerabilities
-        if: env.SHOULD_RUN == 'true'
+        if: env.SHOULD_BUILD == 'true'
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: ${{ env.REGISTRY }}/${{ needs.changes.outputs.repo }}-${{ matrix.service }}:${{ github.sha }}
@@ -138,7 +139,7 @@ jobs:
           ignore-unfixed: true
           severity: CRITICAL,HIGH
       - name: Push image
-        if: env.SHOULD_RUN == 'true'
+        if: env.SHOULD_PUSH == 'true'
         uses: docker/build-push-action@v6
         with:
           context: ${{ matrix.service }}
@@ -149,11 +150,14 @@ jobs:
 
   docker-frontend:
     needs: [changes, build-test-frontend]
-    if: github.event_name == 'push' && contains(fromJSON(needs.changes.outputs.changes), 'frontend')
+    if: contains(fromJSON(needs.changes.outputs.changes), 'frontend')
     runs-on: ubuntu-latest
+    env:
+      SHOULD_PUSH: ${{ github.event_name == 'push' }}
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
+        if: env.SHOULD_PUSH == 'true'
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -187,6 +191,7 @@ jobs:
           ignore-unfixed: true
           severity: CRITICAL,HIGH
       - name: Push image
+        if: env.SHOULD_PUSH == 'true'
         uses: docker/build-push-action@v6
         with:
           context: frontend
