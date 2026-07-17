@@ -105,7 +105,6 @@ public class BriefingService {
         ollamaService.checkStatus();
 
         var llmRequest = new BriefingLLMRequestDto(request.getCategory(), request.getMagnitudeLevel(), request.getReadingLevel());
-
         var llmResponse = generateValidResponse(llmRequest);
 
         String severity;
