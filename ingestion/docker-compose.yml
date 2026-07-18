@@ -1,6 +1,6 @@
 services:
   postgres:
-    image: postgres:17
+    image: postgres:17.10
     container_name: ingestion-postgres
     env_file: .env
     ports:

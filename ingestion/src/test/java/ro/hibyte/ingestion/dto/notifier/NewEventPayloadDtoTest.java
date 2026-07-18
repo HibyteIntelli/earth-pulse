@@ -37,8 +37,18 @@ class NewEventPayloadDtoTest {
     }
 
     @Test
-    void throwsWhenCoordinatesNull() {
-        Event event = EventTestData.anEvent().build();
+    void throwsWhenLongitudeNull() {
+        Event event = EventTestData.anEvent().geometry(10.0, 20.0).build();
+        event.setLongitude(null);
+
+        assertThatThrownBy(() -> new NewEventPayloadDto(event))
+                .isInstanceOf(NullPointerException.class);
+    }
+
+    @Test
+    void throwsWhenLatitudeNull() {
+        Event event = EventTestData.anEvent().geometry(10.0, 20.0).build();
+        event.setLatitude(null);
 
         assertThatThrownBy(() -> new NewEventPayloadDto(event))
                 .isInstanceOf(NullPointerException.class);

@@ -94,6 +94,7 @@ class EventServiceTest {
 
             assertThat(response.getId()).isEqualTo(EVENT_ID);
             verify(eventRepository).save(any(Event.class));
+            verify(notifierClient).notifyNewEvent(any(NewEventPayloadDto.class));
         }
 
         @Test
