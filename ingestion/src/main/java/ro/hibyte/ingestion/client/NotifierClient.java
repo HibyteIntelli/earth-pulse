@@ -14,6 +14,8 @@ import ro.hibyte.ingestion.dto.notifier.NewEventPayloadDto;
 @Slf4j
 public class NotifierClient {
 
+    private static final long MAX_BACKOFF_MS = 30_000;
+
     private final int maxAttempts;
     private final long initialBackoffMs;
     private final int backoffMultiplier;
@@ -26,6 +28,15 @@ public class NotifierClient {
             @Value("${notifier.retry.initial-backoff-ms:1000}") long initialBackoffMs,
             @Value("${notifier.retry.backoff-multiplier:2}") int backoffMultiplier
     ) {
+        if (maxAttempts < 1) {
+            throw new IllegalArgumentException("notifier.retry.max-attempts must be >= 1, was " + maxAttempts);
+        }
+        if (initialBackoffMs < 0) {
+            throw new IllegalArgumentException("notifier.retry.initial-backoff-ms must be >= 0, was " + initialBackoffMs);
+        }
+        if (backoffMultiplier < 1) {
+            throw new IllegalArgumentException("notifier.retry.backoff-multiplier must be >= 1, was " + backoffMultiplier);
+        }
         this.notifierRestClient = notifierRestClient;
         this.maxAttempts = maxAttempts;
         this.initialBackoffMs = initialBackoffMs;
@@ -53,7 +64,7 @@ public class NotifierClient {
                 if (!sleep(backoffMs)) {
                     return;
                 }
-                backoffMs *= backoffMultiplier;
+                backoffMs = Math.min(backoffMs * backoffMultiplier, MAX_BACKOFF_MS);
             } catch (Exception e) {
                 logGivingUp(payload, attempt, e);
                 return;
