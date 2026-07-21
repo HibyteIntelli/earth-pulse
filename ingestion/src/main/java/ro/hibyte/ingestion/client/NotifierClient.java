@@ -1,7 +1,7 @@
 package ro.hibyte.ingestion.client;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
@@ -11,20 +11,43 @@ import org.springframework.web.client.RestClient;
 import ro.hibyte.ingestion.dto.notifier.NewEventPayloadDto;
 
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class NotifierClient {
-    private static final int MAX_ATTEMPTS = 3;
-    private static final long INITIAL_BACKOFF_MS = 1000;
-    private static final int BACKOFF_MULTIPLIER = 2;
+
+    private static final long MAX_BACKOFF_MS = 30_000;
+
+    private final int maxAttempts;
+    private final long initialBackoffMs;
+    private final int backoffMultiplier;
 
     private final RestClient notifierRestClient;
 
+    public NotifierClient(
+            RestClient notifierRestClient,
+            @Value("${notifier.retry.max-attempts:3}") int maxAttempts,
+            @Value("${notifier.retry.initial-backoff-ms:1000}") long initialBackoffMs,
+            @Value("${notifier.retry.backoff-multiplier:2}") int backoffMultiplier
+    ) {
+        if (maxAttempts < 1) {
+            throw new IllegalArgumentException("notifier.retry.max-attempts must be >= 1, was " + maxAttempts);
+        }
+        if (initialBackoffMs < 0) {
+            throw new IllegalArgumentException("notifier.retry.initial-backoff-ms must be >= 0, was " + initialBackoffMs);
+        }
+        if (backoffMultiplier < 1) {
+            throw new IllegalArgumentException("notifier.retry.backoff-multiplier must be >= 1, was " + backoffMultiplier);
+        }
+        this.notifierRestClient = notifierRestClient;
+        this.maxAttempts = maxAttempts;
+        this.initialBackoffMs = initialBackoffMs;
+        this.backoffMultiplier = backoffMultiplier;
+    }
+
     @Async
     public void notifyNewEvent(NewEventPayloadDto payload) {
-        long backoffMs = INITIAL_BACKOFF_MS;
+        long backoffMs = initialBackoffMs;
 
-        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
             try {
                 notifierRestClient.post().uri("/internal/events/new").body(payload).retrieve().toBodilessEntity();
                 return;
@@ -32,16 +55,16 @@ public class NotifierClient {
                 log.error("Notifier returned {} for event {}", e.getStatusCode(), payload.getEventId(), e);
                 return;
             } catch (HttpServerErrorException | ResourceAccessException e) {
-                if (attempt == MAX_ATTEMPTS) {
+                if (attempt == maxAttempts) {
                     logGivingUp(payload, attempt, e);
                     return;
                 }
                 log.debug("Attempt {}/{} to notify Notifier of new event {} failed, retrying in {}ms",
-                        attempt, MAX_ATTEMPTS, payload.getEventId(), backoffMs);
+                        attempt, maxAttempts, payload.getEventId(), backoffMs);
                 if (!sleep(backoffMs)) {
                     return;
                 }
-                backoffMs *= BACKOFF_MULTIPLIER;
+                backoffMs = Math.min(backoffMs * backoffMultiplier, MAX_BACKOFF_MS);
             } catch (Exception e) {
                 logGivingUp(payload, attempt, e);
                 return;
