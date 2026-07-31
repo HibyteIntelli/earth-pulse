@@ -93,7 +93,7 @@ services:
       start_period: 10s
 
   llm-ollama:
-    image: ollama/ollama:0.31.1
+    image: ollama/ollama:0.32.0
     container_name: llm-ollama
     ports:
       - "11435:11434"
